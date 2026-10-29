@@ -474,6 +474,49 @@
               </a>
             </div>
           </div>
+
+          <!-- Cloudflare Live Health, Latency & Cache Controls -->
+          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <div>
+                <span class="form-label" style="margin-bottom:2px;font-size:12.5px;display:flex;align-items:center;gap:6px;">
+                  <i class="fas fa-heartbeat" style="color:var(--accent-amber);"></i> <span>فحص سرعة واستقرار الاتصال السحابي:</span>
+                </span>
+                <div style="font-size:11px;color:var(--text-muted);" id="cf-health-detail">
+                  <span id="cf-health-label">نشط ومستقر عالمياً</span> • زمن الاستجابة: <strong id="cf-health-latency" style="color:var(--accent-cyan);">-- ms</strong> • Ray: <code id="cf-health-ray" style="color:#94a3b8;font-size:10.5px;">--</code>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button type="button" class="btn-action btn-secondary" id="btn-cf-ping" onclick="pingCloudflareHealth()" style="font-size:11.5px;padding:5px 12px;" title="فحص سرعة استجابة الموقع الحي">
+                  <i class="fas fa-bolt"></i> <span>فحص السرعة</span>
+                </button>
+                <button type="button" class="btn-action btn-secondary" id="btn-cf-purge" onclick="purgeCloudflareCache()" style="font-size:11.5px;padding:5px 12px;" title="تحديث ملفات الحافة ومسح الكاش المؤقت">
+                  <i class="fas fa-broom"></i> <span>مسح الكاش</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cloudflare Quick Command & Shortcuts -->
+          <div class="form-group" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:10px 12px;margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:11.5px;font-weight:700;color:#cbd5e1;display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-terminal" style="color:var(--accent-cyan);"></i> <span>أمر النشر المباشر عبر Wrangler CLI:</span>
+              </span>
+              <button type="button" class="btn-action btn-secondary" onclick="copyUrl('npx wrangler pages deploy dist --project-name blogger-studio-pro --branch main', 'تم نسخ أمر النشر السريع!')" style="font-size:11px;padding:3px 8px;">
+                <i class="fas fa-copy"></i> <span>نسخ الأمر</span>
+              </button>
+            </div>
+            <div style="background:#03060a;border-radius:6px;padding:6px 10px;font-family:monospace;font-size:11px;color:#38bdf8;direction:ltr;text-align:left;overflow-x:auto;white-space:nowrap;">
+              npx wrangler pages deploy dist --project-name blogger-studio-pro --branch main
+            </div>
+            <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+              <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer" style="color:var(--accent-amber);text-decoration:none;font-size:11px;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-external-link-alt"></i> <span>لوحة تحكم Cloudflare الرسمية (Dashboard) ↗</span>
+              </a>
+              <span style="font-size:11px;color:#64748b;">(النطاقات المخصصة • التحليلات • سجل البناء)</span>
+            </div>
+          </div>
         </div>
 
         <div style="margin-top:20px;display:flex;gap:10px;">
@@ -566,6 +609,48 @@
               <button type="button" class="btn-action btn-purple" id="btn-save-token" onclick="connectGitHubToken()" style="white-space:nowrap;">
                 <i class="fas fa-sync-alt"></i> <span>تحديث الربط</span>
               </button>
+            </div>
+          </div>
+
+          <!-- Git Branch, Commit & Repository Diagnostics -->
+          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-top:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+              <div>
+                <span class="form-label" style="margin-bottom:2px;font-size:12.5px;display:flex;align-items:center;gap:6px;">
+                  <i class="fas fa-code-branch" style="color:var(--accent-purple);"></i> <span>حالة الفرع وأحدث Commit:</span>
+                </span>
+                <div style="font-size:11px;color:var(--text-muted);" id="gh-commit-detail">
+                  الفرع: <strong id="gh-branch-name" style="color:var(--accent-cyan);">main</strong> • آخر نسخة: <code id="gh-latest-commit" style="color:#cbd5e1;font-family:monospace;">--</code>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span class="badge-status badge-emerald" id="gh-tree-badge" style="font-size:11px;padding:3px 10px;">
+                  <i class="fas fa-check"></i> شجرة العمل نظيفة
+                </span>
+              </div>
+            </div>
+
+            <!-- Token Scopes & API Quota Indicator -->
+            <div style="background:rgba(15,23,42,0.6);border-radius:8px;padding:8px 10px;font-size:11px;color:#cbd5e1;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
+              <div>
+                <span style="color:var(--text-muted);">صلاحيات التوكن (Scopes):</span> <strong id="gh-scopes-list" style="color:var(--accent-purple);">repo, workflow</strong>
+              </div>
+              <div>
+                <span style="color:var(--text-muted);">رصيد استعلامات API:</span> <strong id="gh-api-quota" style="color:var(--accent-emerald);">5,000 / 5,000</strong>
+              </div>
+            </div>
+
+            <!-- GitHub Quick Navigation -->
+            <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;">
+              <a href="https://github.com/Hayan-AL/blogger-studio-pro/commits/main" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-history"></i> <span>سجل التحديثات (Commits) ↗</span>
+              </a>
+              <a href="https://github.com/Hayan-AL/blogger-studio-pro/releases" target="_blank" rel="noopener noreferrer" style="color:var(--accent-purple);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-tag"></i> <span>الإصدارات والحزم (Releases) ↗</span>
+              </a>
+              <a href="https://github.com/Hayan-AL/blogger-studio-pro/settings" target="_blank" rel="noopener noreferrer" style="color:#94a3b8;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-cog"></i> <span>إعدادات المستودع ↗</span>
+              </a>
             </div>
           </div>
         </div>
@@ -675,20 +760,20 @@
       currentRepoIsPrivate = isPrivate;
       const badge = document.getElementById('repo-visibility-badge');
       const btn = document.getElementById('btn-toggle-visibility');
-      const btnText = document.getElementById('btn-toggle-visibility-text');
-      if (!badge || !btn || !btnText) return;
+      if (!badge || !btn) return;
+      btn.disabled = false;
 
       if (isPrivate) {
         badge.className = 'badge-status badge-amber';
         badge.innerHTML = '<i class="fas fa-lock"></i> مستودع خاص (Private) 🔒';
-        btnText.textContent = 'تحويل إلى مستودع عام 🌐';
         btn.className = 'btn-action btn-emerald';
+        btn.innerHTML = '<i class="fas fa-globe"></i> <span>تحويل إلى مستودع عام 🌐</span>';
         btn.title = 'جعل المستودع متاحاً للعامة';
       } else {
         badge.className = 'badge-status badge-emerald';
         badge.innerHTML = '<i class="fas fa-globe"></i> مستودع عام (Public) 🌐';
-        btnText.textContent = 'تحويل إلى مستودع خاص 🔒';
         btn.className = 'btn-action btn-purple';
+        btn.innerHTML = '<i class="fas fa-lock"></i> <span>تحويل إلى مستودع خاص 🔒</span>';
         btn.title = 'حماية وإخفاء المستودع عن الجميع';
       }
     }
@@ -697,13 +782,13 @@
       const targetIsPrivate = !currentRepoIsPrivate;
       const actionName = targetIsPrivate ? 'خاص (Private) 🔒' : 'عام (Public) 🌐';
       
-      if (!confirm(`هل أنت متأكد من تحويل مستودعك على GitHub ليصبح ${actionName}؟`)) {
+      if (!confirm(`هل أنت متأكد من رغبتك في تحويل مستودعك على GitHub ليصبح ${actionName}؟`)) {
         return;
       }
 
       const btn = document.getElementById('btn-toggle-visibility');
       btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التعديل...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تطبيق التغيير...';
       log(`جاري إرسال طلب تعديل خصوصية المستودع إلى GitHub لجعله ${actionName}...`, 'info');
 
       try {
@@ -725,8 +810,63 @@
       } catch (err) {
         log('❌ خطأ في الاتصال: ' + err.message, 'error');
         updateVisibilityUI(currentRepoIsPrivate);
+      }
+    }
+
+    async function pingCloudflareHealth() {
+      const btn = document.getElementById('btn-cf-ping');
+      const label = document.getElementById('cf-health-label');
+      const latency = document.getElementById('cf-health-latency');
+      const ray = document.getElementById('cf-health-ray');
+      if (!btn || !label) return;
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      label.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري القياس...';
+
+      try {
+        const res = await fetch('/api/hub/cloudflare/health');
+        const data = await res.json();
+        if (data.success) {
+          label.innerHTML = '🟢 نشط ومستقر عالمياً (' + data.status_code + ' OK)';
+          latency.textContent = data.latency_ms + ' ms';
+          ray.textContent = data.cf_ray;
+          log(`⚡ فحص استجابة Cloudflare Pages: ${data.latency_ms}ms • العقدة: ${data.cf_ray}`, 'success');
+          showToast(`سرعة استجابة Cloudflare ممتازة: ${data.latency_ms}ms`);
+        } else {
+          label.innerHTML = '🔴 تنبيه: ' + (data.error || 'غير متاح');
+          log('⚠️ فحص Cloudflare: ' + (data.error || 'غير متاح'), 'error');
+        }
+      } catch (err) {
+        label.textContent = '❌ خطأ بالاتصال';
+        log('❌ خطأ في فحص السرعة: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-bolt"></i> <span>فحص السرعة</span>';
+      }
+    }
+
+    async function purgeCloudflareCache() {
+      const btn = document.getElementById('btn-cf-purge');
+      if (!btn) return;
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+      log('جاري تحديث حزمة dist وتجديد ترويسات الكاش العالمي...', 'info');
+
+      try {
+        const res = await fetch('/api/hub/cloudflare/purge-cache', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          log('✨ ' + data.message, 'success');
+          showToast('تم تجديد حزمة الملفات وترويسات الكاش بنجاح!');
+        } else {
+          log('❌ خطأ في مسح الكاش: ' + data.error, 'error');
+        }
+      } catch (err) {
+        log('❌ خطأ بالاتصال: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-broom"></i> <span>مسح الكاش</span>';
       }
     }
 
@@ -753,9 +893,43 @@
           document.getElementById('gh-name-display').textContent = data.github.name || data.github.username;
           const cleanRepoUrl = (data.github.repo_url || 'https://github.com/Hayan-AL/blogger-studio-pro').replace(/\.git$/, '');
           document.getElementById('gh-repo-url-input').value = cleanRepoUrl;
+          
           if (data.github.repo_info) {
             updateVisibilityUI(data.github.repo_info.is_private);
           }
+
+          if (data.github.git_details) {
+            const gd = data.github.git_details;
+            const branchEl = document.getElementById('gh-branch-name');
+            const commitEl = document.getElementById('gh-latest-commit');
+            const treeEl = document.getElementById('gh-tree-badge');
+            if (branchEl && gd.branch) branchEl.textContent = gd.branch;
+            if (commitEl && gd.commit_hash) {
+              commitEl.textContent = `${gd.commit_hash} (${gd.commit_date || ''})`;
+            }
+            if (treeEl) {
+              if (gd.uncommitted_count === 0) {
+                treeEl.className = 'badge-status badge-emerald';
+                treeEl.innerHTML = '<i class="fas fa-check"></i> شجرة العمل نظيفة ومستقرة';
+              } else {
+                treeEl.className = 'badge-status badge-amber';
+                treeEl.innerHTML = `<i class="fas fa-pencil-alt"></i> ${gd.uncommitted_count} تعديلات جاهزة للرفع`;
+              }
+            }
+          }
+
+          if (data.github.token_scopes) {
+            const sc = data.github.token_scopes;
+            const scopesEl = document.getElementById('gh-scopes-list');
+            const quotaEl = document.getElementById('gh-api-quota');
+            if (scopesEl && sc.scopes && sc.scopes.length > 0) {
+              scopesEl.textContent = sc.scopes.join(', ');
+            }
+            if (quotaEl && sc.rate_limit_remaining !== undefined) {
+              quotaEl.textContent = `${sc.rate_limit_remaining.toLocaleString()} / ${sc.rate_limit_total.toLocaleString()}`;
+            }
+          }
+
           log(`تم التعرف على حساب GitHub المرتبط: ${data.github.username} (${data.github.name || ''})`, 'success');
         } else {
           ghBadge.className = 'badge-status badge-amber';
@@ -885,7 +1059,10 @@
       }
     }
 
-    window.addEventListener('DOMContentLoaded', loadInitialStatus);
+    window.addEventListener('DOMContentLoaded', () => {
+      loadInitialStatus();
+      setTimeout(pingCloudflareHealth, 600);
+    });
   </script>
 </body>
 </html>

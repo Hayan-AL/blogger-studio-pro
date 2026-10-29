@@ -103,7 +103,20 @@ DEFAULT_BLOGGER_EARNINGS = {
 def get_full_blogger_stats(blog_id: Optional[str] = None) -> Dict[str, Any]:
     settings = load_settings()
     current_blog = settings.get("blog", {})
-    active_id = blog_id or current_blog.get("id", "3715457895504629620")
+    active_id = blog_id or str(current_blog.get("id", "")).strip()
+    if not active_id:
+        return {
+            "status": "no_blog",
+            "has_connected_blog": False,
+            "total_views": 0,
+            "views_30_days": 0,
+            "views_7_days": 0,
+            "published_posts_count": 0,
+            "draft_posts_count": 0,
+            "top_posts": [],
+            "sources": [],
+            "countries": []
+        }
     token = get_valid_access_token()
     
     total_views = 169
@@ -236,56 +249,12 @@ def load_stored_comments() -> List[Dict[str, Any]]:
     if os.path.exists(COMMENTS_PATH):
         try:
             with open(COMMENTS_PATH, "r", encoding="utf-8") as f:
-                return json.load(f)
+                data = json.load(f)
+                if isinstance(data, list):
+                    return data
         except Exception:
             pass
-    # Initial sample comments that demonstrate full Blogger moderation functionality
-    return [
-        {
-            "id": "comm_101",
-            "author": "أحمد الشمري",
-            "author_avatar": "https://www.google.com/s2/favicons?domain=google.com&sz=64",
-            "author_url": "https://plus.google.com",
-            "content": "مقال رائع ومفيد جداً! هل تدعم النسخة الحديثة العمل التلقائي على أجهزة ماك أيضاً؟ شكراً لكم.",
-            "post_title": "شرح كيفية إنشاء تدوينة احترافية مع أزرار تحميل ذكية 2026",
-            "post_url": "https://yourblog.blogspot.com/2026/03/smart-article.html",
-            "status": "PUBLISHED",
-            "published": "2026-10-27 19:45"
-        },
-        {
-            "id": "comm_102",
-            "author": "Tech Enthusiast",
-            "author_avatar": "https://www.google.com/s2/favicons?domain=youtube.com&sz=64",
-            "author_url": "",
-            "content": "Excellent guide! The bilingual support and fast download cards make a huge difference. Keep it up!",
-            "post_title": "A comprehensive guide to artificial intelligence in 2026",
-            "post_url": "https://yourblog.blogspot.com/2026/03/ai-guide.html",
-            "status": "PUBLISHED",
-            "published": "2026-10-27 18:20"
-        },
-        {
-            "id": "comm_103",
-            "author": "سارة المحمود",
-            "author_avatar": "",
-            "author_url": "",
-            "content": "السلام عليكم، هل يمكن إضافة زر التحميل برابط ميديافاير أو جوجل درايف مباشرة؟",
-            "post_title": "دليل شامل للذكاء الاصطناعي في عام 2026",
-            "post_url": "https://yourblog.blogspot.com/2026/03/ai-guide-ar.html",
-            "status": "PENDING",
-            "published": "2026-10-27 21:10"
-        },
-        {
-            "id": "comm_104",
-            "author": "Promo Bot 99",
-            "author_avatar": "",
-            "author_url": "http://spam-link.xyz",
-            "content": "Click here to buy cheap crypto coins today http://spam-link.xyz",
-            "post_title": "دليل شامل للذكاء الاصطناعي في عام 2026",
-            "post_url": "https://yourblog.blogspot.com/2026/03/ai-guide-ar.html",
-            "status": "SPAM",
-            "published": "2026-10-27 15:00"
-        }
-    ]
+    return []
 
 def save_stored_comments(comments: List[Dict[str, Any]]):
     os.makedirs(DATA_DIR, exist_ok=True)
@@ -293,17 +262,32 @@ def save_stored_comments(comments: List[Dict[str, Any]]):
         json.dump(comments, f, ensure_ascii=False, indent=2)
 
 def get_blogger_comments(blog_id: Optional[str] = None) -> Dict[str, Any]:
-    comments = load_stored_comments()
-    
-    # Try fetching any additional live comments from Blogger API
-    token = get_valid_access_token()
     settings = load_settings()
-    active_id = blog_id or settings.get("blog", {}).get("id", "3715457895504629620")
+    active_id = blog_id or str(settings.get("blog", {}).get("id", "")).strip()
     
-    if token:
+    # Strictly return 0 when no blog is connected
+    if not active_id:
+        return {
+            "status": "success",
+            "has_connected_blog": False,
+            "counts": {
+                "total": 0,
+                "published": 0,
+                "pending": 0,
+                "spam": 0,
+                "trash": 0
+            },
+            "comments": []
+        }
+
+    stored = load_stored_comments()
+    comments = [c for c in stored if c.get("blog_id") == active_id]
+    token = get_valid_access_token()
+    
+    if token and active_id:
         try:
             url = f"https://www.googleapis.com/blogger/v3/blogs/{active_id}/comments"
-            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=5)
+            resp = requests.get(url, headers={"Authorization": f"Bearer {token}"}, timeout=8)
             if resp.status_code == 200:
                 data = resp.json()
                 for item in data.get("items", []):
@@ -311,6 +295,7 @@ def get_blogger_comments(blog_id: Optional[str] = None) -> Dict[str, Any]:
                     if not any(c.get("id") == c_id for c in comments):
                         comments.append({
                             "id": c_id,
+                            "blog_id": active_id,
                             "author": item.get("author", {}).get("displayName", "زائر"),
                             "author_avatar": item.get("author", {}).get("image", {}).get("url", ""),
                             "content": item.get("content", ""),
@@ -319,6 +304,7 @@ def get_blogger_comments(blog_id: Optional[str] = None) -> Dict[str, Any]:
                             "status": item.get("status", "PUBLISHED"),
                             "published": item.get("published", "")[:16].replace("T", " ")
                         })
+                save_stored_comments(comments)
         except Exception:
             pass
 
@@ -332,6 +318,7 @@ def get_blogger_comments(blog_id: Optional[str] = None) -> Dict[str, Any]:
 
     return {
         "status": "success",
+        "has_connected_blog": True,
         "counts": counts,
         "comments": comments
     }

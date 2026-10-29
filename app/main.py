@@ -460,9 +460,24 @@ class CategoryAssignPostsRequest(BaseModel):
 def api_get_categories():
     settings = load_settings()
     blog = settings.get("blog", {})
-    blog_id = str(blog.get("id", ""))
+    blog_id = str(blog.get("id", "")).strip()
     blog_url = blog.get("url", "").rstrip("/")
     
+    # Strictly return zero categories when no blog is connected
+    if not blog_id:
+        return {
+            "status": "success",
+            "has_connected_blog": False,
+            "categories": [],
+            "total_categories": 0,
+            "total_posts": 0,
+            "uncategorized_posts_count": 0,
+            "uncategorized_posts": [],
+            "categories_map": {},
+            "blog_name": "",
+            "blog_url": ""
+        }
+        
     posts = fetch_live_posts()
     
     from .db import list_custom_categories
@@ -544,7 +559,9 @@ def api_create_category(req: CategoryCreateRequest):
         raise HTTPException(status_code=400, detail="اسم التصنيف لا يمكن أن يكون فارغاً.")
         
     settings = load_settings()
-    blog_id = str(settings.get("blog", {}).get("id", ""))
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    if not blog_id:
+        raise HTTPException(status_code=400, detail="لا توجد مدونة مرتبطة حالياً. يرجى ربط مدونة من Blogger أولاً لإضافة وتعديل التصنيفات.")
     
     from .db import upsert_custom_category, log_activity, get_connection
     upsert_custom_category(blog_id, name, req.color or "#38bdf8", req.description or "")
@@ -1659,7 +1676,8 @@ def api_deploy_github(req: DeployGithubRequest):
 from .deployment_hub import (
     load_hub_config, get_cloudflare_status, verify_github_token,
     push_to_github, deploy_cloudflare as hub_deploy_cf, deploy_all as hub_deploy_all,
-    get_github_repo_info, set_github_repo_visibility
+    get_github_repo_info, set_github_repo_visibility,
+    check_cloudflare_health, purge_cloudflare_cache, get_git_details, get_github_scopes_info
 )
 
 class ConnectGithubTokenRequest(BaseModel):
@@ -1679,10 +1697,20 @@ def api_hub_status():
     cf = get_cloudflare_status()
     gh = cfg.get("github", {})
     gh["repo_info"] = get_github_repo_info()
+    gh["git_details"] = get_git_details()
+    gh["token_scopes"] = get_github_scopes_info()
     return {
         "github": gh,
         "cloudflare": cf
     }
+
+@app.get("/api/hub/cloudflare/health")
+def api_hub_cf_health():
+    return check_cloudflare_health()
+
+@app.post("/api/hub/cloudflare/purge-cache")
+def api_hub_cf_purge_cache():
+    return purge_cloudflare_cache()
 
 class ToggleRepoVisibilityRequest(BaseModel):
     is_private: bool

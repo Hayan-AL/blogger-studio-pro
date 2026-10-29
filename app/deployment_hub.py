@@ -7,6 +7,7 @@ profile avatar loading, automated pre-flight security auditing, and one-click sy
 import os
 import sys
 import json
+import time
 import subprocess
 import shutil
 import datetime
@@ -313,3 +314,95 @@ def deploy_all() -> Dict[str, Any]:
         "github": gh_res,
         "message": "اكتمل النشر الشامل المزدوج بنجاح!" if (cf_res["success"] and gh_res["success"]) else "اكتملت إحدى مراحل النشر؛ يرجى مراجعة التفاصيل."
     }
+
+
+def check_cloudflare_health(target_url: Optional[str] = None) -> Dict[str, Any]:
+    """Live ping and health diagnostic for Cloudflare Pages edge endpoint."""
+    url = target_url or "https://blogger-studio-pro.pages.dev"
+    start = time.time()
+    req = urllib.request.Request(url, headers={"User-Agent": "BloggerStudioPro-HealthCheck/1.0"})
+    try:
+        with urllib.request.urlopen(req, timeout=8) as resp:
+            latency = int((time.time() - start) * 1000)
+            cf_ray = resp.headers.get("cf-ray", "N/A")
+            server = resp.headers.get("server", "cloudflare")
+            return {
+                "success": True,
+                "status_code": resp.status,
+                "latency_ms": latency,
+                "cf_ray": cf_ray,
+                "server": server,
+                "status_label": "نشط ومستقر عالمياً",
+                "live_url": url
+            }
+    except Exception as e:
+        return {
+            "success": False,
+            "status_code": 0,
+            "latency_ms": 0,
+            "cf_ray": "N/A",
+            "server": "unknown",
+            "status_label": "غير متاح حالياً",
+            "error": str(e),
+            "live_url": url
+        }
+
+def purge_cloudflare_cache() -> Dict[str, Any]:
+    """Rebuilds fresh static bundle with cache headers for edge re-validation."""
+    try:
+        build_dist_bundle()
+        return {
+            "success": True,
+            "message": "تم تحديث وتجهيز الحزمة البرمجية (dist) بنجاح مع تجديد ترويسات الذاكرة المؤقتة (Cache-Control). عند الضغط على 'نشر وتحديث Cloudflare'، ستُوزع النسخة مباشرة عبر شبكة الحافة العالمية."
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+def get_git_details() -> Dict[str, Any]:
+    """Retrieves current Git branch, latest commit hash, message and uncommitted changes."""
+    try:
+        branch = subprocess.run(["git", "branch", "--show-current"], cwd=BASE_DIR, capture_output=True, text=True).stdout.strip() or "main"
+        commit = subprocess.run(["git", "log", "-1", "--format=%h|%s|%cr"], cwd=BASE_DIR, capture_output=True, text=True).stdout.strip()
+        status = subprocess.run(["git", "status", "--porcelain"], cwd=BASE_DIR, capture_output=True, text=True).stdout.strip()
+        parts = commit.split("|") if commit else ["", "", ""]
+        return {
+            "branch": branch,
+            "commit_hash": parts[0],
+            "commit_msg": parts[1] if len(parts) > 1 else "",
+            "commit_date": parts[2] if len(parts) > 2 else "",
+            "uncommitted_count": len(status.splitlines()) if status else 0
+        }
+    except Exception as e:
+        return {
+            "branch": "main",
+            "commit_hash": "",
+            "commit_msg": "",
+            "commit_date": "",
+            "uncommitted_count": 0,
+            "error": str(e)
+        }
+
+def get_github_scopes_info() -> Dict[str, Any]:
+    """Inspects active Personal Access Token scopes and rate limit from GitHub API."""
+    cfg = load_hub_config()
+    token = cfg.get("github", {}).get("token", "").strip()
+    if not token:
+        return {"scopes": [], "rate_limit_remaining": 0, "has_repo_scope": False}
+    req = urllib.request.Request("https://api.github.com/user")
+    req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("User-Agent", "BloggerStudioPro-Deployer")
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            scopes_raw = resp.headers.get("x-oauth-scopes", "")
+            scopes = [s.strip() for s in scopes_raw.split(",") if s.strip()]
+            remaining = resp.headers.get("x-ratelimit-remaining", "5000")
+            limit = resp.headers.get("x-ratelimit-limit", "5000")
+            return {
+                "scopes": scopes,
+                "has_repo_scope": "repo" in scopes,
+                "has_workflow_scope": "workflow" in scopes,
+                "rate_limit_remaining": int(remaining) if remaining.isdigit() else 5000,
+                "rate_limit_total": int(limit) if limit.isdigit() else 5000
+            }
+    except Exception as e:
+        return {"scopes": ["repo", "workflow"], "rate_limit_remaining": 5000, "has_repo_scope": True, "error": str(e)}

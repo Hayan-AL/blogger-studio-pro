@@ -29,12 +29,7 @@ def load_settings() -> Dict[str, Any]:
         except Exception:
             pass
     return {
-        "blog": {
-            "name": "Blogger Studio | لوحة التحكم الاحترافية",
-            "url": "https://yourblog.blogspot.com/",
-            "id": "3715457895504629620",
-            "feed_url": "https://yourblog.blogspot.com/feeds/posts/default?alt=json&max-results=50"
-        }
+        "blog": {}
     }
 
 def save_settings(data: Dict[str, Any]):
@@ -51,21 +46,8 @@ def detect_language(title: str, labels: Optional[List[str]] = None) -> str:
     return "en"
 
 def infer_categories(title: str, content: str = "", lang: str = "ar") -> List[str]:
-    text = (title + " " + content[:300]).lower()
-    categories = []
-    
-    if any(k in text for k in ["chatgpt", "claude", "ai", "ذكاء", "نموذج", "نماذج", "deepseek", "gemini"]):
-        categories.append("الذكاء الاصطناعي" if lang == "ar" else "AI & Models")
-    if any(k in text for k in ["windows", "ويندوز", "usb", "disk", "قرص"]):
-        categories.append("ويندوز والكمبيوتر" if lang == "ar" else "Windows & PC")
-    if any(k in text for k in ["android", "أندرويد", "هاتف", "هواتف", "سامسونج", "تطبيق", "iphone", "آيفون"]):
-        categories.append("الهواتف الذكية" if lang == "ar" else "Smartphones")
-    if any(k in text for k in ["wi-fi", "wifi", "شبكة", "security", "حماية", "أمان"]):
-        categories.append("أمان وشبكات" if lang == "ar" else "Security & Networks")
-        
-    if not categories:
-        categories.append("شروحات تقنية" if lang == "ar" else "Tech Tutorials")
-    return categories
+    # Never invent fake categories or tags when none exist on Blogger
+    return []
 
 def extract_image(content_html: str, thumbnail_url: str = "", title: str = "") -> str:
     if thumbnail_url and "transparent" not in thumbnail_url:
@@ -210,7 +192,9 @@ def switch_active_blog(blog_id: str) -> Dict[str, Any]:
 # -------------------------------------------------------------
 def fetch_live_posts(force_refresh: bool = False) -> List[Dict[str, Any]]:
     settings = load_settings()
-    blog_id = settings.get("blog", {}).get("id", "3715457895504629620")
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    if not blog_id:
+        return []
     token = get_valid_access_token()
     
     # 1. Check if SQLite already has posts and force_refresh is False
@@ -388,7 +372,9 @@ def fetch_live_posts(force_refresh: bool = False) -> List[Dict[str, Any]]:
 # -------------------------------------------------------------
 def fetch_live_pages() -> List[Dict[str, Any]]:
     settings = load_settings()
-    blog_id = settings.get("blog", {}).get("id", "3715457895504629620")
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    if not blog_id:
+        return []
     token = get_valid_access_token()
     pages: List[Dict[str, Any]] = []
     
@@ -443,7 +429,7 @@ def fetch_live_pages() -> List[Dict[str, Any]]:
 # -------------------------------------------------------------
 def create_post(title: str, content: str, labels: List[str], is_draft: bool = False, lang: str = "ar") -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = settings.get("blog", {}).get("id", "3715457895504629620")
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     
     # 1. Official API flow
@@ -543,7 +529,7 @@ def update_post_cache_and_db(clean_id: str, orig_id: str, title: str, content: s
 
 def toggle_post_status(post_id: str, is_draft: bool) -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = settings.get("blog", {}).get("id", "3715457895504629620")
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     clean_id = post_id.split("post-")[-1] if "post-" in post_id else post_id
     new_status = "DRAFT" if is_draft else "LIVE"
@@ -601,7 +587,7 @@ def toggle_post_status(post_id: str, is_draft: bool) -> Dict[str, Any]:
 
 def update_post(post_id: str, title: str, content: str, labels: List[str], is_draft: bool = False, lang: str = "ar") -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = settings.get("blog", {}).get("id", "3715457895504629620")
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     clean_id = post_id.split("post-")[-1] if "post-" in post_id else post_id
 
@@ -650,7 +636,7 @@ def update_post(post_id: str, title: str, content: str, labels: List[str], is_dr
 
 def delete_post(post_id: str) -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = settings.get("blog", {}).get("id", "3715457895504629620")
+    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     
     # Pre-deletion backup in SQLite

@@ -5790,17 +5790,20 @@ function renderCommentsList() {
     }
 
     if (items.length === 0) {
+        const isEn = (window.currentLang === 'en' || document.documentElement.lang === 'en');
         container.innerHTML = `
-            <div class="comments-empty-state">
-                <div class="empty-icon-circle"><i class="fas fa-comment-dots"></i></div>
-                <h3 class="empty-state-title">لا توجد تعليقات في هذا القسم حالياً</h3>
-                <p class="empty-state-desc">مدونة blogger جاهزة لاستقبال تفاعل القرّاء. ستظهر جميع التعليقات الجديدة هنا فور إرسالها من زوار موقعك مع إمكانية المراجعة المباشرة.</p>
-                <div class="empty-state-actions">
-                    <a href="https://yourblog.blogspot.com" target="_blank" class="btn btn-outline">
-                        <i class="fas fa-external-link-alt"></i>
-                        <span>زيارة المدونة والتحقق من صندوق التعليقات</span>
-                    </a>
+            <div class="comments-empty-state" style="padding: 45px 20px; text-align: center;">
+                <div class="empty-icon-circle" style="width: 56px; height: 56px; border-radius: 50%; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; margin: 0 auto 14px; font-size: 24px; color: var(--text-muted);">
+                    <i class="fas fa-comment-slash"></i>
                 </div>
+                <h3 class="empty-state-title" style="font-size: 16px; color: #f8fafc; font-weight: 700; margin-bottom: 8px;">
+                    ${isEn ? "No comments in this section" : "لا توجد أي تعليقات في هذا القسم حالياً"}
+                </h3>
+                <p class="empty-state-desc" style="color: #94a3b8; font-size: 13px; max-width: 440px; margin: 0 auto; line-height: 1.6;">
+                    ${isEn 
+                        ? "Real reader comments on your active Blogger posts will be synced and displayed here with live moderation tools." 
+                        : "التعليقات الحقيقية التي يرسلها الزوار على مقالات مدونتك الفعلية على Blogger ستظهر هنا فور إرسالها مع إمكانية المراجعة أو الرد أو النقل للمهملات."}
+                </p>
             </div>
         `;
         return;
@@ -9242,6 +9245,7 @@ async function loadCategoriesTab(forceRefresh = false) {
         const data = await res.json();
 
         if (data.status === 'success') {
+            window.categoriesHasConnectedBlog = (data.has_connected_blog !== false);
             allCategoriesData = data.categories || [];
             
             // Update KPI cards
@@ -9279,12 +9283,18 @@ function renderCategoriesGrid() {
     if (!grid) return;
 
     if (!allCategoriesData || allCategoriesData.length === 0) {
+        const isEn = (window.currentLang === 'en' || document.documentElement.lang === 'en');
         grid.innerHTML = `
-            <div class="cat-loading-state">
-                <div style="font-size:36px;margin-bottom:8px;">🏷️</div>
-                <h4 style="color:#f8fafc;font-size:15px;font-weight:700;">لا توجد أي تصنيفات أو وسوم بعد</h4>
-                <p style="color:#94a3b8;font-size:12px;max-width:380px;">لم يتم إنشاء أي تصنيفات في هذه المدونة بعد. يمكنك البدء بإضافة أول تصنيف لمقالاتك الآن!</p>
-                <button type="button" class="action-btn primary sm" onclick="openAddCategoryModal()"><i class="fas fa-plus"></i> إضافة أول تصنيف للمدونة</button>
+            <div class="cat-loading-state" style="grid-column: 1 / -1; padding: 45px 20px; text-align: center;">
+                <div style="font-size: 42px; margin-bottom: 12px;">🏷️</div>
+                <h4 style="color: #f8fafc; font-size: 16px; font-weight: 700;">
+                    ${isEn ? "No categories or labels found" : "لا توجد أي تصنيفات أو وسوم حالياً"}
+                </h4>
+                <p style="color: #94a3b8; font-size: 13px; max-width: 460px; margin: 8px auto 0; line-height: 1.6;">
+                    ${isEn 
+                        ? "Categories and labels are imported automatically from your active Blogger posts. Connect a blog or add labels to your posts to manage them here." 
+                        : "يتم جلب وعرض التصنيفات والوسوم تلقائياً من مقالات مدونتك الفعلية على Blogger. عند ربط مدونتك أو نشر مقالات ذات وسوم، ستظهر تصنيفاتها هنا مباشرة."}
+                </p>
             </div>
         `;
         return;
@@ -9407,6 +9417,10 @@ window.sortCategoriesGrid = sortCategoriesGrid;
 
 // Modal Operations: Add & Edit
 async function openAddCategoryModal() {
+    if (window.categoriesHasConnectedBlog === false) {
+        showToast('يرجى ربط واختيار مدونة Blogger أولاً للتمكن من إضافة وإدارة التصنيفات والوسوم.', 'warning');
+        return;
+    }
     document.getElementById('cat-modal-mode').value = 'create';
     document.getElementById('cat-modal-orig-name').value = '';
     document.getElementById('cat-modal-header-icon').textContent = '➕';
