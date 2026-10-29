@@ -193,11 +193,17 @@ def deploy_to_github():
     print(f"{C.DIM}ملاحظة: إذا طُلب منك تسجيل الدخول، ستظهر نافذة متصفح سريعة للتأكيد.{C.RESET}\n")
     
     ret = run_interactive("git push -u origin main")
+    if ret != 0:
+        print(f"\n{C.YELLOW}⚠️ تم رفض الرفع المباشر (غالباً لأن المستودع على GitHub يحتوي على ملف README أولي تم إنشاؤه مسبقاً).{C.RESET}")
+        force_choice = input(f"{C.BOLD}هل ترغب بفرض رفع وتحديث المستودع بملفات مشروعك الكاملة؟ (Y/n): {C.RESET}").strip().lower()
+        if force_choice in ["", "y", "yes"]:
+            ret = run_interactive("git push -u origin main --force")
+
     if ret == 0:
         print(f"\n{C.GREEN}{C.BOLD}🎉 تم رفع المشروع بنجاح إلى GitHub!{C.RESET}")
         return True
     else:
-        print(f"\n{C.YELLOW}⚠️ لم يكتمل الرفع. في حال كان المستودع يحتوي على ملفات سابقة، يمكنك تجربة إعادة المحاولة.{C.RESET}")
+        print(f"\n{C.YELLOW}⚠️ لم يكتمل الرفع.{C.RESET}")
         return False
 
 def deploy_to_cloudflare():
