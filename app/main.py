@@ -1210,12 +1210,10 @@ async def api_upload_blogger_favicon(file: UploadFile = File(...)):
 
 @app.get("/api/blogger/favicon/download")
 def api_download_blogger_favicon():
-    ico_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "uploads", "blogger_favicon.ico")
-    if not os.path.exists(ico_path):
-        ico_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "uploads", "favicon.ico")
+    ico_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "last_generated_favicon.ico")
     if os.path.exists(ico_path):
         return FileResponse(ico_path, filename="favicon.ico", media_type="image/x-icon")
-    raise HTTPException(status_code=404, detail="Favicon file not found")
+    raise HTTPException(status_code=404, detail="لم يتم توليد رمز أيقونة بعد للتنزيل")
 
 @app.post("/api/blogger/favicon/apply-to-theme")
 def api_apply_favicon_to_theme():

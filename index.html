@@ -209,7 +209,7 @@
       <div class="sidebar-blogs-header">
         <div style="display:flex;align-items:center;gap:6px;">
           <span class="sidebar-blogs-title" data-i18n="sidebar_blogs_heading">مدونات حسابك</span>
-          <span class="blogs-count-badge" id="sidebar-blogs-total-badge">3</span>
+          <span class="blogs-count-badge" id="sidebar-blogs-total-badge">0</span>
         </div>
         <button type="button" class="sidebar-refresh-blogs-btn" onclick="loadAndRenderSidebarBlogs(true)" title="تحديث قائمة المدونات">🔄</button>
       </div>
@@ -1575,7 +1575,7 @@
                 <!-- Breadcrumbs & Favicon -->
                 <div class="serp-meta-top">
                   <div class="serp-favicon-wrap" id="serp-favicon-box">
-                    <img id="serp-favicon-img" src="./static/uploads/blogger_favicon.png" alt="Favicon" class="serp-favicon" onerror="this.src='/static/img/dashboard_favicon.svg'">
+                    <img id="serp-favicon-img" src="https://www.blogger.com/favicon.ico" alt="Favicon" class="serp-favicon" onerror="this.src='/static/img/dashboard_favicon.svg'">
                   </div>
                   <div class="serp-site-info">
                     <span id="serp-site-name" class="serp-site-name">مدونة بلوجر</span>
@@ -3268,8 +3268,8 @@
                  ondrop="handleFaviconDrop(event)">
               
               <div class="favicon-preview-wrap">
-                <img src="./static/uploads/blogger_favicon.png" id="bset-favicon-img" alt="Favicon" class="favicon-img" onerror="this.onerror=null; this.src='/static/uploads/favicon.png';">
-                <span class="favicon-active-indicator" id="favicon-badge-trans"><i class="fas fa-check"></i></span>
+                <img src="https://www.blogger.com/favicon.ico" id="bset-favicon-img" alt="Favicon" class="favicon-img" onerror="this.onerror=null; this.src='https://www.google.com/s2/favicons?domain=blogger.com&sz=64';">
+                <span class="favicon-active-indicator" id="favicon-badge-trans" style="display:none;"><i class="fas fa-check"></i></span>
               </div>
 
               <div class="favicon-drop-info">
@@ -3300,7 +3300,7 @@
                   <i class="fas fa-download"></i>
                   <span>تنزيل الرمز 💾</span>
                 </a>
-                <a id="btn-blogger-official-fav" href="https://www.blogger.com/favicon.g?blogID=3715457895504629620" target="_blank" class="btn btn-secondary btn-sm btn-icon-text" title="فتح أداة الرمز الرسمية في Google Blogger">
+                <a id="btn-blogger-official-fav" href="https://www.blogger.com" id="btn-blogger-official-fav" target="_blank" class="btn btn-secondary btn-sm btn-icon-text" title="فتح أداة الرمز الرسمية في Google Blogger">
                   <i class="fas fa-external-link-alt"></i>
                   <span>أداة Blogger الرسمية 🌐</span>
                 </a>

@@ -139,22 +139,7 @@ def discover_user_blogs(account_id: Optional[str] = None) -> Dict[str, Any]:
                 "is_active": (b_id == current_active_id)
             })
 
-    # If still empty, add default from settings
-    if not blogs:
-        blog_info = settings.get("blog", {})
-        b_id = str(blog_info.get("id", ""))
-        blogs.append({
-            "id": b_id,
-            "name": blog_info.get("name", "Hayan Lite"),
-            "url": blog_info.get("url", "https://yourblog.blogspot.com/"),
-            "description": blog_info.get("description", ""),
-            "posts_count": 8,
-            "pages_count": 0,
-            "role": "ADMIN",
-            "status": "LIVE",
-            "source": "local_settings",
-            "is_active": True
-        })
+    # Return clean blogs list (Do not inject any fake or placeholder blogs)
 
     return {
         "source": "official_api" if token else "local_and_manual",

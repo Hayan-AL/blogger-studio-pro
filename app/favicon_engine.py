@@ -187,26 +187,20 @@ def convert_and_save_favicon(file_bytes: bytes, original_filename: str = "favico
     b64_str = base64.b64encode(png_bytes).decode("utf-8")
     data_uri = f"data:image/png;base64,{b64_str}"
 
-    # Output paths for Blogger blog favicon
-    b_png_path = os.path.join(UPLOADS_DIR, "blogger_favicon.png")
-    b_ico_path = os.path.join(UPLOADS_DIR, "blogger_favicon.ico")
-    std_png_path = os.path.join(UPLOADS_DIR, "favicon.png")
-    std_ico_path = os.path.join(UPLOADS_DIR, "favicon.ico")
-
-    for path, data in [(b_png_path, png_bytes), (b_ico_path, ico_bytes), (std_png_path, png_bytes), (std_ico_path, ico_bytes)]:
-        with open(path, "wb") as f:
-            f.write(data)
-
-    shutil.copyfile(std_png_path, os.path.join(IMG_DIR, "favicon.png"))
-    shutil.copyfile(std_ico_path, os.path.join(IMG_DIR, "favicon.ico"))
+    # Store ready .ico only in temporary cache for direct download without workspace file clutter
+    data_dir = os.path.join(BASE_DIR, "data")
+    os.makedirs(data_dir, exist_ok=True)
+    temp_ico_path = os.path.join(data_dir, "last_generated_favicon.ico")
+    with open(temp_ico_path, "wb") as f:
+        f.write(ico_bytes)
 
     size_kb = round(len(png_bytes) / 1024, 1)
 
-    # Automatically inject into Blogger Theme XML
+    # Automatically inject into Blogger Theme XML using in-memory Base64 Data URI
     theme_res = apply_favicon_to_blogger_theme(data_uri)
 
-    # Save per-blog favicon
-    blog_fav_url = "/static/uploads/blogger_favicon.png"
+    # Pure in-memory / Data-URI representation (Zero workspace file clutter)
+    blog_fav_url = data_uri
     try:
         if os.path.exists(SETTINGS_PATH):
             with open(SETTINGS_PATH, "r", encoding="utf-8") as f:

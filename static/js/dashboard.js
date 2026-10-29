@@ -49,7 +49,12 @@
         }
         if (path === '/api/blogger/blogs') {
             const cached = JSON.parse(localStorage.getItem('studio_cached_blogs') || '[]');
-            return jsonResp(cached);
+            return jsonResp({
+                source: 'edge_accelerator',
+                total: cached.length,
+                blogs: cached,
+                active_blog_id: ''
+            });
         }
         if (path === '/api/posts') {
             const cached = JSON.parse(localStorage.getItem('studio_cached_posts') || '[]');
@@ -6064,25 +6069,49 @@ function populateBloggerSettingsUI(s) {
     if (swAge) swAge.checked = !!basic.age_confirmation;
     if (elGa && basic.analytics_id) elGa.value = basic.analytics_id;
 
-    // Favicon Preview & Status update
+    // Favicon Preview & Status update (Strict Blogger Integration - Zero Loose Files)
     const elFavImg = document.getElementById('bset-favicon-img');
     const favSub = document.getElementById('favicon-status-subtitle');
+    const btnOfficialFav = document.getElementById('btn-blogger-official-fav');
     const isCustom = !!basic.is_custom_favicon;
-    const bDomain = activeBlog.domain || (activeBlog.url ? new URL(activeBlog.url).hostname : 'blogspot.com');
-    const favUrl = basic.favicon_url || `https://www.google.com/s2/favicons?domain=${encodeURIComponent(bDomain)}&sz=64`;
+    const hasBlog = activeBlog && (activeBlog.url || activeBlog.id);
+    const bDomain = (activeBlog && activeBlog.url) ? new URL(activeBlog.url).hostname : '';
+
+    if (btnOfficialFav) {
+        if (activeBlog && activeBlog.id) {
+            btnOfficialFav.href = `https://www.blogger.com/favicon.g?blogID=${activeBlog.id}`;
+            btnOfficialFav.title = `فتح أداة الرمز الرسمية في Blogger لمدونة (${activeBlog.name || activeBlog.id})`;
+        } else {
+            btnOfficialFav.href = 'https://www.blogger.com';
+            btnOfficialFav.title = 'فتح إعدادات Blogger الرسمية';
+        }
+    }
 
     if (elFavImg) {
-        elFavImg.src = favUrl + (isCustom ? '?t=' + Date.now() : '');
-        elFavImg.onerror = function() {
-            this.onerror = null;
-            this.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(bDomain)}&sz=64`;
-        };
+        if (isCustom && basic.favicon_data_uri) {
+            elFavImg.src = basic.favicon_data_uri;
+        } else if (hasBlog && bDomain) {
+            elFavImg.src = `https://www.google.com/s2/favicons?domain=${encodeURIComponent(bDomain)}&sz=64`;
+            elFavImg.onerror = function() {
+                this.onerror = null;
+                this.src = 'https://www.blogger.com/favicon.ico';
+            };
+        } else {
+            // When NO blog is connected or NO custom icon: Display official Blogger Icon
+            elFavImg.src = 'https://www.blogger.com/favicon.ico';
+            elFavImg.onerror = function() {
+                this.onerror = null;
+                this.src = './static/img/dashboard_favicon.svg';
+            };
+        }
     }
     if (favSub) {
         if (isCustom && basic.favicon_updated_at) {
-            favSub.innerHTML = `<span style="color:#10b981;font-weight:600;"><i class="fas fa-check-circle"></i> تم تخصيص الرمز وحقنه في قالب XML للمدونة (${new Date(basic.favicon_updated_at).toLocaleTimeString()})</span>`;
+            favSub.innerHTML = `<span style="color:#10b981;font-weight:600;"><i class="fas fa-check-circle"></i> تم تجهيز الرمز لمواصفات Blogger وحقنه في قالب XML (${new Date(basic.favicon_updated_at).toLocaleTimeString()})</span>`;
+        } else if (hasBlog && bDomain) {
+            favSub.innerHTML = `<span style="color:#64748b;font-weight:500;"><i class="fab fa-blogger" style="color:#ff5722;"></i> رمز المدونة النشطة من: <strong>${escapeSmartHtml(bDomain)}</strong></span>`;
         } else {
-            favSub.innerHTML = `<span style="color:#64748b;font-weight:500;"><i class="fab fa-blogger" style="color:#ff5722;"></i> رمز المدونة الأصلي من: <strong>${escapeSmartHtml(bDomain)}</strong></span>`;
+            favSub.innerHTML = `<span style="color:#64748b;font-weight:500;"><i class="fab fa-blogger" style="color:#ff5722;"></i> رمز Blogger الافتراضي (لم يتم ربط مدونة أو تخصيص رمز بعد)</span>`;
         }
     }
 
@@ -6375,7 +6404,7 @@ async function uploadBloggerFaviconFile(file) {
         const data = await res.json();
         if (res.ok && data.status === 'success') {
             const img = document.getElementById('bset-favicon-img');
-            if (img) img.src = data.url + '?t=' + Date.now();
+            if (img) img.src = data.data_uri || data.url;
 
             const subtitle = document.getElementById('favicon-status-subtitle');
             if (subtitle) {
@@ -6404,7 +6433,8 @@ async function applyFaviconToThemeAction() {
         if (res.ok && data.status === 'success') {
             const favImg = document.getElementById('bset-favicon-img');
             if (favImg) {
-                favImg.src = '/static/uploads/blogger_favicon.png?t=' + Date.now();
+                // Keep in-memory Data URI
+            if (favImg && data.data_uri) favImg.src = data.data_uri;
             }
             const favSub = document.getElementById('favicon-status-subtitle');
             if (favSub) {
