@@ -275,7 +275,7 @@
         <div class="topbar-notification-container" id="topbar-notif-container">
           <button class="topbar-icon-pill topbar-bell-btn" id="topbar-bell-btn" title="مركز الإشعارات والتنبيهات" onclick="toggleNotificationsDropdown(event)">
             <span class="bell-icon">🔔</span>
-            <span class="bell-badge-count" id="notification-badge-count">3</span>
+            <span class="bell-badge-count" id="notification-badge-count" style="display: none;">0</span>
           </button>
           
           <!-- Dropdown Menu -->
@@ -283,7 +283,7 @@
             <div class="notif-dropdown-header">
               <div class="notif-header-title">
                 <span class="notif-title-text">الإشعارات والتنبيهات</span>
-                <span class="notif-badge-pill" id="notif-header-unread-count">3 جديدة</span>
+                <span class="notif-badge-pill" id="notif-header-unread-count">0 جديدة</span>
               </div>
               <button class="notif-mark-read-btn" onclick="markAllNotificationsAsRead(event)" title="تحديد كل التنبيهات كمقروءة">
                 <i class="fas fa-check-double"></i> <span>قراءة الكل</span>
@@ -291,43 +291,12 @@
             </div>
             
             <div class="notif-dropdown-list" id="notif-dropdown-list">
-              <div class="notif-item unread" onclick="switchTab('comments'); closeNotificationsDropdown();">
-                <div class="notif-icon-circle comment-icon"><i class="fas fa-comment-dots"></i></div>
-                <div class="notif-content">
-                  <div class="notif-title">تعليق جديد بانتظار المراجعة</div>
-                  <div class="notif-desc">علق الزائر <strong>Hayan Riad</strong>: مقال مفيد جداً وشرح رائع للمشكلة، شكراً لكم...</div>
-                  <div class="notif-time"><i class="far fa-clock"></i> منذ 15 دقيقة</div>
+              <div class="notif-empty-state" id="notif-empty-state" style="text-align: center; padding: 34px 20px; color: var(--text-muted);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(56, 189, 248, 0.1); border: 1px dashed rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; color: #38bdf8; font-size: 20px;">
+                  <i class="far fa-bell-slash"></i>
                 </div>
-                <span class="notif-unread-dot"></span>
-              </div>
-
-              <div class="notif-item unread" onclick="switchTab('posts'); closeNotificationsDropdown();">
-                <div class="notif-icon-circle post-icon"><i class="fas fa-rocket"></i></div>
-                <div class="notif-content">
-                  <div class="notif-title">مزامنة ونشر مقال بنجاح</div>
-                  <div class="notif-desc">تم نشر مقال <strong>أفضل أدوات الذكاء الاصطناعي</strong> وتحديث فهرس محركات البحث.</div>
-                  <div class="notif-time"><i class="far fa-clock"></i> منذ ساعتين</div>
-                </div>
-                <span class="notif-unread-dot"></span>
-              </div>
-
-              <div class="notif-item unread" onclick="switchTab('earnings'); closeNotificationsDropdown();">
-                <div class="notif-icon-circle adsense-icon"><i class="fas fa-shield-alt"></i></div>
-                <div class="notif-content">
-                  <div class="notif-title">حالة Google AdSense و ads.txt</div>
-                  <div class="notif-desc">تم حقن شفرة AdSense بنجاح في القالب وتحديث ملف ads.txt، بانتظار الموافقة.</div>
-                  <div class="notif-time"><i class="far fa-clock"></i> منذ 4 ساعات</div>
-                </div>
-                <span class="notif-unread-dot"></span>
-              </div>
-
-              <div class="notif-item" onclick="switchTab('settings'); closeNotificationsDropdown();">
-                <div class="notif-icon-circle backup-icon"><i class="fas fa-save"></i></div>
-                <div class="notif-content">
-                  <div class="notif-title">نسخة احتياطية مكتملة للقالب</div>
-                  <div class="notif-desc">تم حفظ أحدث نسخة من قالب Blogger Studio Deluxe بنجاح في مجلد النسخ الاحتياطية.</div>
-                  <div class="notif-time"><i class="far fa-clock"></i> بالأمس</div>
-                </div>
+                <div style="font-size: 13.5px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px;">لا توجد إشعارات جديدة حالياً</div>
+                <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.5;">ستظهر التنبيهات هنا تلقائياً عند ربط مدونة، أو تفويض حساب جديد، أو ورود تعليقات حقيقية.</div>
               </div>
             </div>
 
@@ -1195,13 +1164,7 @@
                 <div class="tags-input-wrap">
                   <input type="text" id="art-tag-input" class="tags-input" autocomplete="off" placeholder="أضف وسماً واضغط Enter..." onkeydown="handleTagInputKey">
                 </div>
-                <div class="tags-chips-container" id="art-tags-chips">
-                  <span class="tag-chip">Windows <button type="button" onclick="removeTagChip(this)">×</button></span>
-                  <span class="tag-chip">AI <button type="button" onclick="removeTagChip(this)">×</button></span>
-                  <span class="tag-chip">Security <button type="button" onclick="removeTagChip(this)">×</button></span>
-                  <span class="tag-chip">Tech <button type="button" onclick="removeTagChip(this)">×</button></span>
-                  <span class="tag-chip">Tutorial <button type="button" onclick="removeTagChip(this)">×</button></span>
-                </div>
+                <div class="tags-chips-container" id="art-tags-chips"></div>
               </div>
 
             </div>
@@ -2967,8 +2930,8 @@
                   <i class="fas fa-fingerprint"></i>
                 </div>
                 <div>
-                  <h3 style="font-size:16px;margin:0;color:#fff;font-weight:700;" data-i18n="add_blog_manual_title">ربط وتفعيل مدونة بلوجر عبر المعرّفات (بدون حساب جوجل)</h3>
-                  <p style="font-size:12px;color:#94a3b8;margin:3px 0 0 0;" data-i18n="add_blog_manual_sub">يمكنك إضافة وربط أي مدونة بلوجر مباشرة عبر معرّفها الرقمي ورابطها بدون الحاجة لتسجيل دخول حساب Google.</p>
+                  <h3 style="font-size:16px;margin:0;color:#fff;font-weight:700;" data-i18n="add_blog_manual_title">الربط والكشف الذكي المباشر لمدونة بلوجر ⚡ (بدون تعقيد وبدون الحاجة لمعرّفات)</h3>
+                  <p style="font-size:12px;color:#94a3b8;margin:3px 0 0 0;" data-i18n="add_blog_manual_sub">أدخل فقط اسم مدونتك أو رابطها، وسيقوم النظام بكشف المعرّف الرقمي والاسم وتفعيل المدونة تلقائياً بنقرة واحدة دون الحاجة للبحث عن أي معرّفات.</p>
                 </div>
               </div>
               <div>
@@ -2987,11 +2950,11 @@
                 <div class="manual-field-block" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <label class="field-title" for="manual-input-blog-url" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin:0;">
-                      <i class="fas fa-globe text-cyan"></i> <span data-i18n="lbl_manual_blog_url">رابط المدونة أو النطاق</span> <span class="text-rose">*</span>
+                      <i class="fas fa-globe text-cyan"></i> <span data-i18n="lbl_manual_blog_url">اسم أو رابط المدونة</span> <span class="text-rose">*</span>
                     </label>
                     <span class="badge" style="font-size:10.5px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;">نطاق كامل</span>
                   </div>
-                  <input type="text" id="manual-input-blog-url" class="form-control-pro ltr" placeholder="https://yourblog.blogspot.com" style="height:40px;font-size:13px;">
+                  <input type="text" id="manual-input-blog-url" class="form-control-pro ltr" placeholder="مثال: tekmilo أو tekmilo.blogspot.com أو https://yourblog.com" style="height:40px;font-size:13px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:6px;">
                     <span style="font-size:11px;color:#94a3b8;">يدعم دومينات blogspot أو النطاقات المخصصة.</span>
                     <button type="button" class="cat-btn-action" id="btn-auto-extract-id" onclick="autoDetectBlogIdFromUrl()" style="font-size:11px;padding:4px 10px;border-radius:6px;color:#38bdf8;border-color:rgba(56, 189, 248, 0.4);">
@@ -3004,11 +2967,11 @@
                 <div class="manual-field-block" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <label class="field-title" for="manual-input-blog-id" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin:0;">
-                      <i class="fas fa-fingerprint text-emerald"></i> <span data-i18n="lbl_manual_blog_id">معرّف المدونة الرقمي (Blog ID)</span> <span class="text-rose">*</span>
+                      <i class="fas fa-fingerprint text-emerald"></i> <span data-i18n="lbl_manual_blog_id">معرّف المدونة الرقمي (Blog ID)</span> <span class="badge" style="font-size:9.5px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;padding:2px 6px;border-radius:4px;">تلقائي اختياري</span>
                     </label>
                     <span class="badge" style="font-size:10.5px;background:rgba(16, 185, 129, 0.15);color:#10b981;">رقمي فريد</span>
                   </div>
-                  <input type="text" id="manual-input-blog-id" class="form-control-pro font-mono" placeholder="مثال: 3715457895504629620" style="height:40px;font-size:13px;">
+                  <input type="text" id="manual-input-blog-id" class="form-control-pro font-mono" placeholder="يتم كشفه واستخراجه تلقائياً (أو الصقه يدوياً)" style="height:40px;font-size:13px;">
                   
                   <!-- Visual Explainer Bar with ONE Direct Link -->
                   <div style="margin-top:8px;background:rgba(15, 23, 42, 0.6);border:1px solid rgba(56, 189, 248, 0.25);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#cbd5e1;line-height:1.6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
@@ -3095,7 +3058,7 @@
                 </button>
                 <button type="button" class="btn btn-primary btn-icon-text" id="btn-save-manual-blog" onclick="saveManualBlogConnectionNow()" style="padding:8px 20px;font-size:13px;">
                   <i class="fas fa-link"></i>
-                  <span data-i18n="btn_connect_and_save_blog">ربط وحفظ وتفعيل المدونة في اللوحة 🚀</span>
+                  <span data-i18n="btn_connect_and_save_blog">كشف وربط وتفعيل المدونة في اللوحة فوراً 🚀</span>
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="clearManualBlogForm()" style="font-size:12px;padding:8px 14px;">
                   <i class="fas fa-eraser"></i> <span data-i18n="btn_clear_fields">إفراغ الحقول</span>
@@ -3163,8 +3126,8 @@
       <div>
         <div style="font-size:11px;color:var(--text-muted);font-weight:700;letter-spacing:0.5px;text-transform:uppercase;">إعدادات المدونة المحددة حالياً</div>
         <div style="display:flex;align-items:center;gap:10px;margin-top:3px;">
-          <span style="font-size:16px;font-weight:700;color:#fff;" id="bset-active-blog-name">جاري تحميل المدونة...</span>
-          <span style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(16,185,129,0.18);color:#10b981;border:1px solid rgba(16,185,129,0.35);font-weight:600;">✓ متصلة بـ Blogger</span>
+          <span style="font-size:16px;font-weight:700;color:#fff;" id="bset-active-blog-name">لا توجد مدونة نشطة حالياً</span>
+          <span id="bset-active-blog-status-badge" style="font-size:11px;padding:2px 8px;border-radius:12px;background:rgba(244,63,94,0.15);color:#fb7185;border:1px solid rgba(244,63,94,0.3);font-weight:600;display:none;">غير متصلة</span>
         </div>
       </div>
     </div>
@@ -3194,7 +3157,7 @@
             <p class="field-desc">الاسم الرئيسي الذي يظهر في أعلى مدونتك ومحركات البحث.</p>
           </div>
           <div class="field-input-col">
-            <input type="text" id="bset-title" class="form-control-pro" value="Blogger Studio">
+            <input type="text" id="bset-title" class="form-control-pro" placeholder="أدخل اسم المدونة..." value="">
           </div>
         </div>
 
@@ -3205,7 +3168,7 @@
             <p class="field-desc">نبذة توضيحية عن هوية ومحتوى المدونة تظهر للقراء والزوار.</p>
           </div>
           <div class="field-input-col">
-            <textarea id="bset-description" class="form-control-pro" rows="3">مدونة تقنية متخصصة في الذكاء الاصطناعي، البرمجة، ومراجعة أحدث الأدوات والحلول التكنولوجية الذكية.</textarea>
+            <textarea id="bset-description" class="form-control-pro" rows="3" placeholder="نبذة تعريفية عن هوية ومحتوى المدونة تظهر للقراء ومحركات البحث..."></textarea>
           </div>
         </div>
 

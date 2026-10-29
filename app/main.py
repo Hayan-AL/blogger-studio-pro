@@ -200,8 +200,8 @@ def api_extract_blog_info_get(url: str = ""):
     return extract_blog_info_from_url(url)
 
 class ManualBlogAddRequest(BaseModel):
-    id: str
-    name: str
+    id: Optional[str] = ""
+    name: Optional[str] = ""
     url: str
     api_key: Optional[str] = ""
     connection_mode: Optional[str] = "auto"
@@ -210,9 +210,9 @@ class ManualBlogAddRequest(BaseModel):
 @app.post("/api/blogs/add-manual")
 def api_add_manual_blog(req: ManualBlogAddRequest):
     return add_manual_blog(
-        blog_id=req.id,
-        name=req.name,
-        url=req.url,
+        blog_id=req.id or "",
+        name=req.name or "",
+        url=req.url or "",
         api_key=req.api_key or "",
         connection_mode=req.connection_mode or "auto",
         set_active=req.set_active if req.set_active is not None else True

@@ -74,7 +74,16 @@
             return jsonResp({ views: 0, total_views: 0, time_series: [] });
         }
         if (path === '/api/blogger/settings') {
-            return jsonResp({});
+            return jsonResp({
+                basic: {
+                    title: '',
+                    description: '',
+                    language: 'ar',
+                    adult_content: false,
+                    age_confirmation: false
+                },
+                active_blog: null
+            });
         }
         if (path === '/api/studio/settings') {
             return jsonResp({
@@ -99,7 +108,16 @@
                 }
             });
         }
-        if (path === '/api/categories') return jsonResp([]);
+        if (path === '/api/categories') {
+            return jsonResp({
+                status: 'success',
+                has_connected_blog: false,
+                categories: [],
+                total_categories: 0,
+                total_posts: 0,
+                uncategorized_posts_count: 0
+            });
+        }
         if (path === '/api/ads') return jsonResp([]);
         if (path === '/api/translations') return jsonResp([]);
         if (path === '/api/backups') return jsonResp([]);
@@ -594,6 +612,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Dynamic Connected Blogs
     loadAndRenderSidebarBlogs();
+    if (typeof renderDynamicNotifications === "function") renderDynamicNotifications();
 
     // Load Studio Settings & Custom Logo
     if (typeof loadStudioSettingsTab === 'function') loadStudioSettingsTab();
@@ -5336,9 +5355,169 @@ function closeNotificationsDropdown() {
     if (dropdown) dropdown.style.display = 'none';
 }
 
+// ==========================================================================
+// DYNAMIC REAL-EVENT NOTIFICATIONS ENGINE (ZERO FAKE ALERTS)
+// ==========================================================================
+
+function getReadNotificationIds() {
+    try {
+        return JSON.parse(localStorage.getItem('studio_read_notif_ids') || '[]');
+    } catch(e) {
+        return [];
+    }
+}
+
+function saveReadNotificationIds(ids) {
+    try {
+        localStorage.setItem('studio_read_notif_ids', JSON.stringify(ids));
+    } catch(e) {}
+}
+
+async function renderDynamicNotifications() {
+    const listContainer = document.getElementById('notif-dropdown-list');
+    const badge = document.getElementById('notification-badge-count');
+    const headerBadge = document.getElementById('notif-header-unread-count');
+    if (!listContainer) return;
+
+    const readIds = getReadNotificationIds();
+    const realNotifs = [];
+
+    // 1. Check for Active Connected Blog
+    let activeBlog = null;
+    if (window.cachedUserBlogs && window.cachedUserBlogs.length) {
+        activeBlog = window.cachedUserBlogs.find(b => b.is_active) || window.cachedUserBlogs[0];
+    } else if (window.bloggerBloggerFullSettings && window.bloggerBloggerFullSettings.active_blog) {
+        activeBlog = window.bloggerBloggerFullSettings.active_blog;
+    }
+
+    if (activeBlog && (activeBlog.id || activeBlog.name)) {
+        let cleanName = activeBlog.name || 'مدونة بلوجر';
+        if (cleanName.includes('–')) cleanName = cleanName.split('–')[0].trim();
+        else if (cleanName.includes('|')) cleanName = cleanName.split('|')[0].trim();
+
+        let domain = 'blogspot.com';
+        try { if (activeBlog.url) domain = new URL(activeBlog.url).hostname; } catch(e) {}
+
+        realNotifs.push({
+            id: `blog_conn_${activeBlog.id || 'active'}`,
+            iconClass: 'blog-icon',
+            iconHtml: '<i class="fab fa-blogger-b"></i>',
+            title: `تم الاتصال بمدونة ${escapeHtml(cleanName)} بنجاح`,
+            desc: `المدونة مفعلة ونشطة حالياً في لوحة التحكم (${escapeHtml(domain)}).`,
+            time: 'نشطة حالياً',
+            tab: 'connect-blog'
+        });
+    }
+
+    // 2. Check for Authorized Google Account
+    if (window.lastGoogleAuthStatus && window.lastGoogleAuthStatus.is_authenticated) {
+        const accounts = window.lastGoogleAuthStatus.accounts || [];
+        const primaryAcc = accounts[0] || {};
+        const accEmail = primaryAcc.email || primaryAcc.name || 'حساب Google المفوّض';
+
+        realNotifs.push({
+            id: `google_auth_${primaryAcc.id || 'main'}`,
+            iconClass: 'google-icon',
+            iconHtml: '<i class="fab fa-google"></i>',
+            title: `تم الاتصال بحساب ${escapeHtml(accEmail)} بنجاح`,
+            desc: 'تم تفويض الحساب ومنح صلاحيات إدارة ونشر مقالات Blogger.',
+            time: 'مفوّض ونشط',
+            tab: 'connect-blog'
+        });
+    }
+
+    // 3. Check for Real Comments
+    if (window.bloggerPendingCommentsCount && window.bloggerPendingCommentsCount > 0) {
+        realNotifs.push({
+            id: `pending_comments_${window.bloggerPendingCommentsCount}`,
+            iconClass: 'comment-icon',
+            iconHtml: '<i class="fas fa-comment-dots"></i>',
+            title: 'تعليقات حقيقية بانتظار المراجعة',
+            desc: `يوجد ${window.bloggerPendingCommentsCount} تعليق بانتظار التدقيق والموافقة.`,
+            time: 'بانتظار المراجعة',
+            tab: 'comments'
+        });
+    }
+
+    // 4. Calculate unread items
+    const unreadCount = realNotifs.filter(n => !readIds.includes(n.id)).length;
+
+    // Update Bell Badge
+    if (badge) {
+        if (unreadCount > 0) {
+            badge.style.display = 'flex';
+            badge.textContent = unreadCount;
+        } else {
+            badge.style.display = 'none';
+            badge.textContent = '0';
+        }
+    }
+
+    // Update Header Badge
+    if (headerBadge) {
+        if (unreadCount > 0) {
+            headerBadge.textContent = `${unreadCount} جديدة`;
+            headerBadge.style.opacity = '1';
+        } else {
+            headerBadge.textContent = '0 جديدة';
+            headerBadge.style.opacity = '0.6';
+        }
+    }
+
+    // Render Notifications or Elegant Empty State
+    if (realNotifs.length === 0) {
+        listContainer.innerHTML = `
+            <div class="notif-empty-state" id="notif-empty-state" style="text-align: center; padding: 34px 20px; color: var(--text-muted);">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(56, 189, 248, 0.1); border: 1px dashed rgba(56, 189, 248, 0.3); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; color: #38bdf8; font-size: 20px;">
+                    <i class="far fa-bell-slash"></i>
+                </div>
+                <div style="font-size: 13.5px; font-weight: 700; color: #e2e8f0; margin-bottom: 4px;">لا توجد إشعارات جديدة حالياً</div>
+                <div style="font-size: 11.5px; color: #94a3b8; line-height: 1.5;">ستظهر التنبيهات هنا تلقائياً عند ربط مدونة، أو تفويض حساب جديد، أو ورود تعليقات حقيقية.</div>
+            </div>
+        `;
+        return;
+    }
+
+    listContainer.innerHTML = realNotifs.map(n => {
+        const isUnread = !readIds.includes(n.id);
+        return `
+            <div class="notif-item ${isUnread ? 'unread' : ''}" onclick="onNotificationClick('${escapeJsStr(n.id)}', '${n.tab}')">
+                <div class="notif-icon-circle ${n.iconClass}">${n.iconHtml}</div>
+                <div class="notif-content">
+                    <div class="notif-title">${n.title}</div>
+                    <div class="notif-desc">${n.desc}</div>
+                    <div class="notif-time"><i class="far fa-clock"></i> ${n.time}</div>
+                </div>
+                ${isUnread ? '<span class="notif-unread-dot"></span>' : ''}
+            </div>
+        `;
+    }).join('');
+}
+window.renderDynamicNotifications = renderDynamicNotifications;
+
+function onNotificationClick(notifId, tabName) {
+    const readIds = getReadNotificationIds();
+    if (!readIds.includes(notifId)) {
+        readIds.push(notifId);
+        saveReadNotificationIds(readIds);
+    }
+    renderDynamicNotifications();
+    closeNotificationsDropdown();
+    if (tabName && typeof switchTab === 'function') {
+        switchTab(tabName);
+    }
+}
+window.onNotificationClick = onNotificationClick;
+
 function markAllNotificationsAsRead(event) {
     if (event) event.stopPropagation();
     
+    const readIds = getReadNotificationIds();
+    document.querySelectorAll('.notif-item').forEach(item => {
+        item.classList.remove('unread');
+    });
+    document.querySelectorAll('.notif-unread-dot').forEach(dot => dot.remove());
+
     const badge = document.getElementById('notification-badge-count');
     if (badge) {
         badge.style.display = 'none';
@@ -5347,16 +5526,24 @@ function markAllNotificationsAsRead(event) {
     
     const headerBadge = document.getElementById('notif-header-unread-count');
     if (headerBadge) {
-        headerBadge.textContent = '0 جديد';
+        headerBadge.textContent = '0 جديدة';
         headerBadge.style.opacity = '0.6';
     }
-    
-    document.querySelectorAll('.notif-item.unread').forEach(item => {
-        item.classList.remove('unread');
-    });
-    document.querySelectorAll('.notif-unread-dot').forEach(dot => {
-        dot.remove();
-    });
+
+    // Mark current blog & auth as read
+    let activeBlog = null;
+    if (window.cachedUserBlogs && window.cachedUserBlogs.length) {
+        activeBlog = window.cachedUserBlogs.find(b => b.is_active) || window.cachedUserBlogs[0];
+    }
+    if (activeBlog && activeBlog.id) {
+        const bId = `blog_conn_${activeBlog.id}`;
+        if (!readIds.includes(bId)) readIds.push(bId);
+    }
+    if (window.lastGoogleAuthStatus && window.lastGoogleAuthStatus.is_authenticated) {
+        const aId = 'google_auth_main';
+        if (!readIds.includes(aId)) readIds.push(aId);
+    }
+    saveReadNotificationIds(readIds);
     
     showToast('تم تحديد جميع الإشعارات كمقروءة بنجاح ✨', 'success');
 }
@@ -5454,6 +5641,9 @@ async function loadAndRenderSidebarBlogs(showNotification = false) {
         const blogs = data.blogs || [];
         cachedUserBlogs = blogs;
         window.cachedUserBlogs = blogs;
+        if (typeof renderDynamicNotifications === 'function') {
+            renderDynamicNotifications();
+        }
 
         if (badge) {
             badge.textContent = blogs.length;
@@ -6302,21 +6492,50 @@ function updateBloggerSettingsContext(blogObj) {
     if (!activeBlog && window.cachedUserBlogs && window.cachedUserBlogs.length) {
         activeBlog = window.cachedUserBlogs.find(b => b.is_active) || window.cachedUserBlogs[0];
     }
-    if (!activeBlog) return;
+    
+    const nameEl = document.getElementById('bset-active-blog-name');
+    const badgeEl = document.getElementById('bset-active-blog-status-badge');
+    const viewBtn = document.getElementById('bset-active-blog-view-btn');
+    const topbarBlogName = document.getElementById('topbar-blog-name');
+
+    if (!activeBlog || (!activeBlog.id && !activeBlog.name)) {
+        if (nameEl) nameEl.textContent = 'لا توجد مدونة نشطة حالياً';
+        if (badgeEl) {
+            badgeEl.style.display = 'inline-block';
+            badgeEl.textContent = 'غير متصلة';
+            badgeEl.style.background = 'rgba(244,63,94,0.15)';
+            badgeEl.style.color = '#fb7185';
+            badgeEl.style.borderColor = 'rgba(244,63,94,0.3)';
+        }
+        if (viewBtn) viewBtn.style.display = 'none';
+        return;
+    }
     
     const blogId = activeBlog.id || '';
-    const blogName = activeBlog.name || 'Blogger Blog';
+    let blogName = activeBlog.name || 'Blogger Blog';
+    if (blogName.includes('–')) blogName = blogName.split('–')[0].trim();
+    else if (blogName.includes('|')) blogName = blogName.split('|')[0].trim();
     const blogUrl = activeBlog.url || '';
 
-    const nameEl = document.getElementById('bset-active-blog-name');
     if (nameEl) nameEl.textContent = blogName;
+    if (badgeEl) {
+        badgeEl.style.display = 'inline-block';
+        badgeEl.textContent = '✓ متصلة بـ Blogger';
+        badgeEl.style.background = 'rgba(16,185,129,0.18)';
+        badgeEl.style.color = '#10b981';
+        badgeEl.style.borderColor = 'rgba(16,185,129,0.35)';
+    }
 
-    const viewBtn = document.getElementById('bset-active-blog-view-btn');
-    if (viewBtn && blogUrl) viewBtn.href = blogUrl;
+    if (viewBtn) {
+        if (blogUrl) {
+            viewBtn.href = blogUrl;
+            viewBtn.style.display = 'inline-flex';
+        } else {
+            viewBtn.style.display = 'none';
+        }
+    }
 
-    const topbarBlogName = document.getElementById('topbar-blog-name');
     if (topbarBlogName) topbarBlogName.textContent = blogName;
-
     if (blogUrl) updateViewSiteButton(blogUrl);
 
     const officialFavBtn = document.getElementById('btn-blogger-official-fav');
@@ -9883,21 +10102,55 @@ async function saveManualBlogConnectionNow() {
     const mode = modeSelect ? modeSelect.value : 'auto';
     const setActive = setActiveCheck ? setActiveCheck.checked : true;
 
-    if (!blogId) {
-        showToast(isAr ? 'يرجى كتابة معرّف المدونة الرقمي (Blog ID) أولاً!' : 'Please enter Blog ID!', 'warning');
-        if (idInput) idInput.focus();
-        return;
+    let finalUrl = blogUrl;
+    if (!finalUrl && blogId) {
+        finalUrl = `https://www.blogger.com/blog/posts/${blogId}`;
     }
-
-    if (!blogUrl) {
-        showToast(isAr ? 'يرجى كتابة رابط المدونة (Blog URL) أولاً!' : 'Please enter Blog URL!', 'warning');
+    if (!finalUrl) {
+        showToast(isAr ? 'يرجى إدخال رابط أو اسم المدونة (مثل: tekmilo أو yourblog.blogspot.com)' : 'Please enter blog URL or subdomain!', 'warning');
         if (urlInput) urlInput.focus();
         return;
     }
 
+    // Auto expand short name e.g. 'tekmilo' -> 'https://tekmilo.blogspot.com'
+    if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+        if (!finalUrl.includes('.')) {
+            finalUrl = 'https://' + finalUrl + '.blogspot.com';
+        } else {
+            finalUrl = 'https://' + finalUrl;
+        }
+        if (urlInput) urlInput.value = finalUrl;
+    }
+
     if (saveBtn) {
         saveBtn.disabled = true;
-        saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${isAr ? 'جاري الحفظ والربط...' : 'Connecting...'}</span>`;
+        saveBtn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${isAr ? 'جاري كشف وربط المدونة وتفعيلها...' : 'Connecting...'}</span>`;
+    }
+
+    // If blogId is missing, attempt auto-extract first to fill the UI
+    let finalId = blogId;
+    let finalName = blogName;
+    if (!finalId) {
+        try {
+            const extractRes = await fetch('/api/blogger/extract-info', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url: finalUrl })
+            });
+            if (extractRes.ok) {
+                const extractData = await extractRes.json();
+                if (extractData && extractData.id) {
+                    finalId = extractData.id;
+                    if (idInput) idInput.value = finalId;
+                    if (extractData.name) {
+                        finalName = extractData.name;
+                        if (nameInput) nameInput.value = finalName;
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn('Auto extract before save warning:', e);
+        }
     }
 
     try {
@@ -9905,9 +10158,9 @@ async function saveManualBlogConnectionNow() {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({
-                id: blogId,
-                name: blogName,
-                url: blogUrl,
+                id: finalId || '',
+                name: finalName || `Blogger (${finalId})`,
+                url: finalUrl,
                 api_key: apiKey,
                 connection_mode: mode,
                 set_active: setActive
@@ -10687,6 +10940,7 @@ async function syncTopbarGoogleProfile() {
         if (res.ok) {
             const data = await res.json();
             const auth = data.auth_status || {};
+            window.lastGoogleAuthStatus = auth;
             if (auth.is_authenticated && Array.isArray(auth.accounts) && auth.accounts.length > 0) {
                 activeAccount = auth.accounts.find(a => a.is_active) || auth.accounts[0];
             }
@@ -10776,3 +11030,24 @@ if (document.readyState === 'loading') {
     syncTopbarGoogleProfile();
 }
 window.addEventListener('load', () => { syncTopbarGoogleProfile(); });
+
+async function connectGoogleAccount() {
+    const isAr = (document.documentElement.lang || 'ar') === 'ar';
+    try {
+        const res = await fetch('/api/auth/google/login');
+        const data = await res.json();
+        if (data.status === 'success' && data.auth_url) {
+            window.location.href = data.auth_url;
+        } else {
+            showToast(isAr ? 'يرجى إدخال Client ID و Client Secret من Google Cloud لتفعيل تسجيل الدخول الرسمي.' : 'Please configure Client ID & Secret first.', 'warning');
+            const devBox = document.getElementById('oauth-developer-box');
+            if (devBox) {
+                devBox.style.display = 'block';
+                devBox.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+    } catch(e) {
+        showToast('خطأ أثناء بدء التفويض: ' + e.message, 'error');
+    }
+}
+window.connectGoogleAccount = connectGoogleAccount;

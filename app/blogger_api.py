@@ -1042,14 +1042,36 @@ def test_blog_connection(blog_id: str = "", url: str = "", api_key: str = "", mo
         "message": "تعذر الاتصال بالمدونة. يرجى التحقق من صحة المعرّف (Blog ID) ورابط المدونة. التفاصيل: " + "; ".join(errors)
     }
 
-def add_manual_blog(blog_id: str, name: str, url: str, api_key: str = "", connection_mode: str = "auto", set_active: bool = True) -> Dict[str, Any]:
+def add_manual_blog(blog_id: str = "", name: str = "", url: str = "", api_key: str = "", connection_mode: str = "auto", set_active: bool = True) -> Dict[str, Any]:
     from urllib.parse import urlparse
     settings = load_settings()
-    blog_id = str(blog_id).strip()
-    name = name.strip() or f"Blogger ({blog_id})"
-    url = url.strip()
-    if not url.startswith("http"):
-        url = "https://" + url
+    blog_id = str(blog_id or "").strip()
+    name = str(name or "").strip()
+    url = str(url or "").strip()
+
+    if url and not url.startswith("http://") and not url.startswith("https://"):
+        if "." not in url:
+            url = f"https://{url}.blogspot.com"
+        else:
+            url = f"https://{url}"
+
+    # Auto-extract Blog ID & Name if not provided
+    if (not blog_id or blog_id == "feed_blog") and url:
+        info = extract_blog_info_from_url(url)
+        if info.get("success") and info.get("id"):
+            blog_id = str(info["id"]).strip()
+            if not name or name == f"Blogger ({blog_id})" or "feed_blog" in name:
+                name = info.get("name", name)
+            if info.get("url"):
+                url = info["url"]
+
+    if not blog_id:
+        return {
+            "status": "error",
+            "message": "تعذر العثور على معرّف المدونة الرقمي من الرابط. تأكد من صحة رابط المدونة."
+        }
+
+    name = name or f"Blogger ({blog_id})"
 
     domain = urlparse(url).hostname or "blogspot.com"
     feed_url = f"{url.rstrip('/')}/feeds/posts/default?alt=json&max-results=50"

@@ -7447,6 +7447,16 @@ html[dir="ltr"] .topbar {
   color: #a78bfa;
 }
 
+.notif-icon-circle.blog-icon {
+  background: rgba(249, 115, 22, 0.15);
+  color: #f97316;
+}
+
+.notif-icon-circle.google-icon {
+  background: rgba(66, 133, 244, 0.15);
+  color: #4285f4;
+}
+
 .notif-content {
   flex: 1;
   min-width: 0;
