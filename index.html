@@ -10,16 +10,15 @@
       document.documentElement.setAttribute('data-theme', savedTheme);
     } catch(e) {}
   </script>
-  <link rel="stylesheet" href="./static/css/dashboard.css?v=2.5">
+  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="./static/css/dashboard.css?v=2.6">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="./static/img/dashboard_favicon.svg">
 <link rel="alternate icon" type="image/png" href="./static/img/dashboard_favicon.png">
 <link rel="shortcut icon" href="./static/img/dashboard_favicon.ico">
-  <!-- CodeMirror Studio IDE -->
-  <link rel="stylesheet" href="./static/vendor/codemirror/codemirror.min.css">
-  <link rel="stylesheet" href="./static/vendor/codemirror/addon/fold/foldgutter.min.css">
-  <link rel="stylesheet" href="./static/vendor/codemirror/addon/display/fullscreen.min.css">
-  <link rel="stylesheet" href="./static/vendor/codemirror/theme/material-darker.min.css">
+  <!-- CodeMirror Studio IDE (High-Performance Unified Bundle) -->
+  <link rel="stylesheet" href="./static/vendor/codemirror/codemirror.bundle.min.css">
 </head>
 <body>
 
@@ -5137,24 +5136,10 @@ Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
 <!-- Toast Container -->
 <div id="toast-container" class="toast-container"></div>
 
-<!-- CodeMirror Core, Modes & Addons -->
-<script src="./static/vendor/codemirror/codemirror.min.js"></script>
-<script src="./static/vendor/codemirror/mode/xml.min.js"></script>
-<script src="./static/vendor/codemirror/mode/javascript.min.js"></script>
-<script src="./static/vendor/codemirror/mode/css.min.js"></script>
-<script src="./static/vendor/codemirror/mode/htmlmixed.min.js"></script>
-<script src="./static/vendor/codemirror/addon/fold/foldcode.min.js"></script>
-<script src="./static/vendor/codemirror/addon/fold/foldgutter.min.js"></script>
-<script src="./static/vendor/codemirror/addon/fold/xml-fold.min.js"></script>
-<script src="./static/vendor/codemirror/addon/fold/brace-fold.min.js"></script>
-<script src="./static/vendor/codemirror/addon/fold/comment-fold.min.js"></script>
-<script src="./static/vendor/codemirror/addon/search/search.min.js"></script>
-<script src="./static/vendor/codemirror/addon/search/searchcursor.min.js"></script>
-<script src="./static/vendor/codemirror/addon/search/jump-to-line.min.js"></script>
-<script src="./static/vendor/codemirror/addon/edit/matchtags.min.js"></script>
-<script src="./static/vendor/codemirror/addon/display/fullscreen.min.js"></script>
+<!-- CodeMirror Studio IDE (Unified High-Performance Bundle) -->
+<script defer src="./static/vendor/codemirror/codemirror.bundle.min.js"></script>
 
-<script src="./static/js/dashboard.js?v=2.5"></script>
+<script defer src="./static/js/dashboard.js?v=2.6"></script>
 
 <!-- Modal: Image Properties & Settings -->
 <div class="modal-backdrop" id="gallery-image-settings-modal" style="display:none;" onclick="if(event.target===this)closeImageSettingsModal()">

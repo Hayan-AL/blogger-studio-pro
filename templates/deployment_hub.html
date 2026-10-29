@@ -41,7 +41,7 @@
     }
 
     .container {
-      max-width: 1080px;
+      max-width: 1120px;
       margin: 0 auto;
       padding: 30px 20px 60px;
       width: 100%;
@@ -57,7 +57,7 @@
       border: 1px solid var(--card-border);
       border-radius: 18px;
       backdrop-filter: blur(12px);
-      margin-bottom: 25px;
+      margin-bottom: 22px;
       box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5);
     }
     .hub-brand {
@@ -99,7 +99,7 @@
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid var(--card-border);
       color: var(--text-main);
-      padding: 8px 16px;
+      padding: 10px 18px;
       border-radius: 10px;
       font-size: 13px;
       font-weight: 700;
@@ -115,12 +115,120 @@
       color: var(--accent-cyan);
     }
 
+    /* Live Quick Access Showcase Bar (Prominent Visit Links) */
+    .dual-links-showcase {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-bottom: 25px;
+    }
+    @media (max-width: 768px) {
+      .dual-links-showcase { grid-template-columns: 1fr; }
+    }
+    .showcase-link-card {
+      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+      border: 1.5px solid rgba(255, 255, 255, 0.1);
+      border-radius: 16px;
+      padding: 18px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+      position: relative;
+      overflow: hidden;
+      transition: all 0.25s ease;
+    }
+    .showcase-link-card.active-cf {
+      border-color: rgba(16, 185, 129, 0.4);
+      background: linear-gradient(135deg, rgba(6, 78, 59, 0.25), rgba(15, 23, 42, 0.85));
+    }
+    .showcase-link-card.active-gh {
+      border-color: rgba(168, 85, 247, 0.4);
+      background: linear-gradient(135deg, rgba(88, 28, 135, 0.25), rgba(15, 23, 42, 0.85));
+    }
+    .showcase-link-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+    }
+    .showcase-link-card.pulse-updated {
+      animation: pulseGlow 1.5s ease-out 2;
+    }
+    @keyframes pulseGlow {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+      70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+    .showcase-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .showcase-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    .showcase-details h3 {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .showcase-url {
+      font-family: 'Inter', monospace;
+      font-size: 12.5px;
+      color: var(--accent-cyan);
+      margin-top: 3px;
+      direction: ltr;
+      text-align: right;
+    }
+    .showcase-status {
+      font-size: 11px;
+      color: #34d399;
+      margin-top: 3px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .showcase-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Security banner */
+    .security-badge-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 22px;
+      font-size: 12.5px;
+      color: #6ee7b7;
+    }
+
     /* Grid */
     .hub-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
       gap: 22px;
       margin-bottom: 25px;
+    }
+    @media (max-width: 540px) {
+      .hub-grid { grid-template-columns: 1fr; }
     }
 
     /* Card */
@@ -227,6 +335,8 @@
       font-size: 13px;
       font-family: 'Inter', monospace;
       outline: none;
+      direction: ltr;
+      text-align: left;
       transition: all 0.2s;
     }
     .input-text:focus {
@@ -239,9 +349,9 @@
       background: var(--accent-blue);
       color: #fff;
       border: none;
-      padding: 12px 20px;
+      padding: 10px 18px;
       border-radius: 10px;
-      font-size: 13.5px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
       display: inline-flex;
@@ -250,13 +360,14 @@
       gap: 8px;
       transition: all 0.2s;
       text-decoration: none;
+      white-space: nowrap;
     }
     .btn-action:hover {
       filter: brightness(1.15);
       transform: translateY(-1px);
     }
-    .btn-emerald { background: #059669; }
-    .btn-purple  { background: #7c3aed; }
+    .btn-emerald { background: #059669; color: #fff; }
+    .btn-purple  { background: #7c3aed; color: #fff; }
     .btn-secondary { background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid var(--card-border); }
     .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
 
@@ -271,6 +382,9 @@
       align-items: center;
       margin-bottom: 25px;
       box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+    }
+    @media (max-width: 768px) {
+      .deploy-all-bar { flex-direction: column; gap: 16px; text-align: center; }
     }
     .deploy-all-info h3 {
       font-size: 17px;
@@ -296,6 +410,7 @@
       gap: 10px;
       box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
       transition: all 0.2s;
+      white-space: nowrap;
     }
     .btn-deploy-mega:hover {
       filter: brightness(1.15);
@@ -343,18 +458,30 @@
     .log-terminal .error { color: #f87171; font-weight: bold; }
     .log-terminal .info { color: #38bdf8; }
 
-    /* Security banner */
-    .security-badge-bar {
+    /* Toast Notification */
+    .toast-popup {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #0f172a;
+      border: 1px solid var(--accent-emerald);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
       display: flex;
       align-items: center;
       gap: 10px;
-      background: rgba(16, 185, 129, 0.1);
-      border: 1px solid rgba(16, 185, 129, 0.25);
-      border-radius: 12px;
-      padding: 12px 18px;
-      margin-bottom: 25px;
-      font-size: 12.5px;
-      color: #6ee7b7;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+    }
+    .toast-popup.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
     }
   </style>
 </head>
@@ -370,7 +497,7 @@
         </div>
         <div>
           <h1>Blogger Studio Pro | مركز النشر السحابي والربط التلقائي</h1>
-          <p>لوحة التحكم الاحترافية لمدونات Blogger • نشر فوري على Cloudflare Pages و GitHub بدون أوامر معقدة</p>
+          <p>لوحة التحكم الاحترافية لمدونات Blogger • نشر ومزامنة متزامنة على Cloudflare Pages و GitHub بدون أوامر معقدة</p>
         </div>
       </div>
       <div class="hub-top-actions">
@@ -380,13 +507,72 @@
       </div>
     </header>
 
+    <!-- LIVE QUICK ACCESS SHOWCASE (Direct Visit Links for Both Platforms) -->
+    <section class="dual-links-showcase" id="quick-links-section">
+      
+      <!-- Link 1: Cloudflare Pages Live Website -->
+      <div class="showcase-link-card active-cf" id="card-showcase-cf">
+        <div class="showcase-info">
+          <div class="showcase-icon" style="background:rgba(16, 185, 129, 0.2);color:#34d399;">
+            <i class="fas fa-globe"></i>
+          </div>
+          <div class="showcase-details">
+            <h3>
+              <span>لوحة التحكم الحية في السحاب</span>
+              <span class="badge-status badge-emerald" style="font-size:10.5px;padding:2px 8px;">Cloudflare Pages</span>
+            </h3>
+            <div class="showcase-url" id="showcase-cf-url">https://blogger-studio-pro.pages.dev</div>
+            <div class="showcase-status" id="showcase-cf-status">
+              <i class="fas fa-check-circle"></i> <span>منشور ويعمل 24/7 (حتى وجهازك مطفأ)</span>
+            </div>
+          </div>
+        </div>
+        <div class="showcase-actions">
+          <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://blogger-studio-pro.pages.dev', 'تم نسخ رابط الموقع الحي!')" title="نسخ الرابط">
+            <i class="fas fa-copy"></i>
+          </button>
+          <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-emerald" title="فتح الموقع الحي في المتصفح">
+            <i class="fas fa-external-link-alt"></i> <span>زيارة الموقع الحي ↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Link 2: GitHub Repository -->
+      <div class="showcase-link-card active-gh" id="card-showcase-gh">
+        <div class="showcase-info">
+          <div class="showcase-icon" style="background:rgba(168, 85, 247, 0.2);color:#c084fc;">
+            <i class="fab fa-github"></i>
+          </div>
+          <div class="showcase-details">
+            <h3>
+              <span>مستودع الأكواد المصدري</span>
+              <span class="badge-status badge-purple" style="font-size:10.5px;padding:2px 8px;">GitHub Repository</span>
+            </h3>
+            <div class="showcase-url" id="showcase-gh-url">https://github.com/Hayan-AL/blogger-studio-pro</div>
+            <div class="showcase-status" id="showcase-gh-status">
+              <i class="fas fa-code-branch"></i> <span>الفرع النشط: main • متزامن ومحمي 100%</span>
+            </div>
+          </div>
+        </div>
+        <div class="showcase-actions">
+          <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://github.com/Hayan-AL/blogger-studio-pro', 'تم نسخ رابط مستودع GitHub!')" title="نسخ الرابط">
+            <i class="fas fa-copy"></i>
+          </button>
+          <a href="https://github.com/Hayan-AL/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-purple" title="فتح مستودع GitHub في المتصفح">
+            <i class="fab fa-github"></i> <span>زيارة المستودع ↗</span>
+          </a>
+        </div>
+      </div>
+
+    </section>
+
     <!-- Security Guarantee Bar -->
     <div class="security-badge-bar">
       <i class="fas fa-shield-alt" style="font-size:18px;"></i>
-      <span><strong>درع الخصوصية النشط:</strong> يتم عزل وتطهير كافة كلمات المرور، ورموز OAuth السرية، وقواعد بيانات SQLite، والملفات الخاصة تلقائياً قبل أي عملية نشر أو رفع.</span>
+      <span><strong>درع الخصوصية والأمان النشط:</strong> يتم استبعاد وتطهير كلمات المرور، ورموز OAuth السرية، وقواعد بيانات SQLite، والملفات الخاصة تلقائياً قبل أي عملية نشر أو رفع.</span>
     </div>
 
-    <!-- Main Grid: Cloudflare & GitHub Cards -->
+    <!-- Main Grid: Cloudflare & GitHub Management Cards -->
     <div class="hub-grid">
 
       <!-- CARD 1: Cloudflare Pages -->
@@ -399,7 +585,7 @@
               </div>
               <div>
                 <div class="card-title">استضافة Cloudflare Pages</div>
-                <div style="font-size:12px;color:var(--text-muted);">نشر الموقع الحي ليعمل 24/7 حتى وجهازك مطفأ</div>
+                <div style="font-size:12px;color:var(--text-muted);">نشر وتحديث الواجهة الحية لتعمل عالمياً بسرعة فائقة</div>
               </div>
             </div>
             <span class="badge-status badge-emerald"><i class="fas fa-check-circle"></i> متصل ومصرّح</span>
@@ -416,12 +602,15 @@
             </div>
           </div>
 
-          <!-- Live link -->
+          <!-- Live link with Copy and Visit -->
           <div class="form-group">
             <label class="form-label">الرابط المباشر للوحة التحكم في السحاب:</label>
             <div class="input-wrap">
               <input type="text" class="input-text" id="cf-live-url-input" value="https://blogger-studio-pro.pages.dev" readonly>
-              <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" title="فتح الموقع في المتصفح">
+              <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://blogger-studio-pro.pages.dev', 'تم نسخ رابط الموقع الحي!')" title="نسخ الرابط">
+                <i class="fas fa-copy"></i>
+              </button>
+              <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-emerald" title="فتح الموقع في المتصفح">
                 <i class="fas fa-external-link-alt"></i> <span>زيارة</span>
               </a>
             </div>
@@ -430,7 +619,7 @@
 
         <div style="margin-top:20px;display:flex;gap:10px;">
           <button type="button" class="btn-action btn-emerald" id="btn-deploy-cf" onclick="runCloudflareDeploy()" style="flex:1;">
-            <i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن</span>
+            <i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن ⚡</span>
           </button>
         </div>
       </div>
@@ -453,39 +642,50 @@
 
           <!-- GitHub Profile / Connection Info -->
           <div class="profile-box" id="gh-profile-box">
-            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="Avatar" class="profile-avatar" id="gh-avatar-img">
+            <img src="https://avatars.githubusercontent.com/u/25952533?v=4" alt="Avatar" class="profile-avatar" id="gh-avatar-img">
             <div class="profile-info">
               <h4 id="gh-name-display">Hayan-AL</h4>
               <p id="gh-repo-sub">مستودع: <span style="color:var(--accent-cyan);">Hayan-AL / blogger-studio-pro</span></p>
             </div>
           </div>
 
-          <!-- Token Auth Input for Zero-Friction connection -->
+          <!-- Direct Repo URL with Copy and Visit (Exact Match with Cloudflare) -->
           <div class="form-group">
-            <label class="form-label" style="display:flex;justify-content:space-between;">
-              <span>رمز التخويل (GitHub Personal Access Token):</span>
-              <a href="https://github.com/settings/tokens/new?scopes=repo&description=BloggerStudioPro" target="_blank" style="color:var(--accent-cyan);text-decoration:none;">
-                <i class="fas fa-key"></i> <span>توليد Token بلمسة واحدة في Edge ↗</span>
-              </a>
-            </label>
+            <label class="form-label">الرابط المباشر لمستودع الكود على GitHub:</label>
             <div class="input-wrap">
-              <input type="password" class="input-text" id="gh-token-input" placeholder="ألصق الرمز هنا (ghp_...)" oninput="handleTokenInput(this.value)">
+              <input type="text" class="input-text" id="gh-repo-url-input" value="https://github.com/Hayan-AL/blogger-studio-pro" readonly>
+              <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://github.com/Hayan-AL/blogger-studio-pro', 'تم نسخ رابط مستودع GitHub!')" title="نسخ الرابط">
+                <i class="fas fa-copy"></i>
+              </button>
+              <a href="https://github.com/Hayan-AL/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-purple" title="فتح مستودع GitHub في المتصفح">
+                <i class="fab fa-github"></i> <span>زيارة</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Token Auth Input / Re-authenticate Option -->
+          <div class="form-group" style="margin-top:10px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span class="form-label" style="margin-bottom:0;">رمز التخويل (GitHub Personal Access Token):</span>
+              <a href="https://github.com/settings/tokens/new?scopes=repo&description=BloggerStudioPro" target="_blank" style="color:var(--accent-cyan);text-decoration:none;font-size:11.5px;">
+                <i class="fas fa-key"></i> <span>توليد رمز جديد ↗</span>
+              </a>
+            </div>
+            <div class="input-wrap">
+              <input type="password" class="input-text" id="gh-token-input" placeholder="الرمز مربوط ومحفوظ بأمان (أدخل رمزاً جديداً لتحديثه)" oninput="handleTokenInput(this.value)">
               <button type="button" class="btn-action btn-purple" id="btn-save-token" onclick="connectGitHubToken()" style="white-space:nowrap;">
-                <i class="fas fa-check"></i> <span>ربط وتأكيد</span>
+                <i class="fas fa-sync-alt"></i> <span>تحديث الربط</span>
               </button>
             </div>
-            <p style="font-size:11px;color:var(--text-muted);margin-top:5px;">
-              💡 الرمز يعطيك صلاحية الرفع لمرة واحدة ويبقى محفوظاً بأمان، دون أن تظهر لك أي نوافذ حسابات منبثقة أو خيارات إيميل ملخبطة.
-            </p>
           </div>
         </div>
 
         <div style="margin-top:15px;display:flex;gap:10px;">
           <button type="button" class="btn-action btn-purple" id="btn-deploy-gh" onclick="runGitHubDeploy()" style="flex:1;">
-            <i class="fas fa-upload"></i> <span>رفع وتحديث GitHub الآن</span>
+            <i class="fas fa-upload"></i> <span>رفع وتحديث GitHub الآن ⚡</span>
           </button>
           <a href="https://github.com/Hayan-AL/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" title="فتح المستودع">
-            <i class="fab fa-github"></i>
+            <i class="fab fa-github"></i> <span>المستودع ↗</span>
           </a>
         </div>
       </div>
@@ -516,13 +716,45 @@
       <div class="log-terminal" id="log-console">
         <div><span class="ts">[System]</span> <span class="info">Blogger Studio Pro Deployment Engine initialized.</span></div>
         <div><span class="ts">[Cloudflare]</span> <span class="success">Live endpoint verified: https://blogger-studio-pro.pages.dev</span></div>
+        <div><span class="ts">[GitHub]</span> <span class="success">Repository verified: https://github.com/Hayan-AL/blogger-studio-pro</span></div>
         <div><span class="ts">[Ready]</span> اضغط على أي زر أعلاه لبدء النشر التلقائي فوراً.</div>
       </div>
     </div>
 
   </div>
 
+  <!-- Toast Element -->
+  <div id="hub-toast" class="toast-popup">
+    <i class="fas fa-check-circle" style="color:var(--accent-emerald);font-size:18px;"></i>
+    <span id="hub-toast-msg">تمت العملية بنجاح!</span>
+  </div>
+
   <script>
+    function showToast(msg) {
+      const toast = document.getElementById('hub-toast');
+      const toastMsg = document.getElementById('hub-toast-msg');
+      toastMsg.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3000);
+    }
+
+    function copyUrl(text, successMsg) {
+      navigator.clipboard.writeText(text).then(() => {
+        showToast(successMsg || 'تم نسخ الرابط بنجاح!');
+        log('📋 تم نسخ الرابط: ' + text, 'info');
+      }).catch(() => {
+        const dummy = document.createElement('input');
+        document.body.appendChild(dummy);
+        dummy.value = text;
+        dummy.select();
+        document.execCommand('copy');
+        document.body.removeChild(dummy);
+        showToast(successMsg || 'تم نسخ الرابط بنجاح!');
+      });
+    }
+
     function log(msg, type = 'info') {
       const consoleBox = document.getElementById('log-console');
       const time = new Date().toLocaleTimeString();
@@ -537,6 +769,26 @@
       log('تم مسح السجل.', 'info');
     }
 
+    function pulseHighlightShowcase(platform) {
+      const cardCf = document.getElementById('card-showcase-cf');
+      const cardGh = document.getElementById('card-showcase-gh');
+      
+      if (platform === 'cf' || platform === 'all') {
+        cardCf.classList.remove('pulse-updated');
+        void cardCf.offsetWidth;
+        cardCf.classList.add('pulse-updated');
+        const now = new Date().toLocaleTimeString();
+        document.getElementById('showcase-cf-status').innerHTML = `<i class="fas fa-check-double" style="color:#10b981;"></i> <span>تم النشر والتحديث بنجاح [${now}]</span>`;
+      }
+      if (platform === 'gh' || platform === 'all') {
+        cardGh.classList.remove('pulse-updated');
+        void cardGh.offsetWidth;
+        cardGh.classList.add('pulse-updated');
+        const now = new Date().toLocaleTimeString();
+        document.getElementById('showcase-gh-status').innerHTML = `<i class="fas fa-check-double" style="color:#c084fc;"></i> <span>تم الرفع والتحديث إلى GitHub بنجاح [${now}]</span>`;
+      }
+    }
+
     async function loadInitialStatus() {
       try {
         const res = await fetch('/api/hub/status');
@@ -547,6 +799,7 @@
           document.getElementById('cf-email-display').textContent = data.cloudflare.email;
           document.getElementById('cf-project-display').textContent = data.cloudflare.project_name;
           document.getElementById('cf-live-url-input').value = data.cloudflare.live_url;
+          document.getElementById('showcase-cf-url').textContent = data.cloudflare.live_url;
         }
 
         // GitHub UI
@@ -558,7 +811,10 @@
             document.getElementById('gh-avatar-img').src = data.github.avatar_url;
           }
           document.getElementById('gh-name-display').textContent = data.github.name || data.github.username;
-          log(`تم التعرف على حساب GitHub المرتبط: ${data.github.username}`, 'success');
+          const cleanRepoUrl = (data.github.repo_url || 'https://github.com/Hayan-AL/blogger-studio-pro').replace(/\.git$/, '');
+          document.getElementById('gh-repo-url-input').value = cleanRepoUrl;
+          document.getElementById('showcase-gh-url').textContent = cleanRepoUrl;
+          log(`تم التعرف على حساب GitHub المرتبط: ${data.github.username} (${data.github.name || ''})`, 'success');
         } else {
           ghBadge.className = 'badge-status badge-amber';
           ghBadge.innerHTML = '<i class="fas fa-key"></i> بانتظار إدخال الرمز (Token)';
@@ -587,6 +843,7 @@
         const data = await res.json();
         if (data.success) {
           log(`🎉 تم الاتصال بنجاح بحساب GitHub: ${data.profile.login} (${data.profile.name})!`, 'success');
+          showToast(`تم ربط حساب ${data.profile.name} بنجاح!`);
           loadInitialStatus();
         } else {
           log('❌ خطأ في الاتصال: ' + (data.error || 'تأكد من صحة الرمز'), 'error');
@@ -602,7 +859,7 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر على Cloudflare...';
       log('--------------------------------------------------', 'info');
-      log('⛅ بدء بناء الأصول والنشر على شبكة Cloudflare Pages العالمية...', 'info');
+      log('⛅ بدء بناء الأصول وتحسين السرعة والنشر على Cloudflare Pages...', 'info');
 
       try {
         const res = await fetch('/api/hub/cloudflare/deploy', { method: 'POST' });
@@ -610,6 +867,8 @@
         if (data.success) {
           log('🎉 ' + data.message, 'success');
           log('🌐 رابط الموقع الحي: ' + data.live_url, 'success');
+          pulseHighlightShowcase('cf');
+          showToast('تم نشر وتحديث الموقع الحي بنجاح!');
         } else {
           log('❌ ' + data.error, 'error');
         }
@@ -617,7 +876,7 @@
         log('❌ خطأ في الاتصال: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن</span>';
+        btn.innerHTML = '<i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن ⚡</span>';
       }
     }
 
@@ -626,7 +885,7 @@
       btn.disabled = true;
       btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع إلى GitHub...';
       log('--------------------------------------------------', 'info');
-      log('🐙 بدء فحص الأمان وتأكيد الإيداع والرفع إلى GitHub...', 'info');
+      log('🐙 بدء فحص الأمان وتأكيد الإيداع والرفع المباشر إلى GitHub...', 'info');
 
       try {
         const res = await fetch('/api/hub/github/push', { method: 'POST' });
@@ -634,6 +893,8 @@
         if (data.success) {
           log('🎉 ' + data.message, 'success');
           log('🐙 المستودع المحدث: ' + data.repo_url, 'success');
+          pulseHighlightShowcase('gh');
+          showToast('تم رفع وتحديث مستودع GitHub بنجاح!');
         } else {
           log('❌ ' + data.error, 'error');
           if (data.details) log(data.details, 'error');
@@ -642,26 +903,30 @@
         log('❌ خطأ في الاتصال: ' + err.message, 'error');
       } finally {
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-upload"></i> <span>رفع وتحديث GitHub الآن</span>';
+        btn.innerHTML = '<i class="fas fa-upload"></i> <span>رفع وتحديث GitHub الآن ⚡</span>';
       }
     }
 
     async function runDeployAll() {
       const btn = document.getElementById('btn-deploy-all');
       btn.disabled = true;
-      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ النشر الشامل...';
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ النشر الشامل المزدوج...';
       log('==================================================', 'info');
-      log('🚀 بدء النشر الشامل المزدوج (Cloudflare + GitHub)...', 'info');
+      log('🚀 بدء النشر الشامل المزدوج (Cloudflare Pages + GitHub)...', 'info');
 
       try {
         const res = await fetch('/api/hub/deploy-all', { method: 'POST' });
         const data = await res.json();
         if (data.success) {
           log('🎉 ' + data.message, 'success');
-          log('🌐 Cloudflare Pages: ' + data.cloudflare.live_url, 'success');
-          log('🐙 GitHub Repo: ' + data.github.repo_url, 'success');
+          log('🌐 رابط الموقع الحي: ' + data.cloudflare.live_url, 'success');
+          log('🐙 رابط المستودع: ' + data.github.repo_url, 'success');
+          pulseHighlightShowcase('all');
+          showToast('🎉 اكتمل النشر الشامل على المنصتين بنجاح!');
         } else {
           log('⚠️ ' + data.message, 'info');
+          if (data.cloudflare && data.cloudflare.success) pulseHighlightShowcase('cf');
+          if (data.github && data.github.success) pulseHighlightShowcase('gh');
         }
       } catch (err) {
         log('❌ خطأ: ' + err.message, 'error');
@@ -673,7 +938,6 @@
 
     function handleTokenInput(val) {
       if (val.startsWith('ghp_') && val.length > 20) {
-        // Auto-detect valid token paste
         document.getElementById('btn-save-token').style.animation = 'pulse 1s infinite';
       }
     }

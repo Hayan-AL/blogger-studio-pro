@@ -1,3 +1,7 @@
-# Cloudflare Pages Single Page Redirects
+# Cloudflare Pages Static Single Page Routing
+# Direct API requests return 404 without downloading the full 352KB index.html
+/api/* /404 404
+
+# Normal Single Page App Redirects
 /index.html / 200
 /* /index.html 200
