@@ -23,7 +23,7 @@ from .auth import (
 )
 from .blogger_api import (
     discover_user_blogs, switch_active_blog,
-    test_blog_connection, add_manual_blog, remove_manual_blog,
+    test_blog_connection, add_manual_blog, remove_manual_blog, extract_blog_info_from_url,
     fetch_live_posts, fetch_live_pages,
     create_post, delete_post,
     get_diagnostics, get_stats, load_settings, save_settings
@@ -187,6 +187,17 @@ def api_test_blog_connection(req: BlogTestConnectionRequest):
         api_key=req.api_key or "",
         mode=req.mode or "auto"
     )
+
+class BlogExtractInfoRequest(BaseModel):
+    url: str
+
+@app.post("/api/blogger/extract-info")
+def api_extract_blog_info(req: BlogExtractInfoRequest):
+    return extract_blog_info_from_url(req.url)
+
+@app.get("/api/blogger/extract-info")
+def api_extract_blog_info_get(url: str = ""):
+    return extract_blog_info_from_url(url)
 
 class ManualBlogAddRequest(BaseModel):
     id: str
@@ -1677,7 +1688,7 @@ from .deployment_hub import (
     load_hub_config, get_cloudflare_status, verify_github_token,
     push_to_github, deploy_cloudflare as hub_deploy_cf, deploy_all as hub_deploy_all,
     get_github_repo_info, set_github_repo_visibility,
-    check_cloudflare_health, purge_cloudflare_cache, get_git_details, get_github_scopes_info
+    check_cloudflare_health, purge_cloudflare_cache, get_git_details, get_github_scopes_info, toggle_maintenance_mode
 )
 
 class ConnectGithubTokenRequest(BaseModel):
@@ -1688,7 +1699,14 @@ def serve_deployment_hub():
     hub_file = os.path.join(TEMPLATES_DIR, "deployment_hub.html")
     if os.path.exists(hub_file):
         with open(hub_file, "r", encoding="utf-8") as f:
-            return HTMLResponse(content=f.read())
+            return HTMLResponse(
+                content=f.read(),
+                headers={
+                    "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+                    "Pragma": "no-cache",
+                    "Expires": "0"
+                }
+            )
     return HTMLResponse("<h1>Deployment Hub Not Found</h1>", status_code=404)
 
 @app.get("/api/hub/status")
@@ -1711,6 +1729,14 @@ def api_hub_cf_health():
 @app.post("/api/hub/cloudflare/purge-cache")
 def api_hub_cf_purge_cache():
     return purge_cloudflare_cache()
+
+class ToggleMaintenanceRequest(BaseModel):
+    enabled: bool
+
+@app.post("/api/hub/cloudflare/toggle-maintenance")
+def api_hub_toggle_maintenance(req: ToggleMaintenanceRequest):
+    return toggle_maintenance_mode(req.enabled)
+
 
 class ToggleRepoVisibilityRequest(BaseModel):
     is_private: bool

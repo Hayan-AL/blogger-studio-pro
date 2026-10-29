@@ -775,6 +775,145 @@ def get_stats() -> Dict[str, Any]:
     }
 
 
+def extract_blog_info_from_url(raw_url: str) -> Dict[str, Any]:
+    """
+    Extracts Blogger numeric blog_id and blog title from a given URL:
+    1. Direct regex on Blogger admin URLs
+    2. Atom JSON Feed probe (?alt=json)
+    3. Atom XML Feed probe
+    4. HTML meta tags & widget manager probe
+    """
+    import html as html_lib
+    from urllib.parse import urlparse
+    if not raw_url or not str(raw_url).strip():
+        return {
+            "success": False,
+            "connected": False,
+            "message": "يرجى إدخال رابط المدونة أولاً."
+        }
+    
+    url = str(raw_url).strip()
+    
+    # 1. Direct regex on Blogger Admin/Dashboard URL (e.g. pasted directly by user)
+    m_admin = re.search(r"blogger\.com/blog/(?:posts|settings|stats|pages|comments|layout|themes|earnings)/(\d+)", url, re.I)
+    if not m_admin:
+        m_admin = re.search(r"[?&]blogID=(\d+)", url, re.I)
+    
+    if m_admin:
+        blog_id = m_admin.group(1)
+        return {
+            "success": True,
+            "connected": True,
+            "id": blog_id,
+            "name": f"مدونة بلوجر ({blog_id})",
+            "url": f"https://www.blogger.com/blog/posts/{blog_id}",
+            "mode_used": "Direct Admin URL Pattern",
+            "message": f"تم استخراج معرّف المدونة ({blog_id}) بنجاح من رابط لوحة تحكم Blogger!"
+        }
+
+    # Normalize scheme
+    if not url.startswith("http://") and not url.startswith("https://"):
+        url = "https://" + url
+
+    try:
+        parsed = urlparse(url)
+        origin = f"{parsed.scheme}://{parsed.netloc}"
+    except Exception:
+        origin = url
+
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+        "Accept": "application/json, application/atom+xml, text/html, */*"
+    }
+
+    discovered_id = None
+    discovered_name = ""
+    discovered_url = origin
+
+    # 2. Probe Atom / JSON Feed
+    json_feed_url = f"{origin.rstrip('/')}/feeds/posts/default?alt=json&max-results=1"
+    try:
+        r = requests.get(json_feed_url, headers=headers, timeout=6, allow_redirects=True)
+        if r.status_code == 200:
+            try:
+                feed = r.json().get("feed", {})
+                feed_id_str = str(feed.get("id", {}).get("$t", ""))
+                m_id = re.search(r"blog-(\d+)", feed_id_str)
+                if m_id:
+                    discovered_id = m_id.group(1)
+                
+                title_obj = feed.get("title", {})
+                raw_name = title_obj.get("$t") if isinstance(title_obj, dict) else str(title_obj)
+                if raw_name:
+                    discovered_name = html_lib.unescape(raw_name).strip()
+                
+                for link in feed.get("link", []):
+                    if link.get("rel") == "alternate":
+                        discovered_url = link.get("href")
+                        break
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # 3. If ID not found, probe Atom XML Feed
+    if not discovered_id:
+        xml_feed_url = f"{origin.rstrip('/')}/feeds/posts/default?max-results=1"
+        try:
+            r = requests.get(xml_feed_url, headers=headers, timeout=6, allow_redirects=True)
+            if r.status_code == 200:
+                m_id = re.search(r"tag:blogger\.com,1999:blog-(\d+)", r.text)
+                if m_id:
+                    discovered_id = m_id.group(1)
+                if not discovered_name:
+                    m_title = re.search(r"<title[^>]*>(.*?)</title>", r.text, re.I | re.S)
+                    if m_title:
+                        discovered_name = html_lib.unescape(m_title.group(1)).strip()
+        except Exception:
+            pass
+
+    # 4. If ID still not found, probe HTML Homepage
+    if not discovered_id:
+        try:
+            r = requests.get(origin, headers=headers, timeout=6, allow_redirects=True)
+            if r.status_code == 200:
+                html = r.text
+                m_meta = re.search(r"name=['\"]blogger-blog-id['\"]\s+content=['\"](\d+)['\"]", html, re.I)
+                if not m_meta:
+                    m_meta = re.search(r"content=['\"](\d+)['\"]\s+name=['\"]blogger-blog-id['\"]", html, re.I)
+                if not m_meta:
+                    m_meta = re.search(r"blogger\.com/feeds/(\d+)/", html, re.I)
+                if not m_meta:
+                    m_meta = re.search(r"['\"]blogId['\"]\s*:\s*['\"](\d+)['\"]", html, re.I)
+                if not m_meta:
+                    m_meta = re.search(r"_WidgetManager\._Init\(.*?['\"](\d{15,22})['\"]", html, re.S)
+
+                if m_meta:
+                    discovered_id = m_meta.group(1)
+                if not discovered_name:
+                    m_title = re.search(r"<title[^>]*>(.*?)</title>", html, re.I | re.S)
+                    if m_title:
+                        discovered_name = html_lib.unescape(m_title.group(1)).strip()
+        except Exception:
+            pass
+
+    if discovered_id:
+        return {
+            "success": True,
+            "connected": True,
+            "id": discovered_id,
+            "name": discovered_name or f"مدونة بلوجر ({discovered_id})",
+            "url": discovered_url or origin,
+            "message": f"تم استخراج معرّف المدونة الرقمي ({discovered_id}) واسمها '{discovered_name or discovered_id}' بنجاح!"
+        }
+    else:
+        return {
+            "success": False,
+            "connected": False,
+            "message": "تعذر العثور على معرّف المدونة الرقمي من الرابط. يمكنك إدخال المعرّف يدوياً بنسخه من لوحة Blogger."
+        }
+
+
 def test_blog_connection(blog_id: str = "", url: str = "", api_key: str = "", mode: str = "auto") -> Dict[str, Any]:
     import time
     blog_id = str(blog_id).strip()
@@ -783,9 +922,17 @@ def test_blog_connection(blog_id: str = "", url: str = "", api_key: str = "", mo
     
     t0 = time.time()
     errors = []
+
+    # If blog_id is missing but url is provided, attempt auto-extraction first
+    if not blog_id and url:
+        extract_res = extract_blog_info_from_url(url)
+        if extract_res.get("success") and extract_res.get("id"):
+            blog_id = extract_res["id"]
+            if not url or url.startswith("https://www.blogger.com/blog/posts/"):
+                url = extract_res.get("url", url)
     
     # 1. Try Google Blogger API v3 if blog_id provided
-    if blog_id:
+    if blog_id and blog_id != "feed_blog":
         token = get_valid_access_token()
         headers = {"Authorization": f"Bearer {token}"} if token else {}
         params = {"key": api_key} if (api_key and not token) else {}
@@ -819,11 +966,17 @@ def test_blog_connection(blog_id: str = "", url: str = "", api_key: str = "", mo
     if not probe_url and blog_id:
         probe_url = f"https://www.blogger.com/feeds/{blog_id}/posts/default?alt=json&max-results=1"
     elif probe_url:
+        if not probe_url.startswith("http://") and not probe_url.startswith("https://"):
+            probe_url = "https://" + probe_url
         probe_url = probe_url.rstrip("/") + "/feeds/posts/default?alt=json&max-results=1"
+
+    req_headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36"
+    }
 
     if probe_url:
         try:
-            feed_resp = requests.get(probe_url, timeout=8)
+            feed_resp = requests.get(probe_url, headers=req_headers, timeout=8, allow_redirects=True)
             if feed_resp.status_code == 200:
                 feed_data = feed_resp.json().get("feed", {})
                 latency = round((time.time() - t0) * 1000)
@@ -831,11 +984,13 @@ def test_blog_connection(blog_id: str = "", url: str = "", api_key: str = "", mo
                 # Auto-discover Blog ID from feed tag: tag:blogger.com,1999:blog-
                 feed_id_str = str(feed_data.get("id", {}).get("$t", ""))
                 import re as re_mod
+                import html as html_lib
                 m_id = re_mod.search(r"blog-(\d+)", feed_id_str)
                 discovered_id = m_id.group(1) if m_id else blog_id
 
                 title_obj = feed_data.get("title", {})
-                blog_title = title_obj.get("$t") if isinstance(title_obj, dict) else str(title_obj)
+                raw_title = title_obj.get("$t") if isinstance(title_obj, dict) else str(title_obj)
+                blog_title = html_lib.unescape(raw_title).strip() if raw_title else "Blogger Blog"
                 total_posts = feed_data.get("openSearch$totalResults", {}).get("$t", 0)
                 try:
                     total_posts = int(total_posts)
@@ -863,6 +1018,23 @@ def test_blog_connection(blog_id: str = "", url: str = "", api_key: str = "", mo
                 errors.append(f"Feed ({feed_resp.status_code})")
         except Exception as e:
             errors.append(f"Feed Error: {str(e)}")
+
+    # 3. Fallback extraction from URL if feed failed
+    if url:
+        extract_res = extract_blog_info_from_url(url)
+        if extract_res.get("success") and extract_res.get("id"):
+            latency = round((time.time() - t0) * 1000)
+            return {
+                "status": "success",
+                "connected": True,
+                "latency_ms": latency,
+                "id": extract_res["id"],
+                "name": extract_res.get("name", "Blogger Blog"),
+                "url": extract_res.get("url", url),
+                "posts_count": 0,
+                "mode_used": "HTML Extraction",
+                "message": f"تم استخراج معرّف المدونة ({extract_res['id']}) واسمها '{extract_res.get('name')}' بنجاح من الصفحة!"
+            }
             
     return {
         "status": "error",

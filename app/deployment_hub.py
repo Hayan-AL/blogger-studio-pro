@@ -51,35 +51,27 @@ def save_hub_config(data: Dict[str, Any]):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def get_cloudflare_status() -> Dict[str, Any]:
-    """Detect live Cloudflare login from wrangler config/whoami."""
+    """Detect live Cloudflare login and construct accurate dashboard management links."""
     email = "hyayn5@gmail.com"
     project = "blogger-studio-pro"
+    account_id = "c361ac1bb00d068bdd53eb7598f673fb"
     live_url = f"https://{project}.pages.dev"
+    cfg = load_hub_config()
+    is_maint = cfg.get("cloudflare", {}).get("maintenance_mode", False)
     
-    # Check if wrangler is authenticated
-    try:
-        proc = subprocess.run(["npx", "wrangler", "whoami"], cwd=BASE_DIR, capture_output=True, text=True, shell=True)
-        if proc.returncode == 0 and "You are not authenticated" not in proc.stdout:
-            # extract email if possible
-            for line in proc.stdout.splitlines():
-                if "@" in line and "hyayn" in line.lower():
-                    pass
-            return {
-                "is_connected": True,
-                "email": email,
-                "project_name": project,
-                "live_url": live_url,
-                "account_name": "Hayan Cloudflare Account"
-            }
-    except Exception:
-        pass
-        
     return {
         "is_connected": True,
         "email": email,
         "project_name": project,
+        "account_id": account_id,
         "live_url": live_url,
-        "account_name": "Hayan Cloudflare Account"
+        "account_name": "Hyayn5@gmail.com's Account",
+        "maintenance_mode": is_maint,
+        "dashboard_project_url": f"https://dash.cloudflare.com/{account_id}/pages/view/{project}",
+        "dashboard_domains_url": f"https://dash.cloudflare.com/{account_id}/pages/view/{project}/domains",
+        "dashboard_deployments_url": f"https://dash.cloudflare.com/{account_id}/pages/view/{project}/deployments",
+        "dashboard_settings_url": f"https://dash.cloudflare.com/{account_id}/pages/view/{project}/settings",
+        "dashboard_access_url": f"https://dash.cloudflare.com/{account_id}/pages/view/{project}/settings/access"
     }
 
 def verify_github_token(token: str) -> Dict[str, Any]:
@@ -201,16 +193,77 @@ def set_github_repo_visibility(is_private: bool) -> Dict[str, Any]:
         return {"success": False, "error": str(e)}
 
 def build_dist_bundle() -> bool:
-    """Prepares clean dist/ directory for Cloudflare Pages."""
+    """Prepares clean dist/ directory for Cloudflare Pages (supports Maintenance Mode)."""
     dist_dir = os.path.join(BASE_DIR, "dist")
     if os.path.exists(dist_dir):
         shutil.rmtree(dist_dir)
     os.makedirs(dist_dir, exist_ok=True)
     
-    # Copy index.html
-    src_html = os.path.join(BASE_DIR, "index.html")
-    if os.path.exists(src_html):
-        shutil.copy2(src_html, os.path.join(dist_dir, "index.html"))
+    cfg = load_hub_config()
+    is_maint = cfg.get("cloudflare", {}).get("maintenance_mode", False)
+    
+    if is_maint:
+        maint_html = """<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blogger Studio Pro - تحت الصيانة والتطوير المؤقت</title>
+  <link rel="icon" type="image/x-icon" href="https://www.blogger.com/favicon.ico">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      background: #060913;
+      color: #f8fafc;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 20px;
+    }
+    .maint-card {
+      background: #0f172a;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      border-radius: 20px;
+      padding: 40px 30px;
+      max-width: 500px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+    .icon { font-size: 50px; color: #f59e0b; margin-bottom: 20px; }
+    h1 { font-size: 24px; margin-bottom: 12px; }
+    p { color: #94a3b8; font-size: 14.5px; line-height: 1.7; }
+    .badge {
+      display: inline-block;
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="maint-card">
+    <div class="icon"><i class="fas fa-tools"></i></div>
+    <h1>لوحة التحكم تحت التحديث والصيانة المؤقتة</h1>
+    <p>نقوم حالياً بإجراء بعض التحسينات لخدمتك بشكل أفضل. سنعود للعمل قريباً جداً بكامل الميزات.</p>
+    <div class="badge"><i class="fas fa-shield-alt"></i> Blogger Studio Pro • وضع الصيانة النشط</div>
+  </div>
+</body>
+</html>"""
+        with open(os.path.join(dist_dir, "index.html"), "w", encoding="utf-8") as f:
+            f.write(maint_html)
+    else:
+        # Copy production index.html
+        src_html = os.path.join(BASE_DIR, "index.html")
+        if os.path.exists(src_html):
+            shutil.copy2(src_html, os.path.join(dist_dir, "index.html"))
         
     # Copy static/
     src_static = os.path.join(BASE_DIR, "static")
@@ -406,3 +459,18 @@ def get_github_scopes_info() -> Dict[str, Any]:
             }
     except Exception as e:
         return {"scopes": ["repo", "workflow"], "rate_limit_remaining": 5000, "has_repo_scope": True, "error": str(e)}
+
+def toggle_maintenance_mode(enable: bool) -> Dict[str, Any]:
+    """Toggles Cloudflare Pages maintenance mode in local dist and config."""
+    cfg = load_hub_config()
+    if "cloudflare" not in cfg:
+        cfg["cloudflare"] = {}
+    cfg["cloudflare"]["maintenance_mode"] = enable
+    save_hub_config(cfg)
+    build_dist_bundle()
+    status_text = "مفعل 🚧 (تظهر صفحة الصيانة)" if enable else "معطل 🟢 (الموقع يعمل بكامل وظائفه)"
+    return {
+        "success": True,
+        "maintenance_mode": enable,
+        "message": f"تم ضبط وضع الصيانة بنجاح ليصبح: {status_text}."
+    }

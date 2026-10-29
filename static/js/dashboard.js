@@ -9813,6 +9813,9 @@ async function testManualBlogConnectionNow() {
             if (urlInput && !urlInput.value.trim() && data.url) {
                 urlInput.value = data.url;
             }
+            if (idInput && (!idInput.value.trim() || idInput.value === 'feed_blog') && data.id && data.id !== 'feed_blog') {
+                idInput.value = data.id;
+            }
 
             showToast(isAr ? `✓ تم التحقق من الاتصال بمدونة "${data.name}" بنجاح!` : 'Connection verified!', 'success');
         } else {
@@ -10171,6 +10174,63 @@ window.pingAllConnectedBlogs = pingAllConnectedBlogs;
 // -------------------------------------------------------------
 // CONNECT & ACTIVATE SUITE: AESTHETIC & UTILITY HELPERS
 // -------------------------------------------------------------
+function extractBlogInfoViaJsonp(blogUrl) {
+    return new Promise((resolve, reject) => {
+        try {
+            let u = (blogUrl || '').trim();
+            if (!u.startsWith('http://') && !u.startsWith('https://')) u = 'https://' + u;
+            const parsed = new URL(u);
+            const callbackName = 'blogger_feed_cb_' + Date.now();
+            const script = document.createElement('script');
+            const timeout = setTimeout(() => {
+                cleanup();
+                reject(new Error('انتهت مهلة استجابة التغذية الحية'));
+            }, 6000);
+
+            function cleanup() {
+                clearTimeout(timeout);
+                try { delete window[callbackName]; } catch(_) {}
+                if (script.parentNode) script.parentNode.removeChild(script);
+            }
+
+            window[callbackName] = function(json) {
+                cleanup();
+                try {
+                    const feed = json && json.feed;
+                    if (!feed) return reject(new Error('استجابة غير صالحة من التغذية'));
+                    const feedIdStr = (feed.id && feed.id.$t) || '';
+                    const m = feedIdStr.match(/blog-(\d+)/);
+                    const blogId = m ? m[1] : '';
+                    let title = (feed.title && feed.title.$t) || '';
+                    let blogHref = parsed.origin;
+                    if (Array.isArray(feed.link)) {
+                        const alt = feed.link.find(l => l.rel === 'alternate');
+                        if (alt && alt.href) blogHref = alt.href;
+                    }
+                    if (blogId) {
+                        resolve({ success: true, connected: true, id: blogId, name: title, url: blogHref });
+                    } else {
+                        reject(new Error('لم يتم العثور على المعرف الرقمي في التغذية'));
+                    }
+                } catch(e) {
+                    reject(e);
+                }
+            };
+
+            script.onerror = function() {
+                cleanup();
+                reject(new Error('تعذر الوصول إلى التغذية'));
+            };
+
+            script.src = `${parsed.origin.replace(/\/+$/, '')}/feeds/posts/default?alt=json-in-script&callback=${callbackName}&max-results=1`;
+            document.head.appendChild(script);
+        } catch(err) {
+            reject(err);
+        }
+    });
+}
+window.extractBlogInfoViaJsonp = extractBlogInfoViaJsonp;
+
 async function autoDetectBlogIdFromUrl() {
     const isAr = (document.documentElement.lang || 'ar') === 'ar';
     const urlInput = document.getElementById('manual-input-blog-url');
@@ -10178,9 +10238,9 @@ async function autoDetectBlogIdFromUrl() {
     const nameInput = document.getElementById('manual-input-blog-name');
     const btn = document.getElementById('btn-auto-extract-id');
 
-    const url = (urlInput ? urlInput.value : '').trim();
-    if (!url) {
-        showToast(isAr ? 'يرجى كتابة رابط المدونة أولاً في الخانة المجاورة!' : 'Please enter blog URL first!', 'warning');
+    let rawUrl = (urlInput ? urlInput.value : '').trim();
+    if (!rawUrl) {
+        showToast(isAr ? 'يرجى كتابة رابط المدونة أولاً في خانة الرابط!' : 'Please enter blog URL first!', 'warning');
         if (urlInput) urlInput.focus();
         return;
     }
@@ -10190,31 +10250,90 @@ async function autoDetectBlogIdFromUrl() {
         btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> <span>${isAr ? 'جاري الاستخراج...' : 'Extracting...'}</span>`;
     }
 
-    try {
-        const res = await fetch('/api/blogs/test-connection', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ url: url })
-        });
-        const data = await res.json();
-
-        if (data.connected && data.id && data.id !== 'feed_blog') {
-            if (idInput) idInput.value = data.id;
-            if (nameInput && !nameInput.value.trim() && data.name) nameInput.value = data.name;
-            showToast(isAr ? `✓ تم اكتشاف معرّف المدونة الرقمي (${data.id}) واسمها بنجاح!` : `Blog ID (${data.id}) extracted successfully!`, 'success');
-        } else if (data.connected && data.name) {
-            if (nameInput && !nameInput.value.trim()) nameInput.value = data.name;
-            showToast(isAr ? `✓ تم الاتصال بـ "${data.name}"، يرجى نسخ المعرف من رابط المتصفح.` : 'Connected! Please copy Blog ID.', 'info');
-        } else {
-            showToast(isAr ? `تعذر الاستخراج التلقائي: ${data.message || 'تأكد من الرابط'}` : 'Failed to extract ID', 'warning');
-        }
-    } catch(e) {
-        showToast('خطأ: ' + e.message, 'error');
-    } finally {
+    // 1. Direct Regex Detection if user pasted Blogger admin / dashboard URL directly
+    const adminRegex = /blogger\.com\/blog\/(?:posts|settings|stats|pages|comments|layout|themes|earnings)\/(\d+)/i;
+    const adminParamRegex = /[?&]blogID=(\d+)/i;
+    const directMatch = rawUrl.match(adminRegex) || rawUrl.match(adminParamRegex);
+    if (directMatch && directMatch[1]) {
+        const foundId = directMatch[1];
+        if (idInput) idInput.value = foundId;
+        if (nameInput && !nameInput.value.trim()) nameInput.value = `مدونة بلوجر (${foundId})`;
+        showToast(isAr ? `✓ تم استخراج معرّف المدونة الرقمي (${foundId}) بنجاح من الرابط!` : `Blog ID (${foundId}) extracted successfully!`, 'success');
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = `<i class="fas fa-magic text-cyan"></i> <span>${isAr ? 'استخراج المعرّف والاسم تلقائياً ⚡' : 'Auto-extract ID ⚡'}</span>`;
         }
+        return;
+    }
+
+    let extractedData = null;
+
+    // 2. Try Backend API first (/api/blogger/extract-info)
+    try {
+        const res = await fetch('/api/blogger/extract-info', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ url: rawUrl })
+        });
+        if (res.ok) {
+            const data = await res.json();
+            if (data && (data.success || data.connected) && data.id && data.id !== 'feed_blog') {
+                extractedData = data;
+            }
+        }
+    } catch(apiErr) {
+        console.warn('Backend extract-info fetch failed, falling back:', apiErr);
+    }
+
+    // 3. Fallback to /api/blogs/test-connection if extract-info didn't succeed
+    if (!extractedData) {
+        try {
+            const res = await fetch('/api/blogs/test-connection', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ url: rawUrl })
+            });
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.connected && data.id && data.id !== 'feed_blog') {
+                    extractedData = data;
+                }
+            }
+        } catch(tcErr) {
+            console.warn('Backend test-connection failed:', tcErr);
+        }
+    }
+
+    // 4. Fallback to Browser-native JSONP probe (works on Cloudflare Pages static hosting without backend)
+    if (!extractedData) {
+        try {
+            const jsonpData = await extractBlogInfoViaJsonp(rawUrl);
+            if (jsonpData && jsonpData.id) {
+                extractedData = jsonpData;
+            }
+        } catch(jsonpErr) {
+            console.warn('JSONP feed probe failed:', jsonpErr);
+        }
+    }
+
+    // Process Result
+    if (extractedData && extractedData.id && extractedData.id !== 'feed_blog') {
+        if (idInput) idInput.value = extractedData.id;
+        if (nameInput) {
+            nameInput.value = extractedData.name || `مدونة بلوجر (${extractedData.id})`;
+        }
+        if (urlInput && extractedData.url && !rawUrl.startsWith('http')) {
+            urlInput.value = extractedData.url;
+        }
+        showToast(isAr ? `✓ تم استخراج معرّف المدونة الرقمي (${extractedData.id}) واسمها "${extractedData.name || ''}" بنجاح!` : `Blog ID (${extractedData.id}) extracted successfully!`, 'success');
+    } else {
+        showToast(isAr ? 'تعذر استخراج المعرّف تلقائياً من الرابط العام. يمكنك نسخه بضغطة واحدة من رابط فتح Blogger بالأسفل.' : 'Could not extract ID automatically. Please copy it from Blogger dashboard below.', 'warning');
+        if (idInput) idInput.focus();
+    }
+
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = `<i class="fas fa-magic text-cyan"></i> <span>${isAr ? 'استخراج المعرّف والاسم تلقائياً ⚡' : 'Auto-extract ID ⚡'}</span>`;
     }
 }
 window.autoDetectBlogIdFromUrl = autoDetectBlogIdFromUrl;

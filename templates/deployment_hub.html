@@ -377,7 +377,69 @@
     .log-terminal .info { color: #38bdf8; }
 
     /* Toast Notification */
-    .toast-popup {
+    /* Custom Confirmation Modal */
+    .custom-modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.78);
+      backdrop-filter: blur(8px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .custom-modal-backdrop.show {
+      opacity: 1;
+    }
+    .custom-modal-card {
+      background: #0b1329;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 20px;
+      padding: 28px;
+      max-width: 460px;
+      width: 90%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(168, 85, 247, 0.2);
+      transform: scale(0.92);
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .custom-modal-backdrop.show .custom-modal-card {
+      transform: scale(1);
+    }
+    .custom-modal-icon-wrap {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--accent-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 26px;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .custom-modal-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: #f8fafc;
+      margin-bottom: 8px;
+    }
+    .custom-modal-desc {
+      font-size: 13px;
+      color: #94a3b8;
+      line-height: 1.6;
+      margin-bottom: 22px;
+    }
+    .custom-modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    /* Toast Popup */
       position: fixed;
       bottom: 24px;
       left: 50%;
@@ -461,22 +523,80 @@
             </div>
           </div>
 
-          <!-- Live link with Copy and Visit -->
+          <!-- Live link with Direct Dashboard Project Link -->
           <div class="form-group">
-            <label class="form-label">الرابط المباشر للوحة التحكم في السحاب:</label>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <label class="form-label" style="margin-bottom:0;">الرابط المباشر للوحة التحكم في السحاب:</label>
+              <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro" target="_blank" rel="noopener noreferrer" style="color:var(--accent-amber);text-decoration:none;font-size:11.5px;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-cloud"></i> <span>زيارة مشروع Cloudflare في لوحة التحكم ↗</span>
+              </a>
+            </div>
             <div class="input-wrap">
               <input type="text" class="input-text" id="cf-live-url-input" value="https://blogger-studio-pro.pages.dev" readonly>
               <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://blogger-studio-pro.pages.dev', 'تم نسخ رابط الموقع الحي!')" title="نسخ الرابط">
                 <i class="fas fa-copy"></i>
               </button>
-              <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-emerald" title="فتح الموقع في المتصفح">
-                <i class="fas fa-external-link-alt"></i> <span>زيارة</span>
+              <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-emerald" title="فتح الموقع الحي في المتصفح">
+                <i class="fas fa-external-link-alt"></i> <span>زيارة الموقع</span>
+              </a>
+              <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" title="زيارة لوحة تحكم المشروع في Cloudflare" style="border-color:rgba(245,158,11,0.3);color:var(--accent-amber);white-space:nowrap;">
+                <i class="fas fa-cloud"></i> <span>المشروع ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Cloudflare Custom Domains & URL Management -->
+          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-top:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <div>
+                <span class="form-label" style="margin-bottom:2px;font-size:12.5px;display:flex;align-items:center;gap:6px;">
+                  <i class="fas fa-globe" style="color:var(--accent-cyan);"></i> <span>تغيير رابط الموقع وربط دومين مخصص (Custom Domain):</span>
+                </span>
+                <div style="font-size:11px;color:var(--text-muted);">
+                  الرابط الافتراضي: <code style="color:var(--accent-cyan);">blogger-studio-pro.pages.dev</code>
+                </div>
+              </div>
+              <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro/domains" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" style="font-size:11.5px;padding:5px 12px;color:var(--accent-cyan);border-color:rgba(56,189,248,0.3);">
+                <i class="fas fa-link"></i> <span>ربط دومين خاص ↗</span>
+              </a>
+            </div>
+            <div style="background:rgba(15,23,42,0.6);border-radius:8px;padding:8px 10px;font-size:11px;line-height:1.6;color:#cbd5e1;margin-top:6px;">
+              💡 <em>يمكنك ربط نطاقك الخاص (مثل <code>studio.yourdomain.com</code>) مجاناً وبشهادة SSL أوتوماتيكية عبر تبويب Custom Domains، أو تغيير الاسم الفرعي لـ pages.dev من إعدادات المشروع.</em>
+            </div>
+          </div>
+
+          <!-- Cloudflare Maintenance Mode & Project Pause Controls -->
+          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-top:12px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+              <div>
+                <span class="form-label" style="margin-bottom:2px;font-size:12.5px;display:flex;align-items:center;gap:6px;">
+                  <i class="fas fa-sliders-h" style="color:var(--accent-amber);"></i> <span>حالة نشر الصفحة (تعطيل مؤقت / وضع الصيانة):</span>
+                </span>
+                <div style="font-size:11px;color:var(--text-muted);">
+                  حالة الواجهة: <strong id="cf-maint-badge-text" style="color:var(--accent-emerald);">نشطة وتعمل للجميع 🟢</strong>
+                </div>
+              </div>
+              <button type="button" class="btn-action btn-secondary" id="btn-toggle-maint" onclick="toggleMaintenanceAction()" style="font-size:11.5px;padding:5px 12px;">
+                <i class="fas fa-tools"></i> <span id="btn-toggle-maint-text">تفعيل وضع الصيانة</span>
+              </button>
+            </div>
+
+            <!-- Management Shortcuts in Cloudflare -->
+            <div style="margin-top:8px;display:flex;gap:12px;flex-wrap:wrap;font-size:11px;padding-top:8px;border-top:1px solid rgba(255,255,255,0.06);">
+              <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro/deployments" target="_blank" rel="noopener noreferrer" style="color:var(--accent-cyan);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-history"></i> <span>سجل النسخ والتراجع (Rollback) ↗</span>
+              </a>
+              <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro/settings" target="_blank" rel="noopener noreferrer" style="color:var(--accent-amber);text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-pause-circle"></i> <span>تعطيل أو حذف المشروع (Settings) ↗</span>
+              </a>
+              <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro/settings/access" target="_blank" rel="noopener noreferrer" style="color:#a855f7;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                <i class="fas fa-user-lock"></i> <span>قفل الرابط برمز سري (Access PIN) ↗</span>
               </a>
             </div>
           </div>
 
           <!-- Cloudflare Live Health, Latency & Cache Controls -->
-          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-top:14px;">
+          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:12px 14px;margin-top:12px;">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
               <div>
                 <span class="form-label" style="margin-bottom:2px;font-size:12.5px;display:flex;align-items:center;gap:6px;">
@@ -510,19 +630,16 @@
             <div style="background:#03060a;border-radius:6px;padding:6px 10px;font-family:monospace;font-size:11px;color:#38bdf8;direction:ltr;text-align:left;overflow-x:auto;white-space:nowrap;">
               npx wrangler pages deploy dist --project-name blogger-studio-pro --branch main
             </div>
-            <div style="margin-top:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;">
-              <a href="https://dash.cloudflare.com/" target="_blank" rel="noopener noreferrer" style="color:var(--accent-amber);text-decoration:none;font-size:11px;display:inline-flex;align-items:center;gap:4px;">
-                <i class="fas fa-external-link-alt"></i> <span>لوحة تحكم Cloudflare الرسمية (Dashboard) ↗</span>
-              </a>
-              <span style="font-size:11px;color:#64748b;">(النطاقات المخصصة • التحليلات • سجل البناء)</span>
-            </div>
           </div>
         </div>
 
-        <div style="margin-top:20px;display:flex;gap:10px;">
+        <div style="margin-top:15px;display:flex;gap:10px;">
           <button type="button" class="btn-action btn-emerald" id="btn-deploy-cf" onclick="runCloudflareDeploy()" style="flex:1;">
             <i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن ⚡</span>
           </button>
+          <a href="https://dash.cloudflare.com/c361ac1bb00d068bdd53eb7598f673fb/pages/view/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" title="زيارة لوحة تحكم المشروع في Cloudflare">
+            <i class="fas fa-cloud"></i> <span>مشروع Cloudflare ↗</span>
+          </a>
         </div>
       </div>
 
@@ -755,6 +872,39 @@
 
     
     let currentRepoIsPrivate = false;
+    let currentMaintenanceMode = false;
+    let confirmModalResolver = null;
+
+    function showCustomConfirm({ title, desc, confirmText, btnClass = 'btn-purple', iconClass = 'fa-shield-alt' }) {
+      return new Promise((resolve) => {
+        confirmModalResolver = resolve;
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-desc').innerHTML = desc;
+        document.getElementById('modal-confirm-text').textContent = confirmText || 'تأكيد';
+        
+        const confirmBtn = document.getElementById('modal-confirm-btn');
+        confirmBtn.className = `btn-action ${btnClass}`;
+        
+        const icon = document.getElementById('modal-icon');
+        icon.className = `fas ${iconClass}`;
+        
+        const modal = document.getElementById('hub-confirm-modal');
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+      });
+    }
+
+    function closeConfirmModal(result) {
+      const modal = document.getElementById('hub-confirm-modal');
+      modal.classList.remove('show');
+      setTimeout(() => {
+        modal.style.display = 'none';
+        if (confirmModalResolver) {
+          confirmModalResolver(result);
+          confirmModalResolver = null;
+        }
+      }, 200);
+    }
 
     function updateVisibilityUI(isPrivate) {
       currentRepoIsPrivate = isPrivate;
@@ -781,10 +931,19 @@
     async function toggleRepoVisibility() {
       const targetIsPrivate = !currentRepoIsPrivate;
       const actionName = targetIsPrivate ? 'خاص (Private) 🔒' : 'عام (Public) 🌐';
-      
-      if (!confirm(`هل أنت متأكد من رغبتك في تحويل مستودعك على GitHub ليصبح ${actionName}؟`)) {
-        return;
-      }
+      const descText = targetIsPrivate
+        ? 'هل أنت متأكد من رغبتك في تحويل مستودعك على GitHub إلى <strong>مستودع خاص (Private) 🔒</strong>؟<br>سيتم حماية الكود وإخفاؤه تماماً ولن يتمكن أي شخص من رؤيته إلا أنت عبر حسابك.'
+        : 'هل أنت متأكد من رغبتك في تحويل مستودعك على GitHub إلى <strong>مستودع عام (Public) 🌐</strong>؟<br>سيصبح الكود متاحاً ومفتوحاً للعامة للاطلاع عليه، مع بقاء صلاحيات التعديل والرفع لك وحدك.';
+
+      const confirmed = await showCustomConfirm({
+        title: `تعديل خصوصية المستودع إلى ${actionName}`,
+        desc: descText,
+        confirmText: `نعم، تحويل إلى ${actionName}`,
+        btnClass: targetIsPrivate ? 'btn-purple' : 'btn-emerald',
+        iconClass: targetIsPrivate ? 'fa-lock' : 'fa-globe'
+      });
+
+      if (!confirmed) return;
 
       const btn = document.getElementById('btn-toggle-visibility');
       btn.disabled = true;
@@ -804,12 +963,74 @@
           updateVisibilityUI(data.is_private);
         } else {
           log('❌ ' + data.error, 'error');
-          alert('خطأ أثناء تعديل الخصوصية: ' + data.error);
+          showToast('خطأ أثناء تعديل الخصوصية: ' + data.error);
           updateVisibilityUI(currentRepoIsPrivate);
         }
       } catch (err) {
         log('❌ خطأ في الاتصال: ' + err.message, 'error');
+        showToast('خطأ في الاتصال بالخادم');
         updateVisibilityUI(currentRepoIsPrivate);
+      }
+    }
+
+    function updateMaintenanceUI(isMaint) {
+      currentMaintenanceMode = isMaint;
+      const badgeText = document.getElementById('cf-maint-badge-text');
+      const btn = document.getElementById('btn-toggle-maint');
+      if (!badgeText || !btn) return;
+
+      if (isMaint) {
+        badgeText.style.color = 'var(--accent-amber)';
+        badgeText.textContent = 'وضع الصيانة مفعل (الواجهة معطلة مؤقتاً) 🚧';
+        btn.className = 'btn-action btn-emerald';
+        btn.innerHTML = '<i class="fas fa-play"></i> <span id="btn-toggle-maint-text">إلغاء الصيانة وتشغيل الموقع</span>';
+      } else {
+        badgeText.style.color = 'var(--accent-emerald)';
+        badgeText.textContent = 'نشطة وتعمل للجميع 🟢';
+        btn.className = 'btn-action btn-secondary';
+        btn.innerHTML = '<i class="fas fa-tools"></i> <span id="btn-toggle-maint-text">تفعيل وضع الصيانة</span>';
+      }
+    }
+
+    async function toggleMaintenanceAction() {
+      const targetMaint = !currentMaintenanceMode;
+      const actionName = targetMaint ? 'تفعيل وضع الصيانة المؤقت 🚧' : 'إلغاء وضع الصيانة وتشغيل الموقع 🟢';
+      const descText = targetMaint
+        ? 'عند تفعيل وضع الصيانة، سيتم تجهيز ونشر صفحة صيانة مؤقتة أنيقة تحجب لوحة التحكم عن الزوار حتى تقوم بإلغائها.<br>هل تريد المتابعة وتفعيل وضع الصيانة؟'
+        : 'سيتم إعادة تجهيز ونشر لوحة التحكم بالكامل لتعمل لجميع الزوار بشكل طبيعي.<br>هل تريد إلغاء وضع الصيانة وتشغيل الموقع الآن؟';
+
+      const confirmed = await showCustomConfirm({
+        title: actionName,
+        desc: descText,
+        confirmText: targetMaint ? 'نعم، تفعيل الصيانة' : 'نعم، تشغيل الموقع',
+        btnClass: targetMaint ? 'btn-amber' : 'btn-emerald',
+        iconClass: targetMaint ? 'fa-tools' : 'fa-check-circle'
+      });
+
+      if (!confirmed) return;
+
+      const btn = document.getElementById('btn-toggle-maint');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الضبط...';
+
+      try {
+        const res = await fetch('/api/hub/cloudflare/toggle-maintenance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: targetMaint })
+        });
+        const data = await res.json();
+        if (data.success) {
+          updateMaintenanceUI(data.maintenance_mode);
+          log('⚙️ ' + data.message, 'success');
+          showToast(data.message);
+        } else {
+          showToast('خطأ: ' + data.error);
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+      } finally {
+        btn.disabled = false;
       }
     }
 
@@ -880,6 +1101,9 @@
           document.getElementById('cf-email-display').textContent = data.cloudflare.email;
           document.getElementById('cf-project-display').textContent = data.cloudflare.project_name;
           document.getElementById('cf-live-url-input').value = data.cloudflare.live_url;
+          if (data.cloudflare.maintenance_mode !== undefined) {
+            updateMaintenanceUI(data.cloudflare.maintenance_mode);
+          }
         }
 
         // GitHub UI
@@ -945,7 +1169,7 @@
       const input = document.getElementById('gh-token-input');
       const token = input.value.trim();
       if (!token) {
-        alert('يرجى إدخال رمز الـ Token أو الضغط على رابط توليده أولاً.');
+        showToast('يرجى إدخال رمز الـ Token أو توليد رمز جديد أولاً.');
         return;
       }
 
@@ -963,7 +1187,7 @@
           loadInitialStatus();
         } else {
           log('❌ خطأ في الاتصال: ' + (data.error || 'تأكد من صحة الرمز'), 'error');
-          alert('خطأ: ' + (data.error || 'تأكد من صحة الرمز'));
+          showToast('خطأ: ' + (data.error || 'تأكد من صحة الرمز'));
         }
       } catch (err) {
         log('❌ فشل الاتصال: ' + err.message, 'error');
@@ -1064,5 +1288,25 @@
       setTimeout(pingCloudflareHealth, 600);
     });
   </script>
+  <!-- Custom In-Page Confirmation Modal (Replaces browser confirm) -->
+  <div id="hub-confirm-modal" class="custom-modal-backdrop" onclick="if(event.target===this) closeConfirmModal(false);">
+    <div class="custom-modal-card" onclick="event.stopPropagation();">
+      <div class="custom-modal-icon-wrap" id="modal-icon-wrap">
+        <i class="fas fa-shield-alt" id="modal-icon"></i>
+      </div>
+      <h3 class="custom-modal-title" id="modal-title">تأكيد الإجراء</h3>
+      <p class="custom-modal-desc" id="modal-desc">هل أنت متأكد من تنفيذ هذا الإجراء؟</p>
+      
+      <div class="custom-modal-actions">
+        <button type="button" class="btn-action btn-secondary" onclick="closeConfirmModal(false)" style="flex:1;">
+          <i class="fas fa-times"></i> <span>إلغاء</span>
+        </button>
+        <button type="button" class="btn-action btn-purple" id="modal-confirm-btn" onclick="closeConfirmModal(true)" style="flex:1.2;">
+          <i class="fas fa-check"></i> <span id="modal-confirm-text">تأكيد التغيير</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
