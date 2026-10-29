@@ -1653,3 +1653,48 @@ def api_deploy_cloudflare():
 @app.post("/api/deployment/github")
 def api_deploy_github(req: DeployGithubRequest):
     return deploy_github(token=req.token)
+
+
+# -------------------------------------------------------------
+# DEDICATED VISUAL DEPLOYMENT HUB (EDGE & STANDALONE)
+# -------------------------------------------------------------
+from .deployment_hub import (
+    load_hub_config, get_cloudflare_status, verify_github_token,
+    push_to_github, deploy_cloudflare as hub_deploy_cf, deploy_all as hub_deploy_all
+)
+
+class ConnectGithubTokenRequest(BaseModel):
+    token: str
+
+@app.get("/deployment-hub", response_class=HTMLResponse)
+def serve_deployment_hub():
+    hub_file = os.path.join(TEMPLATES_DIR, "deployment_hub.html")
+    if os.path.exists(hub_file):
+        with open(hub_file, "r", encoding="utf-8") as f:
+            return HTMLResponse(content=f.read())
+    return HTMLResponse("<h1>Deployment Hub Not Found</h1>", status_code=404)
+
+@app.get("/api/hub/status")
+def api_hub_status():
+    cfg = load_hub_config()
+    cf = get_cloudflare_status()
+    return {
+        "github": cfg.get("github", {}),
+        "cloudflare": cf
+    }
+
+@app.post("/api/hub/github/connect")
+def api_hub_github_connect(req: ConnectGithubTokenRequest):
+    return verify_github_token(req.token)
+
+@app.post("/api/hub/github/push")
+def api_hub_github_push():
+    return push_to_github()
+
+@app.post("/api/hub/cloudflare/deploy")
+def api_hub_cf_deploy():
+    return hub_deploy_cf()
+
+@app.post("/api/hub/deploy-all")
+def api_hub_deploy_all():
+    return hub_deploy_all()

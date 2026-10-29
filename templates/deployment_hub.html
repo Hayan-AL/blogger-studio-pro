@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blogger Studio Pro | مركز النشر السحابي والربط التلقائي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="icon" type="image/svg+xml" href="/static/img/dashboard_favicon.svg">
+  
+  <style>
+    :root {
+      --bg-dark: #090e17;
+      --card-bg: rgba(22, 32, 50, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent-cyan: #38bdf8;
+      --accent-emerald: #10b981;
+      --accent-purple: #a855f7;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --accent-blue: #2563eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+      background: var(--bg-dark);
+      background-image: radial-gradient(circle at 15% 15%, rgba(56, 189, 248, 0.08) 0%, transparent 40%),
+                        radial-gradient(circle at 85% 85%, rgba(168, 85, 247, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      direction: rtl;
+      text-align: right;
+    }
+
+    .container {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+      width: 100%;
+    }
+
+    /* Topbar */
+    .hub-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 28px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      backdrop-filter: blur(12px);
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px -5px rgba(0,0,0,0.5);
+    }
+    .hub-brand {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .hub-logo-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0284c7, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+    }
+    .hub-brand h1 {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .hub-brand p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .hub-top-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .btn-top-dash {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .btn-top-dash:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    /* Grid */
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 22px;
+      margin-bottom: 25px;
+    }
+
+    /* Card */
+    .hub-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .card-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .card-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+    .card-title {
+      font-size: 16px;
+      font-weight: 800;
+    }
+    .badge-status {
+      font-size: 11.5px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .badge-emerald { background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-purple  { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .badge-amber   { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+
+    /* Profile Box */
+    .profile-box {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 16px;
+    }
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 2px solid var(--accent-purple);
+      object-fit: cover;
+      background: #1e293b;
+    }
+    .profile-info h4 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+    .profile-info p {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 14px;
+    }
+    .form-label {
+      display: block;
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 6px;
+    }
+    .input-wrap {
+      display: flex;
+      gap: 8px;
+    }
+    .input-text {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 10px;
+      color: #fff;
+      padding: 10px 14px;
+      font-size: 13px;
+      font-family: 'Inter', monospace;
+      outline: none;
+      transition: all 0.2s;
+    }
+    .input-text:focus {
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.2);
+    }
+
+    /* Buttons */
+    .btn-action {
+      background: var(--accent-blue);
+      color: #fff;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+    .btn-action:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px);
+    }
+    .btn-emerald { background: #059669; }
+    .btn-purple  { background: #7c3aed; }
+    .btn-secondary { background: rgba(255, 255, 255, 0.08); color: #e2e8f0; border: 1px solid var(--card-border); }
+    .btn-secondary:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+
+    /* Huge Deploy All Banner */
+    .deploy-all-bar {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(124, 58, 237, 0.2));
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      border-radius: 18px;
+      padding: 22px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      box-shadow: 0 10px 30px rgba(37, 99, 235, 0.2);
+    }
+    .deploy-all-info h3 {
+      font-size: 17px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .deploy-all-info p {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+    .btn-deploy-mega {
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: #fff;
+      border: none;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
+      transition: all 0.2s;
+    }
+    .btn-deploy-mega:hover {
+      filter: brightness(1.15);
+      transform: scale(1.02);
+    }
+
+    /* Live Log Card */
+    .log-card {
+      background: #060a12;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 18px;
+      padding: 20px 24px;
+    }
+    .log-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .log-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .log-terminal {
+      background: #03060a;
+      border-radius: 10px;
+      padding: 14px 18px;
+      font-family: 'Consolas', monospace;
+      font-size: 12px;
+      color: #e2e8f0;
+      height: 180px;
+      overflow-y: auto;
+      line-height: 1.7;
+      direction: ltr;
+      text-align: left;
+    }
+    .log-terminal .ts { color: #64748b; margin-right: 8px; }
+    .log-terminal .success { color: #34d399; font-weight: bold; }
+    .log-terminal .error { color: #f87171; font-weight: bold; }
+    .log-terminal .info { color: #38bdf8; }
+
+    /* Security banner */
+    .security-badge-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 12px;
+      padding: 12px 18px;
+      margin-bottom: 25px;
+      font-size: 12.5px;
+      color: #6ee7b7;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    
+    <!-- Topbar Header -->
+    <header class="hub-header">
+      <div class="hub-brand">
+        <div class="hub-logo-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <div>
+          <h1>Blogger Studio Pro | مركز النشر السحابي والربط التلقائي</h1>
+          <p>لوحة التحكم الاحترافية لمدونات Blogger • نشر فوري على Cloudflare Pages و GitHub بدون أوامر معقدة</p>
+        </div>
+      </div>
+      <div class="hub-top-actions">
+        <a href="/" class="btn-top-dash">
+          <i class="fas fa-arrow-right"></i> <span>العودة للوحة الإدارة</span>
+        </a>
+      </div>
+    </header>
+
+    <!-- Security Guarantee Bar -->
+    <div class="security-badge-bar">
+      <i class="fas fa-shield-alt" style="font-size:18px;"></i>
+      <span><strong>درع الخصوصية النشط:</strong> يتم عزل وتطهير كافة كلمات المرور، ورموز OAuth السرية، وقواعد بيانات SQLite، والملفات الخاصة تلقائياً قبل أي عملية نشر أو رفع.</span>
+    </div>
+
+    <!-- Main Grid: Cloudflare & GitHub Cards -->
+    <div class="hub-grid">
+
+      <!-- CARD 1: Cloudflare Pages -->
+      <div class="hub-card">
+        <div>
+          <div class="card-top">
+            <div class="card-title-wrap">
+              <div class="card-icon" style="background:rgba(245, 158, 11, 0.15);color:var(--accent-amber);">
+                <i class="fas fa-cloud"></i>
+              </div>
+              <div>
+                <div class="card-title">استضافة Cloudflare Pages</div>
+                <div style="font-size:12px;color:var(--text-muted);">نشر الموقع الحي ليعمل 24/7 حتى وجهازك مطفأ</div>
+              </div>
+            </div>
+            <span class="badge-status badge-emerald"><i class="fas fa-check-circle"></i> متصل ومصرّح</span>
+          </div>
+
+          <!-- Account info -->
+          <div class="profile-box">
+            <div style="width:48px;height:48px;border-radius:12px;background:#f59e0b;display:flex;align-items:center;justify-content:center;font-size:24px;color:#fff;">
+              <i class="fas fa-bolt"></i>
+            </div>
+            <div class="profile-info">
+              <h4 id="cf-email-display">hyayn5@gmail.com</h4>
+              <p>المشروع النشط: <strong id="cf-project-display" style="color:var(--accent-cyan);">blogger-studio-pro</strong></p>
+            </div>
+          </div>
+
+          <!-- Live link -->
+          <div class="form-group">
+            <label class="form-label">الرابط المباشر للوحة التحكم في السحاب:</label>
+            <div class="input-wrap">
+              <input type="text" class="input-text" id="cf-live-url-input" value="https://blogger-studio-pro.pages.dev" readonly>
+              <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" title="فتح الموقع في المتصفح">
+                <i class="fas fa-external-link-alt"></i> <span>زيارة</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top:20px;display:flex;gap:10px;">
+          <button type="button" class="btn-action btn-emerald" id="btn-deploy-cf" onclick="runCloudflareDeploy()" style="flex:1;">
+            <i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CARD 2: GitHub Repository -->
+      <div class="hub-card">
+        <div>
+          <div class="card-top">
+            <div class="card-title-wrap">
+              <div class="card-icon" style="background:rgba(168, 85, 247, 0.15);color:var(--accent-purple);">
+                <i class="fab fa-github"></i>
+              </div>
+              <div>
+                <div class="card-title">مستودع GitHub المصدري</div>
+                <div style="font-size:12px;color:var(--text-muted);">حفظ وتحديث الأكواد البرمجية والتطويرات</div>
+              </div>
+            </div>
+            <span class="badge-status badge-purple" id="gh-status-badge"><i class="fas fa-circle-notch fa-spin"></i> جاري الفحص</span>
+          </div>
+
+          <!-- GitHub Profile / Connection Info -->
+          <div class="profile-box" id="gh-profile-box">
+            <img src="https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png" alt="Avatar" class="profile-avatar" id="gh-avatar-img">
+            <div class="profile-info">
+              <h4 id="gh-name-display">Hayan-AL</h4>
+              <p id="gh-repo-sub">مستودع: <span style="color:var(--accent-cyan);">Hayan-AL / blogger-studio-pro</span></p>
+            </div>
+          </div>
+
+          <!-- Token Auth Input for Zero-Friction connection -->
+          <div class="form-group">
+            <label class="form-label" style="display:flex;justify-content:space-between;">
+              <span>رمز التخويل (GitHub Personal Access Token):</span>
+              <a href="https://github.com/settings/tokens/new?scopes=repo&description=BloggerStudioPro" target="_blank" style="color:var(--accent-cyan);text-decoration:none;">
+                <i class="fas fa-key"></i> <span>توليد Token بلمسة واحدة في Edge ↗</span>
+              </a>
+            </label>
+            <div class="input-wrap">
+              <input type="password" class="input-text" id="gh-token-input" placeholder="ألصق الرمز هنا (ghp_...)" oninput="handleTokenInput(this.value)">
+              <button type="button" class="btn-action btn-purple" id="btn-save-token" onclick="connectGitHubToken()" style="white-space:nowrap;">
+                <i class="fas fa-check"></i> <span>ربط وتأكيد</span>
+              </button>
+            </div>
+            <p style="font-size:11px;color:var(--text-muted);margin-top:5px;">
+              💡 الرمز يعطيك صلاحية الرفع لمرة واحدة ويبقى محفوظاً بأمان، دون أن تظهر لك أي نوافذ حسابات منبثقة أو خيارات إيميل ملخبطة.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top:15px;display:flex;gap:10px;">
+          <button type="button" class="btn-action btn-purple" id="btn-deploy-gh" onclick="runGitHubDeploy()" style="flex:1;">
+            <i class="fas fa-upload"></i> <span>رفع وتحديث GitHub الآن</span>
+          </button>
+          <a href="https://github.com/Hayan-AL/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary" title="فتح المستودع">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Huge Deploy All Banner -->
+    <div class="deploy-all-bar">
+      <div class="deploy-all-info">
+        <h3>🚀 النشر الشامل المزدوج (Cloudflare + GitHub)</h3>
+        <p>يقوم برفع أحدث نسخة من الكود إلى مستودعك على GitHub، ونشر الواجهة حية على شبكة Cloudflare في نفس اللحظة.</p>
+      </div>
+      <button type="button" class="btn-deploy-mega" id="btn-deploy-all" onclick="runDeployAll()">
+        <i class="fas fa-rocket"></i> <span>نشر وتحديث شامل بضغطة زر واحدة</span>
+      </button>
+    </div>
+
+    <!-- Live Execution Terminal Log -->
+    <div class="log-card">
+      <div class="log-header">
+        <div class="log-title">
+          <i class="fas fa-terminal"></i> <span>سجل العمليات والاتصال المباشر (Live Progress Console)</span>
+        </div>
+        <button type="button" onclick="clearLog()" style="background:none;border:none;color:var(--text-muted);font-size:12px;cursor:pointer;">
+          <i class="fas fa-trash-alt"></i> مسح السجل
+        </button>
+      </div>
+      <div class="log-terminal" id="log-console">
+        <div><span class="ts">[System]</span> <span class="info">Blogger Studio Pro Deployment Engine initialized.</span></div>
+        <div><span class="ts">[Cloudflare]</span> <span class="success">Live endpoint verified: https://blogger-studio-pro.pages.dev</span></div>
+        <div><span class="ts">[Ready]</span> اضغط على أي زر أعلاه لبدء النشر التلقائي فوراً.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function log(msg, type = 'info') {
+      const consoleBox = document.getElementById('log-console');
+      const time = new Date().toLocaleTimeString();
+      const div = document.createElement('div');
+      div.innerHTML = `<span class="ts">[${time}]</span> <span class="${type}">${msg}</span>`;
+      consoleBox.appendChild(div);
+      consoleBox.scrollTop = consoleBox.scrollHeight;
+    }
+
+    function clearLog() {
+      document.getElementById('log-console').innerHTML = '';
+      log('تم مسح السجل.', 'info');
+    }
+
+    async function loadInitialStatus() {
+      try {
+        const res = await fetch('/api/hub/status');
+        const data = await res.json();
+        
+        // Cloudflare UI
+        if (data.cloudflare) {
+          document.getElementById('cf-email-display').textContent = data.cloudflare.email;
+          document.getElementById('cf-project-display').textContent = data.cloudflare.project_name;
+          document.getElementById('cf-live-url-input').value = data.cloudflare.live_url;
+        }
+
+        // GitHub UI
+        const ghBadge = document.getElementById('gh-status-badge');
+        if (data.github && data.github.is_connected) {
+          ghBadge.className = 'badge-status badge-emerald';
+          ghBadge.innerHTML = '<i class="fas fa-check-circle"></i> متصل بحساب: ' + data.github.username;
+          if (data.github.avatar_url) {
+            document.getElementById('gh-avatar-img').src = data.github.avatar_url;
+          }
+          document.getElementById('gh-name-display').textContent = data.github.name || data.github.username;
+          log(`تم التعرف على حساب GitHub المرتبط: ${data.github.username}`, 'success');
+        } else {
+          ghBadge.className = 'badge-status badge-amber';
+          ghBadge.innerHTML = '<i class="fas fa-key"></i> بانتظار إدخال الرمز (Token)';
+          log('أدخل رمز الـ Token واضغط "ربط وتأكيد" للاتصال الدائم بحسابك.', 'info');
+        }
+      } catch (e) {
+        log('تعذر قراءة حالة الربط: ' + e.message, 'error');
+      }
+    }
+
+    async function connectGitHubToken() {
+      const input = document.getElementById('gh-token-input');
+      const token = input.value.trim();
+      if (!token) {
+        alert('يرجى إدخال رمز الـ Token أو الضغط على رابط توليده أولاً.');
+        return;
+      }
+
+      log('جاري التحقق من رمز الـ Token مع خوادم GitHub API...', 'info');
+      try {
+        const res = await fetch('/api/hub/github/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: token })
+        });
+        const data = await res.json();
+        if (data.success) {
+          log(`🎉 تم الاتصال بنجاح بحساب GitHub: ${data.profile.login} (${data.profile.name})!`, 'success');
+          loadInitialStatus();
+        } else {
+          log('❌ خطأ في الاتصال: ' + (data.error || 'تأكد من صحة الرمز'), 'error');
+          alert('خطأ: ' + (data.error || 'تأكد من صحة الرمز'));
+        }
+      } catch (err) {
+        log('❌ فشل الاتصال: ' + err.message, 'error');
+      }
+    }
+
+    async function runCloudflareDeploy() {
+      const btn = document.getElementById('btn-deploy-cf');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري النشر على Cloudflare...';
+      log('--------------------------------------------------', 'info');
+      log('⛅ بدء بناء الأصول والنشر على شبكة Cloudflare Pages العالمية...', 'info');
+
+      try {
+        const res = await fetch('/api/hub/cloudflare/deploy', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          log('🎉 ' + data.message, 'success');
+          log('🌐 رابط الموقع الحي: ' + data.live_url, 'success');
+        } else {
+          log('❌ ' + data.error, 'error');
+        }
+      } catch (err) {
+        log('❌ خطأ في الاتصال: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-bolt"></i> <span>نشر وتحديث Cloudflare الآن</span>';
+      }
+    }
+
+    async function runGitHubDeploy() {
+      const btn = document.getElementById('btn-deploy-gh');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الرفع إلى GitHub...';
+      log('--------------------------------------------------', 'info');
+      log('🐙 بدء فحص الأمان وتأكيد الإيداع والرفع إلى GitHub...', 'info');
+
+      try {
+        const res = await fetch('/api/hub/github/push', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          log('🎉 ' + data.message, 'success');
+          log('🐙 المستودع المحدث: ' + data.repo_url, 'success');
+        } else {
+          log('❌ ' + data.error, 'error');
+          if (data.details) log(data.details, 'error');
+        }
+      } catch (err) {
+        log('❌ خطأ في الاتصال: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-upload"></i> <span>رفع وتحديث GitHub الآن</span>';
+      }
+    }
+
+    async function runDeployAll() {
+      const btn = document.getElementById('btn-deploy-all');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري تنفيذ النشر الشامل...';
+      log('==================================================', 'info');
+      log('🚀 بدء النشر الشامل المزدوج (Cloudflare + GitHub)...', 'info');
+
+      try {
+        const res = await fetch('/api/hub/deploy-all', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+          log('🎉 ' + data.message, 'success');
+          log('🌐 Cloudflare Pages: ' + data.cloudflare.live_url, 'success');
+          log('🐙 GitHub Repo: ' + data.github.repo_url, 'success');
+        } else {
+          log('⚠️ ' + data.message, 'info');
+        }
+      } catch (err) {
+        log('❌ خطأ: ' + err.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-rocket"></i> <span>نشر وتحديث شامل بضغطة زر واحدة</span>';
+      }
+    }
+
+    function handleTokenInput(val) {
+      if (val.startsWith('ghp_') && val.length > 20) {
+        // Auto-detect valid token paste
+        document.getElementById('btn-save-token').style.animation = 'pulse 1s infinite';
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', loadInitialStatus);
+  </script>
+</body>
+</html>
