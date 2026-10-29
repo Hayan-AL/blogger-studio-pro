@@ -105,6 +105,16 @@
         if (path === '/api/backups') return jsonResp([]);
         if (path === '/api/media') return jsonResp([]);
         if (path === '/api/theme') return jsonResp({ theme_xml: '' });
+        if (path === '/api/settings/google-auth' || path === '/api/auth/status') {
+            return jsonResp({
+                enabled: true,
+                auth_status: {
+                    is_authenticated: false,
+                    accounts: [],
+                    active_account_id: null
+                }
+            });
+        }
 
         if (path.startsWith('/api/')) {
             return jsonResp({ success: true, static_mode: true, message: 'Cloudflare Pages Edge Accelerator' });
@@ -10641,3 +10651,128 @@ async function executeWebDeployAll() {
     if (btn) btn.disabled = false;
 }
 window.executeWebDeployAll = executeWebDeployAll;
+
+
+// -------------------------------------------------------------
+// TOPBAR GOOGLE ACCOUNT & PROFILE SYNC SUITE (CLEAN ZERO-STATE)
+// -------------------------------------------------------------
+function toggleUserAccountMenu(event) {
+    if (event) event.stopPropagation();
+    const dropdown = document.getElementById('topbar-user-dropdown');
+    if (!dropdown) return;
+    const isShown = dropdown.style.display === 'block';
+    // close other topbar dropdowns
+    const notifDropdown = document.getElementById('topbar-notifications-dropdown');
+    if (notifDropdown) notifDropdown.style.display = 'none';
+    dropdown.style.display = isShown ? 'none' : 'block';
+}
+window.toggleUserAccountMenu = toggleUserAccountMenu;
+
+async function syncTopbarGoogleProfile() {
+    const isAr = (document.documentElement.lang || 'ar') === 'ar';
+    const avatarImg = document.getElementById('topbar-user-avatar');
+    const avatarPlaceholder = document.getElementById('topbar-user-avatar-placeholder');
+    const userNameEl = document.getElementById('topbar-user-name');
+    const userEmailEl = document.getElementById('topbar-user-email');
+    const displayNameEl = document.getElementById('user-display-name');
+    const displayEmailEl = document.getElementById('user-display-email');
+    const userBadgeEl = document.getElementById('topbar-user-badge');
+    const logoutDivider = document.getElementById('topbar-menu-logout-divider');
+    const logoutBtn = document.getElementById('topbar-menu-logout');
+
+    let activeAccount = null;
+
+    try {
+        const res = await fetch('/api/settings/google-auth');
+        if (res.ok) {
+            const data = await res.json();
+            const auth = data.auth_status || {};
+            if (auth.is_authenticated && Array.isArray(auth.accounts) && auth.accounts.length > 0) {
+                activeAccount = auth.accounts.find(a => a.is_active) || auth.accounts[0];
+            }
+        }
+    } catch(e) {
+        console.warn('Failed to query google-auth status:', e);
+    }
+
+    if (activeAccount && activeAccount.email) {
+        // Authenticated State: ONLY here we display user info and profile picture
+        if (avatarImg) {
+            if (activeAccount.picture) {
+                avatarImg.src = activeAccount.picture;
+                avatarImg.style.display = 'inline-block';
+                if (avatarPlaceholder) avatarPlaceholder.style.display = 'none';
+            } else {
+                avatarImg.style.display = 'none';
+                if (avatarPlaceholder) avatarPlaceholder.style.display = 'flex';
+            }
+        }
+        if (userNameEl) userNameEl.textContent = activeAccount.name || (isAr ? 'حساب Google' : 'Google Account');
+        if (userEmailEl) userEmailEl.textContent = activeAccount.email || '';
+        if (displayNameEl) displayNameEl.textContent = activeAccount.name || (isAr ? 'حساب Google' : 'Google Account');
+        if (displayEmailEl) displayEmailEl.textContent = activeAccount.email || '';
+        if (userBadgeEl) {
+            userBadgeEl.style.background = 'rgba(16, 185, 129, 0.18)';
+            userBadgeEl.style.color = '#10b981';
+            userBadgeEl.style.borderColor = 'rgba(16, 185, 129, 0.35)';
+            userBadgeEl.textContent = isAr ? 'متصل مع بلوجر' : 'Connected';
+        }
+        if (logoutDivider) logoutDivider.style.display = 'block';
+        if (logoutBtn) logoutBtn.style.display = 'flex';
+    } else {
+        // Pure Unauthenticated State (Default): ZERO personal pictures
+        if (avatarImg) {
+            avatarImg.src = '';
+            avatarImg.style.display = 'none';
+        }
+        if (avatarPlaceholder) {
+            avatarPlaceholder.style.display = 'flex';
+        }
+        if (userNameEl) userNameEl.textContent = isAr ? 'حساب Google' : 'Google Account';
+        if (userEmailEl) userEmailEl.textContent = isAr ? 'غير متصل (تسجيل الدخول)' : 'Not Connected';
+        if (displayNameEl) displayNameEl.textContent = isAr ? 'حساب Google' : 'Google Account';
+        if (displayEmailEl) displayEmailEl.textContent = isAr ? 'لم يتم تسجيل الدخول بعد' : 'No account connected';
+        if (userBadgeEl) {
+            userBadgeEl.style.background = 'rgba(148, 163, 184, 0.15)';
+            userBadgeEl.style.color = '#94a3b8';
+            userBadgeEl.style.borderColor = 'rgba(148, 163, 184, 0.3)';
+            userBadgeEl.textContent = isAr ? 'غير متصل' : 'Disconnected';
+        }
+        if (logoutDivider) logoutDivider.style.display = 'none';
+        if (logoutBtn) logoutBtn.style.display = 'none';
+    }
+}
+window.syncTopbarGoogleProfile = syncTopbarGoogleProfile;
+
+async function logoutGoogleAccount() {
+    const isAr = (document.documentElement.lang || 'ar') === 'ar';
+    try {
+        const res = await fetch('/api/settings/google-auth');
+        const data = await res.json();
+        const activeAcc = (data.auth_status && data.auth_status.accounts && data.auth_status.accounts[0]) || null;
+        if (activeAcc && activeAcc.account_id) {
+            await fetch('/api/auth/google/disconnect', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ account_id: activeAcc.account_id })
+            });
+        }
+    } catch(e) {
+        console.warn('Logout request error:', e);
+    }
+    localStorage.removeItem('studio_google_account');
+    await syncTopbarGoogleProfile();
+    if (typeof loadGoogleAuthStatusInSettings === 'function') loadGoogleAuthStatusInSettings();
+    const dropdown = document.getElementById('topbar-user-dropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    showToast(isAr ? 'تم تسجيل الخروج بنجاح.' : 'Signed out successfully.', 'info');
+}
+window.logoutGoogleAccount = logoutGoogleAccount;
+
+// Run sync on DOM ready and window load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => { syncTopbarGoogleProfile(); });
+} else {
+    syncTopbarGoogleProfile();
+}
+window.addEventListener('load', () => { syncTopbarGoogleProfile(); });
