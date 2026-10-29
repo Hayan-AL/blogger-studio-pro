@@ -1,1 +1,1 @@
-# Tekmilo Studio Application Package
+# Blogger Studio Pro Application Package

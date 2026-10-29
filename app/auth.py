@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Google OAuth 2.0 & Account Manager
+Blogger Studio Pro - لوحة التحكم الاحترافية - Google OAuth 2.0 & Account Manager
 Handles secure OAuth 2.0 authorization, state validation, token exchange,
 token refresh, multi-account storage, and safe credential management.
 """

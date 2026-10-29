@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Dual-Engine Blogger Client
+Blogger Studio Pro - لوحة التحكم الاحترافية - Dual-Engine Blogger Client
 Provides seamless integration with:
 1. Official Google Blogger API v3 (authenticated via OAuth 2.0)
 2. Public Feed Engine (graceful fallback when OAuth is unconfigured)
@@ -30,10 +30,10 @@ def load_settings() -> Dict[str, Any]:
             pass
     return {
         "blog": {
-            "name": "Tekmilo | تيكميلو",
-            "url": "https://tekmilo.blogspot.com/",
+            "name": "Blogger Studio | لوحة التحكم الاحترافية",
+            "url": "https://yourblog.blogspot.com/",
             "id": "3715457895504629620",
-            "feed_url": "https://tekmilo.blogspot.com/feeds/posts/default?alt=json&max-results=50"
+            "feed_url": "https://yourblog.blogspot.com/feeds/posts/default?alt=json&max-results=50"
         }
     }
 
@@ -289,9 +289,9 @@ def fetch_live_posts(force_refresh: bool = False) -> List[Dict[str, Any]]:
             
     # 3. Fallback to Public Atom JSON Feed if no posts fetched via API
     if not posts:
-        feed_url = settings.get("blog", {}).get("feed_url", f"https://tekmilo.blogspot.com/feeds/posts/default?alt=json&max-results=50")
+        feed_url = settings.get("blog", {}).get("feed_url", f"https://yourblog.blogspot.com/feeds/posts/default?alt=json&max-results=50")
         try:
-            req = urllib.request.Request(feed_url, headers={"User-Agent": "Mozilla/5.0 TekmiloStudio/2.0"})
+            req = urllib.request.Request(feed_url, headers={"User-Agent": "Mozilla/5.0 BloggerStudioPro/2.0"})
             with urllib.request.urlopen(req, timeout=10) as response:
                 feed_data = json.loads(response.read().decode("utf-8"))
                 
@@ -737,7 +737,7 @@ def get_diagnostics() -> Dict[str, Any]:
             status_code = r.status_code
             api_reachable = (r.status_code == 200)
         else:
-            r = requests.get(blog_info.get("feed_url", "https://tekmilo.blogspot.com/"), timeout=5)
+            r = requests.get(blog_info.get("feed_url", "https://yourblog.blogspot.com/"), timeout=5)
             status_code = r.status_code
             api_reachable = (r.status_code == 200)
     except Exception:

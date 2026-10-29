@@ -1,8 +1,8 @@
-# Tekmilo Studio Server Control Center (Port 8000)
+# Blogger Studio Server Control Center - لوحة التحكم الاحترافية (Port 8000)
 # Modeled after Hayan Server Control Center Standard
 
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
-$Host.UI.RawUI.WindowTitle = "Tekmilo Studio Server Control Center (Port 8000)"
+$Host.UI.RawUI.WindowTitle = "Blogger Studio Server Control Center - لوحة التحكم الاحترافية (Port 8000)"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Definition
 if (-not $ScriptDir) { $ScriptDir = (Get-Location).Path }
@@ -36,7 +36,7 @@ function Open-UrlWithChoice {
     } elseif ($b -eq "5") {
         try { Start-Process "brave.exe" $Url } catch { Start-Process $Url }
     } elseif ($b -eq "6") {
-        $tmp = Join-Path $env:TEMP "tekmilo_link.url"
+        $tmp = Join-Path $env:TEMP "blogger_studio_link.url"
         "[InternetShortcut]`r`nURL=$Url" | Set-Content -Path $tmp -Encoding ascii
         try { Start-Process "openwith.exe" $tmp } catch { Start-Process $Url }
     } elseif ($b -eq "0") {
@@ -71,7 +71,7 @@ function Stop-ServerPort {
 function Show-Header {
     Clear-Host
     Write-Host "=========================================================================" -ForegroundColor Cyan
-    Write-Host "            TEKMILO STUDIO SERVER CONTROL CENTER (PORT 8000)             " -ForegroundColor Yellow
+    Write-Host "            BLOGGER STUDIO SERVER CONTROL CENTER - لوحة التحكم الاحترافية (PORT 8000)             " -ForegroundColor Yellow
     Write-Host "=========================================================================" -ForegroundColor Cyan
     Write-Host ""
 
@@ -87,16 +87,16 @@ function Show-Header {
 
     Write-Host ""
     Write-Host "  Quick Access URLs:" -ForegroundColor DarkCyan
-    Write-Host "    - Tekmilo Studio Dashboard  : http://localhost:8000/"
-    Write-Host "    - Live Blogger Website      : https://tekmilo.blogspot.com/"
+    Write-Host "    - Blogger Studio Pro Dashboard  : http://localhost:8000/"
+    Write-Host "    - Live Blogger Website      : https://www.blogger.com/"
     Write-Host "    - Blogger Posts Feed API    : http://localhost:8000/api/posts"
     Write-Host "    - Blog Analytics & Stats    : http://localhost:8000/api/stats"
     Write-Host "    - Theme Management API      : http://localhost:8000/api/theme"
     Write-Host "    - Backups & Snapshots API   : http://localhost:8000/api/backups"
     Write-Host ""
     Write-Host "  -------------------------------------------------------------------------" -ForegroundColor DarkGray
-    Write-Host "   [1] Start Tekmilo Studio Server (Port 8000)"
-    Write-Host "   [2] Open Tekmilo Dashboard in Browser"
+    Write-Host "   [1] Start Blogger Studio Studio Server (Port 8000)"
+    Write-Host "   [2] Open Blogger Studio Dashboard in Browser"
     Write-Host "   [3] Open Live Blogger Website in Browser"
     Write-Host "   [4] Health Check & Diagnostics (API Status, Posts, Response Time)"
     Write-Host "   [5] Create Full Local Backup (Theme XML + Posts JSON)"
@@ -120,7 +120,7 @@ while ($true) {
             Write-Host "[!] Server is already running on port 8000." -ForegroundColor Yellow
             Open-UrlWithChoice "http://localhost:8000/"
         } else {
-            Write-Host "[*] Starting Tekmilo Studio Server in a new window..." -ForegroundColor Cyan
+            Write-Host "[*] Starting Blogger Studio Studio Server in a new window..." -ForegroundColor Cyan
             Start-Process powershell.exe -WorkingDirectory $ScriptDir -ArgumentList "-NoProfile -ExecutionPolicy Bypass -NoExit -Command python run.py --no-browser" -WindowStyle Normal
 
             Write-Host "[*] Waiting for server initialization..." -ForegroundColor Gray
@@ -128,7 +128,7 @@ while ($true) {
 
             try {
                 $h = Invoke-RestMethod "http://localhost:8000/api/stats" -TimeoutSec 5
-                Write-Host "[OK] Tekmilo Studio is online and healthy!" -ForegroundColor Green
+                Write-Host "[OK] Blogger Studio Studio is online and healthy!" -ForegroundColor Green
             } catch {
                 Write-Host "[!] Server is starting up. Check the opened server window." -ForegroundColor Yellow
             }
@@ -142,7 +142,7 @@ while ($true) {
         Open-UrlWithChoice "http://localhost:8000/"
     }
     elseif ($choice -eq "3") {
-        Open-UrlWithChoice "https://tekmilo.blogspot.com/"
+        Open-UrlWithChoice "https://www.blogger.com/"
     }
     elseif ($choice -eq "4") {
         Write-Host ""
@@ -211,7 +211,7 @@ while ($true) {
         Stop-ServerPort
         Start-Sleep -Seconds 2
 
-        Write-Host "[*] Restarting Tekmilo Studio Server in a new window..." -ForegroundColor Cyan
+        Write-Host "[*] Restarting Blogger Studio Studio Server in a new window..." -ForegroundColor Cyan
         Start-Process powershell.exe -WorkingDirectory $ScriptDir -ArgumentList "-NoProfile -ExecutionPolicy Bypass -NoExit -Command python run.py --no-browser" -WindowStyle Normal
         Start-Sleep -Seconds 3
 
@@ -252,7 +252,7 @@ while ($true) {
         Read-Host "Press Enter to continue..."
     }
     elseif ($choice -eq "0") {
-        Write-Host "Exiting Tekmilo Studio Server Control Center. Goodbye!" -ForegroundColor Cyan
+        Write-Host "Exiting Blogger Studio Server Control Center - لوحة التحكم الاحترافية. Goodbye!" -ForegroundColor Cyan
         exit 0
     }
     else {

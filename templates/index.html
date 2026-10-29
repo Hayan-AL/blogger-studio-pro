@@ -6,7 +6,7 @@
   <title data-i18n="app_title">استوديو بلوجر برو | لوحة إدارة مدونات بلوجر الشاملة</title>
   <script>
     try {
-      const savedTheme = localStorage.getItem('tekmilo_theme') || 'dark';
+      const savedTheme = (localStorage.getItem('studio_theme') || localStorage.getItem('blogger_theme')) || 'dark';
       document.documentElement.setAttribute('data-theme', savedTheme);
     } catch(e) {}
   </script>
@@ -240,7 +240,7 @@
         <div class="blog-selector-dropdown-container">
           <button class="blog-selector-dropdown-btn" id="topbar-blog-btn" onclick="toggleBlogDropdown(event)" title="اختيار المدونة النشطة">
             <span class="blog-globe-icon">💻</span>
-            <span id="topbar-blog-name" class="blog-name-text">Tekmilo - AI, Apps & Tech Solutions</span>
+            <span id="topbar-blog-name" class="blog-name-text">Blogger Studio - لوحة التحكم الاحترافية</span>
             <span class="blog-chevron-down">▾</span>
           </button>
           <div class="blog-dropdown-menu" id="topbar-blog-menu">
@@ -325,7 +325,7 @@
                 <div class="notif-icon-circle backup-icon"><i class="fas fa-save"></i></div>
                 <div class="notif-content">
                   <div class="notif-title">نسخة احتياطية مكتملة للقالب</div>
-                  <div class="notif-desc">تم حفظ أحدث نسخة من قالب Tekmilo Deluxe بنجاح في مجلد النسخ الاحتياطية.</div>
+                  <div class="notif-desc">تم حفظ أحدث نسخة من قالب Blogger Studio Deluxe بنجاح في مجلد النسخ الاحتياطية.</div>
                   <div class="notif-time"><i class="far fa-clock"></i> بالأمس</div>
                 </div>
               </div>
@@ -424,7 +424,7 @@
           <div class="kpi-card" onclick="document.querySelector('[data-tab=theme]')?.click()">
             <div class="kpi-card-content">
               <div class="kpi-label" data-i18n="stat_theme_layout">قالب ومظهر المدونة</div>
-              <div class="kpi-value" style="font-size:18px;">Tekmilo Pro</div>
+              <div class="kpi-value" style="font-size:18px;">Blogger Studio Pro</div>
             </div>
             <div class="kpi-icon-box kpi-icon-purple">🎨</div>
           </div>
@@ -731,7 +731,7 @@
     <div class="module-header-info">
       <div class="module-badge"><i class="fas fa-comments"></i> إدارة تعليقات بلوجر الرسمية</div>
       <h2 class="module-title">تعليقات المدونة والتفاعل</h2>
-      <p class="module-desc">مراجعة وإدارة تعليقات القرّاء لمدونة <strong class="text-accent">tekmilo.blogspot.com</strong> مع أدوات الإشراف الفوري، الحذف، والرد ومكافحة السبام.</p>
+      <p class="module-desc">مراجعة وإدارة تعليقات القرّاء لمدونة <strong class="text-accent">yourblog.blogspot.com</strong> مع أدوات الإشراف الفوري، الحذف، والرد ومكافحة السبام.</p>
     </div>
     <div class="module-header-actions">
       <button type="button" class="btn btn-secondary btn-icon-text" onclick="loadBloggerComments(true)">
@@ -783,9 +783,9 @@
           <i class="fas fa-comment-dots"></i>
         </div>
         <h3 class="empty-state-title">لا توجد تعليقات في هذا القسم حالياً</h3>
-        <p class="empty-state-desc">مدونة tekmilo جاهزة لاستقبال تفاعل القرّاء. ستظهر جميع التعليقات الجديدة هنا فور إرسالها من زوار موقعك مع إمكانية المراجعة المباشرة.</p>
+        <p class="empty-state-desc">مدونتك على بلوجر جاهزة لاستقبال تفاعل القرّاء. ستظهر جميع التعليقات الجديدة هنا فور إرسالها من زوار موقعك مع إمكانية المراجعة المباشرة.</p>
         <div class="empty-state-actions">
-          <a href="https://tekmilo.blogspot.com" target="_blank" class="btn btn-outline">
+          <a href="https://yourblog.blogspot.com" target="_blank" class="btn btn-outline">
             <i class="fas fa-external-link-alt"></i>
             <span>زيارة المدونة والتحقق من صندوق التعليقات</span>
           </a>
@@ -870,7 +870,7 @@
               <div class="metadata-col permalink-col">
                 <label class="metadata-label" data-i18n="lbl_art_permalink">المعرف الدائم</label>
                 <div class="permalink-input-group">
-                  <span class="permalink-prefix" id="permalink-base-url">https://tekmilo.blogspot.com/</span>
+                  <span class="permalink-prefix" id="permalink-base-url">https://yourblog.blogspot.com/</span>
                   <input type="text" id="art-slug" class="permalink-slug-input" placeholder="article-slug">
                   <button type="button" class="permalink-generate-btn" onclick="generateSlugManual()">
                     <span data-i18n="btn_generate">توليد</span>
@@ -1925,7 +1925,7 @@
     <div class="module-header-info">
       <div class="module-badge"><i class="fab fa-google"></i> برنامج Google AdSense وتحقيق الدخل</div>
       <h2 class="module-title">الأرباح وجوجل أدسنس</h2>
-      <p class="module-desc">تحقيق الدخل من مدونة <strong class="text-accent">tekmilo.blogspot.com</strong> عبر ربطها رسمياً بحساب Google AdSense وإدارة ظهور الإعلانات الذكية التلقائية.</p>
+      <p class="module-desc">تحقيق الدخل من مدونة <strong class="text-accent">yourblog.blogspot.com</strong> عبر ربطها رسمياً بحساب Google AdSense وإدارة ظهور الإعلانات الذكية التلقائية.</p>
     </div>
     <div class="module-header-actions">
       <button type="button" class="btn btn-secondary btn-icon-text" onclick="loadBloggerEarningsTab(true)">
@@ -1969,7 +1969,7 @@
           </div>
           <div class="audit-item" id="audit-item-adstxt">
             <span class="audit-icon" id="audit-icon-adstxt"><i class="fas fa-circle-notch fa-spin text-muted"></i></span>
-            <span class="audit-label" data-i18n="audit_adstxt_file">ملف ads.txt على tekmilo.blogspot.com:</span>
+            <span class="audit-label" data-i18n="audit_adstxt_file">ملف ads.txt على yourblog.blogspot.com:</span>
             <span class="audit-val" id="audit-val-adstxt">جاري الفحص...</span>
           </div>
           <div class="audit-item" id="audit-item-approval">
@@ -2225,7 +2225,7 @@
                 <span class="badge live" id="theme-status-badge">جاهز ونشط</span>
               </div>
               <div class="card-subtitle">
-                ملف القالب: <strong class="text-cyan font-mono">Tekmilo-Deluxe-Master.xml</strong> | 
+                ملف القالب: <strong class="text-cyan font-mono">Blogger-Studio-Deluxe-Master.xml</strong> | 
                 الحجم: <span id="theme-size-info" class="text-emerald font-mono">0 KB</span> | 
                 الأسطر: <span id="theme-lines-count" class="font-mono">0 سطر</span>
               </div>
@@ -2365,7 +2365,7 @@
                 <div class="theme-css-hero-title">محرك حقن الـ CSS المخصص داخل القالب الذكي</div>
                 <div class="theme-css-hero-desc">
                   يتم حقن أكواد الـ CSS الخاصة بك تلقائياً داخل وسم <strong class="text-cyan font-mono">&lt;b:skin&gt;</strong> في قالب بلوجر، محاطة بعلامات الأمان:
-                  <code class="font-mono text-emerald">/* [[TEKMILO_CUSTOM_CSS_START]] */ ... /* [[TEKMILO_CUSTOM_CSS_END]] */</code>
+                  <code class="font-mono text-emerald">/* [[STUDIO_CUSTOM_CSS_START]] */ ... /* [[STUDIO_CUSTOM_CSS_END]] */</code>
                   مما يضمن تطبيقها بأعلى أولوية وسرعة بدون تشويه بنية القالب الأصلية وسهولة تحديثها في أي وقت بنقرة واحدة!
                 </div>
               </div>
@@ -2374,7 +2374,7 @@
             <!-- CSS Actions Toolbar -->
             <div class="theme-css-actions-bar">
               <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                <button type="button" onclick="injectCustomCssNow()" class="action-btn primary btn-inject-css" title="حقن هذا الكود مباشرة داخل ملف القالب Tekmilo-Deluxe-Master.xml">
+                <button type="button" onclick="injectCustomCssNow()" class="action-btn primary btn-inject-css" title="حقن هذا الكود مباشرة داخل ملف القالب Blogger-Studio-Deluxe-Master.xml">
                   <i class="fas fa-bolt"></i>
                   <span>⚡ حقن وحفظ CSS داخل كود القالب فوراً</span>
                 </button>
@@ -3190,7 +3190,7 @@
             <p class="field-desc">الاسم الرئيسي الذي يظهر في أعلى مدونتك ومحركات البحث.</p>
           </div>
           <div class="field-input-col">
-            <input type="text" id="bset-title" class="form-control-pro" value="Tekmilo">
+            <input type="text" id="bset-title" class="form-control-pro" value="Blogger Studio">
           </div>
         </div>
 
@@ -3344,7 +3344,7 @@
           </div>
           <div class="field-input-col">
             <div class="input-addon-group">
-              <input type="text" id="bset-blog-address" class="form-control-pro ltr" value="tekmilo">
+              <input type="text" id="bset-blog-address" class="form-control-pro ltr" value="yourblog">
               <span class="addon-tag">.blogspot.com</span>
             </div>
           </div>
@@ -3354,7 +3354,7 @@
         <div class="setting-field-row">
           <div class="field-label-col">
             <label class="field-title" for="bset-custom-domain">نطاق خاص</label>
-            <p class="field-desc">نطاق مدفوع خاص بشركتك (مثال: www.tekmilo.com).</p>
+            <p class="field-desc">نطاق مدفوع خاص بشركتك (مثال: www.yourblog.com).</p>
           </div>
           <div class="field-input-col">
             <input type="text" id="bset-custom-domain" class="form-control-pro ltr" placeholder="www.yourdomain.com">
@@ -3641,7 +3641,7 @@ User-agent: *
 Disallow: /search
 Allow: /
 
-Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
+Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
           </div>
         </div>
 
@@ -3686,7 +3686,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
         <div class="setting-field-row">
           <div class="field-label-col">
             <label class="field-title" for="bset-adstxt-content">محتوى ملف ads.txt المخصص</label>
-            <p class="field-desc">سجل الناشر المعتمد من AdSense لمدونة tekmilo.</p>
+            <p class="field-desc">سجل الناشر المعتمد من AdSense لمدونتك على بلوجر.</p>
           </div>
           <div class="field-input-col">
             <textarea id="bset-adstxt-content" class="form-control-pro code-font ltr" rows="2">google.com, pub-3098010546872026, DIRECT, f08c47fec0942fa0</textarea>
@@ -3731,7 +3731,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
         <div class="setting-field-row danger-row">
           <div class="field-label-col">
             <label class="field-title text-danger">حذف المدونة</label>
-            <p class="field-desc">حذف مدونة tekmilo.blogspot.com نهائياً. يمكن استعادتها خلال 90 يوماً فقط من لوحة Blogger الرسمية.</p>
+            <p class="field-desc">حذف مدونة yourblog.blogspot.com نهائياً. يمكن استعادتها خلال 90 يوماً فقط من لوحة Blogger الرسمية.</p>
           </div>
           <div class="field-input-col">
             <button type="button" class="btn btn-danger-outline" onclick="showToast('إجراء حساس: لا يمكن حذف المدونة إلا بطلب مباشر مؤكد من المالك', 'warning')">
@@ -3811,7 +3811,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
                   </div>
                 </div>
                 <div class="simulator-active-pill">
-                  <span class="sim-dot"></span> Tekmilo Blog
+                  <span class="sim-dot"></span> Blogger Studio
                 </div>
               </div>
 
@@ -4199,7 +4199,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
     <div class="module-header-info">
       <div class="module-badge"><i class="fas fa-chart-line"></i> إحصائيات Google Blogger الرسمية</div>
       <h2 class="module-title">إحصائيات المدونة الشاملة</h2>
-      <p class="module-desc">مزامنة حية ومباشرة من Google Blogger API لمدونة <strong class="text-accent" id="analytics-blog-url">tekmilo.blogspot.com</strong> مع تحليل حركة الزيارات وتفاعل القرّاء.</p>
+      <p class="module-desc">مزامنة حية ومباشرة من Google Blogger API لمدونة <strong class="text-accent" id="analytics-blog-url">yourblog.blogspot.com</strong> مع تحليل حركة الزيارات وتفاعل القرّاء.</p>
     </div>
     <div class="module-header-actions">
       <!-- Time filter pills -->
@@ -4315,7 +4315,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
               <span class="lp-val" id="stat-latest-comments">0</span>
             </div>
             <div class="lp-stat-box action">
-              <a href="https://tekmilo.blogspot.com" target="_blank" class="btn btn-sm btn-outline" id="stat-latest-url">
+              <a href="https://yourblog.blogspot.com" target="_blank" class="btn btn-sm btn-outline" id="stat-latest-url">
                 <span>عرض على المدونة</span>
                 <i class="fas fa-external-link-alt"></i>
               </a>
@@ -4771,7 +4771,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
               <i class="fas fa-heart"></i> <span data-i18n="support_header_badge">مساهمة ورعاية المطور</span>
             </div>
             <h2 class="module-title" data-i18n="support_section_title">دعم وتطوير المشروع</h2>
-            <p class="module-desc" data-i18n="support_section_desc">إذا كنت تستفيد من استوديو Tekmilo AI وأدواته، يمكنك المساهمة في استمرار التحديثات والتطوير ودعم المطور عبر المنصات المعتمدة التالية.</p>
+            <p class="module-desc" data-i18n="support_section_desc">إذا كنت تستفيد من استوديو Blogger Studio Pro وأدواته، يمكنك المساهمة في استمرار التحديثات والتطوير ودعم المطور عبر المنصات المعتمدة التالية.</p>
           </div>
           <div class="module-header-actions">
             <div class="badge" style="background:rgba(16, 185, 129, 0.15);color:#34d399;border:1px solid rgba(16, 185, 129, 0.3);padding:8px 16px;border-radius:30px;font-size:12px;display:flex;align-items:center;gap:8px;">
@@ -5226,7 +5226,7 @@ Sitemap: https://tekmilo.blogspot.com/sitemap.xml</textarea>
           <div class="smart-builder-controls">
             <div class="smart-builder-field-group" id="group-modal-label">
               <label class="smart-builder-label" id="lbl-modal-label">اسم الملف / نص الرابط:</label>
-              <input type="text" id="smart-modal-input-label" class="smart-builder-input" placeholder="مثال: تحميل تطبيق Tekmilo Studio 2026" oninput="updateSmartModalLivePreview()">
+              <input type="text" id="smart-modal-input-label" class="smart-builder-input" placeholder="مثال: تحميل تطبيق Blogger Studio Studio 2026" oninput="updateSmartModalLivePreview()">
             </div>
 
             <div class="smart-builder-field-group" id="group-modal-url">

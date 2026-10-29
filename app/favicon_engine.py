@@ -13,7 +13,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 UPLOADS_DIR = os.path.join(BASE_DIR, "static", "uploads")
 IMG_DIR = os.path.join(BASE_DIR, "static", "img")
 SETTINGS_PATH = os.path.join(BASE_DIR, "data", "settings.json")
-THEME_PATH = os.path.join(BASE_DIR, "theme", "Tekmilo-Deluxe-Master.xml")
+THEME_PATH = os.path.join(BASE_DIR, "theme", "Blogger-Studio-Deluxe-Master.xml")
 BACKUPS_DIR = os.path.join(BASE_DIR, "data", "backups")
 
 os.makedirs(UPLOADS_DIR, exist_ok=True)
@@ -60,7 +60,7 @@ def make_square_compatible(img: Image.Image, has_transparency: bool) -> Image.Im
 
 def apply_favicon_to_blogger_theme(data_uri: str) -> Dict[str, Any]:
     """
-    Injects the custom favicon Data URI / link directly into theme/Tekmilo-Deluxe-Master.xml.
+    Injects the custom favicon Data URI / link directly into theme/Blogger-Studio-Deluxe-Master.xml.
     Cleans up any previous or duplicate favicon links completely.
     Also injects the Dynamic Favicon Enforcer JavaScript block to override default Blogger icon.
     """

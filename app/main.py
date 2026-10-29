@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Main FastAPI Application
+Blogger Studio Pro - لوحة التحكم الاحترافية - Main FastAPI Application
 Coordinates modular CMS services, security middleware, static routing,
 and full-spectrum Blogger management endpoints.
 """
@@ -56,7 +56,7 @@ from .backups import (
 from .search_console import get_search_console_sites, get_search_analytics
 from .ai_writer import markdown_to_html
 
-app = FastAPI(title="Tekmilo Studio Pro API", version="2.0.0")
+app = FastAPI(title="Blogger Studio Pro - لوحة التحكم الاحترافية API", version="2.0.0")
 
 # Enable CORS for Cloudflare Pages, GitHub Pages & External Frontends
 app.add_middleware(
@@ -95,7 +95,7 @@ def get_dashboard():
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
-    return "<h1>Tekmilo Studio Pro</h1>"
+    return "<h1>Blogger Studio Pro - لوحة التحكم الاحترافية</h1>"
 
 # -------------------------------------------------------------
 # GOOGLE OAUTH 2.0 & ACCOUNTS
@@ -828,7 +828,7 @@ def api_seo_fetch_url(req: SeoFetchUrlRequest):
         url = "https://" + url
     import requests
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 TekmiloSEO/2.0"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36 BloggerStudioSEO/2.0"
     }
     try:
         r = requests.get(url, headers=headers, timeout=10)
@@ -1103,8 +1103,8 @@ def api_sc_sites():
     return get_search_console_sites()
 
 @app.get("/api/search-console/analytics")
-def api_sc_analytics(site_url: Optional[str] = "https://tekmilo.blogspot.com/"):
-    return get_search_analytics(site_url or "https://tekmilo.blogspot.com/")
+def api_sc_analytics(site_url: Optional[str] = "https://yourblog.blogspot.com/"):
+    return get_search_analytics(site_url or "https://yourblog.blogspot.com/")
 
 # -------------------------------------------------------------
 # DIAGNOSTICS, SETTINGS & AUDIT LOGS

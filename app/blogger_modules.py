@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Blogger Modules Engine
+Blogger Studio Pro - لوحة التحكم الاحترافية - Blogger Modules Engine
 Provides comprehensive support for:
 1. Native Blogger Statistics & Detailed Analytics (Pageviews, Traffic, Referrers, Top Posts, Devices, Geographies)
 2. Native Blogger Comments Management (Published, Pending, Spam, Trash moderation)
@@ -26,19 +26,19 @@ EARNINGS_PATH = os.path.join(DATA_DIR, "earnings.json")
 # Default comprehensive Blogger settings
 DEFAULT_BLOGGER_SETTINGS = {
     "basic": {
-        "title": "Tekmilo | تيكميلو – AI, Apps & Tech Solutions",
+        "title": "Blogger Studio | لوحة التحكم الاحترافية",
         "description": "مدونة تقنية متخصصة في شروحات الذكاء الاصطناعي، مراجعة التطبيقات، وحلول المشاكل التقنية في أنظمة أندرويد وآيفون وويندوز باللغتين العربية والإنجليزية.",
         "language": "ar",
         "adult_content": False,
         "age_confirmation": False,
-        "analytics_id": "G-TEKMILO2026",
-        "favicon_url": "https://tekmilo.blogspot.com/favicon.ico"
+        "analytics_id": "G-STUDIO2026",
+        "favicon_url": "https://yourblog.blogspot.com/favicon.ico"
     },
     "privacy": {
         "search_engine_visible": True
     },
     "publishing": {
-        "blog_address": "tekmilo.blogspot.com",
+        "blog_address": "yourblog.blogspot.com",
         "custom_domain": "",
         "redirect_domain": False
     },
@@ -70,7 +70,7 @@ DEFAULT_BLOGGER_SETTINGS = {
         "meta_description": "أفضل مدونة عربية لشروحات الذكاء الاصطناعي وتطبيقات الهواتف وحلول الكمبيوتر.",
         "custom_404": "عذراً، الصفحة التي تبحث عنها غير متوفرة حالياً.",
         "custom_robots_enabled": True,
-        "custom_robots_txt": "User-agent: *\\nAllow: /\\nDisallow: /search\\nSitemap: https://tekmilo.blogspot.com/sitemap.xml",
+        "custom_robots_txt": "User-agent: *\\nAllow: /\\nDisallow: /search\\nSitemap: https://yourblog.blogspot.com/sitemap.xml",
         "custom_header_tags_enabled": True
     },
     "monetization": {
@@ -156,8 +156,8 @@ def get_full_blogger_stats(blog_id: Optional[str] = None) -> Dict[str, Any]:
 
     # Latest post
     latest_post = top_posts[0] if top_posts else {
-        "title": current_blog.get("name", "Tekmilo"),
-        "url": current_blog.get("url", "https://tekmilo.blogspot.com/"),
+        "title": current_blog.get("name", "Blogger Studio"),
+        "url": current_blog.get("url", "https://yourblog.blogspot.com/"),
         "views": total_views,
         "published": datetime.now().strftime("%Y-%m-%d"),
         "lang": "ar"
@@ -198,7 +198,7 @@ def get_full_blogger_stats(blog_id: Optional[str] = None) -> Dict[str, Any]:
 
     # Search queries / keywords
     search_keywords = [
-        {"keyword": "tekmilo الذكاء الاصطناعي", "clicks": 38, "impressions": 210},
+        {"keyword": "blogger الذكاء الاصطناعي", "clicks": 38, "impressions": 210},
         {"keyword": "تحميل تطبيقات احترافية 2026", "clicks": 26, "impressions": 164},
         {"keyword": "شروحات بلوجر وسيو المقالات", "clicks": 19, "impressions": 125},
         {"keyword": "أفضل أدوات ومواقع الذكاء الاصطناعي", "clicks": 15, "impressions": 98}
@@ -248,7 +248,7 @@ def load_stored_comments() -> List[Dict[str, Any]]:
             "author_url": "https://plus.google.com",
             "content": "مقال رائع ومفيد جداً! هل تدعم النسخة الحديثة العمل التلقائي على أجهزة ماك أيضاً؟ شكراً لكم.",
             "post_title": "شرح كيفية إنشاء تدوينة احترافية مع أزرار تحميل ذكية 2026",
-            "post_url": "https://tekmilo.blogspot.com/2026/03/smart-article.html",
+            "post_url": "https://yourblog.blogspot.com/2026/03/smart-article.html",
             "status": "PUBLISHED",
             "published": "2026-10-27 19:45"
         },
@@ -259,7 +259,7 @@ def load_stored_comments() -> List[Dict[str, Any]]:
             "author_url": "",
             "content": "Excellent guide! The bilingual support and fast download cards make a huge difference. Keep it up!",
             "post_title": "A comprehensive guide to artificial intelligence in 2026",
-            "post_url": "https://tekmilo.blogspot.com/2026/03/ai-guide.html",
+            "post_url": "https://yourblog.blogspot.com/2026/03/ai-guide.html",
             "status": "PUBLISHED",
             "published": "2026-10-27 18:20"
         },
@@ -270,7 +270,7 @@ def load_stored_comments() -> List[Dict[str, Any]]:
             "author_url": "",
             "content": "السلام عليكم، هل يمكن إضافة زر التحميل برابط ميديافاير أو جوجل درايف مباشرة؟",
             "post_title": "دليل شامل للذكاء الاصطناعي في عام 2026",
-            "post_url": "https://tekmilo.blogspot.com/2026/03/ai-guide-ar.html",
+            "post_url": "https://yourblog.blogspot.com/2026/03/ai-guide-ar.html",
             "status": "PENDING",
             "published": "2026-10-27 21:10"
         },
@@ -281,7 +281,7 @@ def load_stored_comments() -> List[Dict[str, Any]]:
             "author_url": "http://spam-link.xyz",
             "content": "Click here to buy cheap crypto coins today http://spam-link.xyz",
             "post_title": "دليل شامل للذكاء الاصطناعي في عام 2026",
-            "post_url": "https://tekmilo.blogspot.com/2026/03/ai-guide-ar.html",
+            "post_url": "https://yourblog.blogspot.com/2026/03/ai-guide-ar.html",
             "status": "SPAM",
             "published": "2026-10-27 15:00"
         }
@@ -479,11 +479,11 @@ import re
 
 def verify_real_adsense_status(blog_id: str = "3715457895504629620") -> Dict[str, Any]:
     """
-    Performs a real HTTP probe of the live blog (tekmilo.blogspot.com)
+    Performs a real HTTP probe of the live blog (yourblog.blogspot.com)
     and ads.txt to verify actual Google AdSense status.
     """
     settings = load_settings()
-    blog_url = settings.get("blog", {}).get("url", "https://tekmilo.blogspot.com/")
+    blog_url = settings.get("blog", {}).get("url", "https://yourblog.blogspot.com/")
     if not blog_url.endswith("/"):
         blog_url += "/"
 
@@ -581,8 +581,8 @@ def setup_and_connect_adsense(publisher_id: str, blog_id: str = "371545789550462
     earnings["adsense_connected"] = False  # Set to true only after live verification passes!
     save_blogger_earnings(earnings)
 
-    # 3. Inject AdSense script into theme/Tekmilo-Deluxe-Master.xml
-    theme_path = os.path.join(BASE_DIR, "theme", "Tekmilo-Deluxe-Master.xml")
+    # 3. Inject AdSense script into theme/Blogger-Studio-Deluxe-Master.xml
+    theme_path = os.path.join(BASE_DIR, "theme", "Blogger-Studio-Deluxe-Master.xml")
     injected_in_theme = False
     if os.path.exists(theme_path):
         try:

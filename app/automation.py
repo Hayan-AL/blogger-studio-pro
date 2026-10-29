@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Microsoft Edge Automation Deployment Engine
+Blogger Studio Pro - لوحة التحكم الاحترافية - Microsoft Edge Automation Deployment Engine
 Deploys local theme to Blogger editor with pre-flight checks,
 automatic safety backup, and target validation.
 """
@@ -15,7 +15,7 @@ from .theme_engine import validate_theme_xml
 from .backups import create_theme_backup
 from .db import log_activity
 
-THEME_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "theme", "Tekmilo-Deluxe-Master.xml")
+THEME_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "theme", "Blogger-Studio-Deluxe-Master.xml")
 
 def get_edge_window():
     try:
@@ -34,7 +34,7 @@ def get_edge_window():
 
 def deploy_theme(confirmed: bool = True):
     """
-    Safely deploys the local Tekmilo-Deluxe-Master.xml directly to Blogger via Edge automation.
+    Safely deploys the local Blogger-Studio-Deluxe-Master.xml directly to Blogger via Edge automation.
     """
     if not os.path.exists(THEME_PATH):
         return {"status": "error", "message": "Theme file not found."}

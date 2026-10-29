@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Google Search Console Integration
+Blogger Studio Pro - لوحة التحكم الاحترافية - Google Search Console Integration
 Queries Google Search Console API for verified sites, clicks, impressions, CTR,
 average position, top search queries, and landing pages.
 """
@@ -34,7 +34,7 @@ def get_search_console_sites() -> Dict[str, Any]:
     except Exception as e:
         return {"status": "error", "message": str(e), "sites": []}
 
-def get_search_analytics(site_url: str = "https://tekmilo.blogspot.com/") -> Dict[str, Any]:
+def get_search_analytics(site_url: str = "https://yourblog.blogspot.com/") -> Dict[str, Any]:
     token = get_valid_access_token()
     if not token:
         # Return transparent guidance state, never invent fake analytics

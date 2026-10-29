@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Media Management & Optimization Engine
+Blogger Studio Pro - لوحة التحكم الاحترافية - Media Management & Optimization Engine
 Handles local image uploads, metadata inspection, Pillow WebP compression,
 media library database persistence, and broken image detection.
 """
@@ -235,7 +235,7 @@ def verify_image_url(url: str) -> Dict[str, Any]:
     if not url.startswith("http"):
         return {"status": "local", "reachable": True, "message": "Local asset"}
     try:
-        resp = requests.head(url, timeout=5, headers={"User-Agent": "Mozilla/5.0 TekmiloStudio/2.0"})
+        resp = requests.head(url, timeout=5, headers={"User-Agent": "Mozilla/5.0 Blogger StudioStudio/2.0"})
         if resp.status_code == 200:
             content_type = resp.headers.get("content-type", "")
             return {"status": "success", "reachable": True, "content_type": content_type}

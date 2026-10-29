@@ -1,4 +1,4 @@
-# Tekmilo Studio Pro - PowerShell Deployment Shortcut
+# Blogger Studio Pro - لوحة التحكم الاحترافية (PowerShell Deployment Shortcut)
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Set-Location -Path $PSScriptRoot
 

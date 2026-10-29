@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Bilingual & Translation Relationship Manager
+Blogger Studio Pro - لوحة التحكم الاحترافية - Bilingual & Translation Relationship Manager
 Maintains translation pairing between Arabic and English articles,
 calculates translation coverage, and generates SEO hreflang tags.
 """

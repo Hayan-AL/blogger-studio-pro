@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - SQLite Database Manager
+Blogger Studio Pro - SQLite Database Manager | لوحة التحكم الاحترافية
 Provides persistent local storage for post caches, static pages, translation pairs,
 editorial notes, media assets, ad placements, and activity audit logs.
 """
@@ -10,7 +10,15 @@ import json
 from datetime import datetime
 from typing import Dict, List, Optional, Any
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "tekmilo.db")
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
+DB_PATH = os.path.join(DATA_DIR, "blogger_studio.db")
+LEGACY_DB = os.path.join(DATA_DIR, "tekmilo.db")
+if not os.path.exists(DB_PATH) and os.path.exists(LEGACY_DB):
+    try:
+        import shutil
+        shutil.copy2(LEGACY_DB, DB_PATH)
+    except Exception:
+        pass
 
 def get_connection():
     os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)

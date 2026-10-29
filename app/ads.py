@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Advertising & Monetization Slot Manager (Comprehensive & Universal)
+Blogger Studio Pro - لوحة التحكم الاحترافية - Advertising & Monetization Slot Manager (Comprehensive & Universal)
 Controls ad placements: Header, In-Article (Top, Middle, Bottom), Sidebar (Top, Sticky), Footer, Anchor, Head.
 Compatible with: Google AdSense, Adsterra, Ezoic, Mediavine, PropellerAds, Direct Image Banners, HTML5/JS.
 """
@@ -107,7 +107,7 @@ DEFAULT_SLOTS = [
         "title": "إعلان الشريط الجانبي الثابت (Sticky Sidebar 300×600 Half-Page)",
         "enabled": 1,
         "code": """<!-- Sticky Sidebar Skyscraper 300x600 -->
-<div class="tekmilo-sticky-ad-wrapper" style="position:sticky; top:80px;">
+<div class="studio-sticky-ad-wrapper" style="position:sticky; top:80px;">
   <ins class="adsbygoogle"
        style="display:inline-block;width:300px;height:600px"
        data-ad-client="ca-pub-3098010546872026"
@@ -145,7 +145,7 @@ DEFAULT_SLOTS = [
         "title": "إعلان الشريط السفلي اللاصق للهواتف (Mobile Sticky Bottom Anchor)",
         "enabled": 0,
         "code": """<!-- Mobile Bottom Sticky Banner 320x50 / Anchor -->
-<div id="tekmilo-mobile-anchor-ad" style="position:fixed;bottom:0;left:0;width:100%;z-index:9999;background:rgba(0,0,0,0.85);text-align:center;padding:4px 0;">
+<div id="studio-mobile-anchor-ad" style="position:fixed;bottom:0;left:0;width:100%;z-index:9999;background:rgba(0,0,0,0.85);text-align:center;padding:4px 0;">
   <ins class="adsbygoogle"
        style="display:inline-block;width:320px;height:50px"
        data-ad-client="ca-pub-3098010546872026"

@@ -1,6 +1,6 @@
 """
-Tekmilo Studio Pro - Theme Studio Pro Engine
-Manages Tekmilo-Deluxe-Master.xml, ElementTree syntax verification,
+Blogger Studio Pro - لوحة التحكم الاحترافية - Theme Studio Pro Engine
+Manages Blogger-Studio-Deluxe-Master.xml, ElementTree syntax verification,
 theme version history & snapshots, and custom CSS overrides.
 """
 
@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Any
 from .db import get_connection, log_activity
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
-THEME_PATH = os.path.join(BASE_DIR, "theme", "Tekmilo-Deluxe-Master.xml")
+THEME_PATH = os.path.join(BASE_DIR, "theme", "Blogger-Studio-Deluxe-Master.xml")
 BACKUPS_DIR = os.path.join(BASE_DIR, "data", "backups")
 
 def get_theme_xml() -> str:
@@ -92,17 +92,17 @@ def save_custom_css(css_code: str) -> bool:
 def inject_custom_css_into_theme(css_code: str) -> Dict[str, Any]:
     """
     Intelligently injects or updates custom CSS inside the Blogger XML theme
-    between /* [[TEKMILO_CUSTOM_CSS_START]] */ and /* [[TEKMILO_CUSTOM_CSS_END]] */
+    between /* [[STUDIO_CUSTOM_CSS_START]] */ and /* [[STUDIO_CUSTOM_CSS_END]] */
     inside the <b:skin> tag or before </head>.
     """
     xml = get_theme_xml()
     if not xml:
-        raise ValueError("Theme file Tekmilo-Deluxe-Master.xml not found.")
+        raise ValueError("Theme file Blogger-Studio-Deluxe-Master.xml not found.")
 
-    start_marker = "/* [[TEKMILO_CUSTOM_CSS_START]] */"
-    end_marker = "/* [[TEKMILO_CUSTOM_CSS_END]] */"
+    start_marker = "/* [[STUDIO_CUSTOM_CSS_START]] */"
+    end_marker = "/* [[STUDIO_CUSTOM_CSS_END]] */"
 
-    formatted_block = f"{start_marker}\n/* Tekmilo Studio Pro Custom Overrides */\n{css_code.strip()}\n{end_marker}"
+    formatted_block = f"{start_marker}\n/* Blogger Studio Pro - لوحة التحكم الاحترافية Custom Overrides */\n{css_code.strip()}\n{end_marker}"
 
     if start_marker in xml and end_marker in xml:
         idx_start = xml.find(start_marker)
@@ -146,15 +146,15 @@ def extract_custom_css_from_theme(xml_content: str = None) -> str:
     if xml_content is None:
         xml_content = get_theme_xml()
 
-    start_marker = "/* [[TEKMILO_CUSTOM_CSS_START]] */"
-    end_marker = "/* [[TEKMILO_CUSTOM_CSS_END]] */"
+    start_marker = "/* [[STUDIO_CUSTOM_CSS_START]] */"
+    end_marker = "/* [[STUDIO_CUSTOM_CSS_END]] */"
 
     if start_marker in xml_content and end_marker in xml_content:
         idx_start = xml_content.find(start_marker) + len(start_marker)
         idx_end = xml_content.find(end_marker)
         raw_css = xml_content[idx_start:idx_end].strip()
-        if raw_css.startswith("/* Tekmilo Studio Pro Custom Overrides */"):
-            raw_css = raw_css[len("/* Tekmilo Studio Pro Custom Overrides */"):].strip()
+        if raw_css.startswith("/* Blogger Studio Pro - لوحة التحكم الاحترافية Custom Overrides */"):
+            raw_css = raw_css[len("/* Blogger Studio Pro - لوحة التحكم الاحترافية Custom Overrides */"):].strip()
         return raw_css
     return get_custom_css()
 

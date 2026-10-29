@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - All-in-One Deployment Engine (deploy.py)
+Blogger Studio Pro - All-in-One Deployment Engine | لوحة التحكم الاحترافية (deploy.py)
 Automates publishing to GitHub and Cloudflare Pages with 1 command,
 including browser-based OAuth authorization, pre-flight security scan,
 and automated asset synchronization.
@@ -34,7 +34,7 @@ class C:
 
 def banner():
     print(f"\n{C.CYAN}{C.BOLD}" + "=" * 68 + f"{C.RESET}")
-    print(f"{C.CYAN}{C.BOLD}   🚀 TEKMILO STUDIO PRO - ONE-CLICK DEPLOYMENT MANAGER 🚀   {C.RESET}")
+    print(f"{C.CYAN}{C.BOLD}   🚀 BLOGGER STUDIO PRO - لوحة التحكم الاحترافية 🚀   {C.RESET}")
     print(f"{C.DIM}   Automated Cloudflare Pages & GitHub Publishing with Security Guard{C.RESET}")
     print(f"{C.CYAN}{C.BOLD}" + "=" * 68 + f"{C.RESET}\n")
 
@@ -79,6 +79,7 @@ def preflight_security_scan():
         forbidden_patterns = [
             "data/oauth_accounts.json",
             "data/tekmilo.db",
+            "data/blogger_studio.db",
             "data/settings.json",
             "data/google_credentials.json",
             "data/posts.json",
@@ -153,16 +154,16 @@ def deploy_to_github():
     if code != 0 or not remote_url:
         print(f"\n{C.YELLOW}لم يتم العثور على رابط مستودع GitHub مرتبط.{C.RESET}")
         print(f"{C.CYAN}يمكنك إنشاء مستودع جديد مجاناً عبر الرابط:{C.RESET}")
-        print(f" 👉 {C.BOLD}https://github.com/new?name=tekmilo-studio{C.RESET}\n")
+        print(f" 👉 {C.BOLD}https://github.com/new?name=blogger-studio-pro{C.RESET}\n")
         
         try:
             open_browser = input(f"هل ترغب بفتح صفحة إنشاء المستودع في المتصفح الآن؟ (Y/n): ").strip().lower()
             if open_browser in ["", "y", "yes"]:
-                webbrowser.open("https://github.com/new?name=tekmilo-studio")
+                webbrowser.open("https://github.com/new?name=blogger-studio-pro")
         except Exception:
             pass
 
-        entered_url = input(f"\n{C.BOLD}أدخل رابط مستودعك على GitHub (مثال: https://github.com/username/tekmilo-studio.git):{C.RESET} ").strip()
+        entered_url = input(f"\n{C.BOLD}أدخل رابط مستودعك على GitHub (مثال: https://github.com/username/blogger-studio-pro.git):{C.RESET} ").strip()
         if not entered_url:
             print(f"{C.RED}❌ تم إلغاء العملية: لم يتم إدخال رابط المستودع.{C.RESET}")
             return False
@@ -226,7 +227,7 @@ def deploy_to_cloudflare():
         print(f"   {C.GREEN}✓ اتصال حساب Cloudflare نشط ومصرّح.{C.RESET}")
 
     # Step 2: Project name
-    default_project = "tekmilo-studio"
+    default_project = "blogger-studio-pro"
     print(f"\nاسم مشروع Cloudflare Pages الافتراضي: {C.BOLD}{default_project}{C.RESET}")
     user_project = input(f"اضغط Enter للمتابعة بالاسم الافتراضي أو اكتب اسماً آخر: ").strip()
     project_name = user_project if user_project else default_project
@@ -309,7 +310,7 @@ def main_menu():
             print(f"{C.RED}خيار غير صالح. يرجى اختيار رقم من 1 إلى 5.{C.RESET}")
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Tekmilo Studio Deployment Wizard")
+    parser = argparse.ArgumentParser(description="Blogger Studio Pro Deployment Wizard | لوحة التحكم الاحترافية")
     parser.add_argument("--github", action="store_true", help="Deploy directly to GitHub")
     parser.add_argument("--cloudflare", action="store_true", help="Deploy directly to Cloudflare Pages")
     parser.add_argument("--all", action="store_true", help="Deploy to both GitHub and Cloudflare")

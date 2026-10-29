@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Advanced 2026 SEO Workspace, Deep Audit & AI Assistant Engine
+Blogger Studio Pro - لوحة التحكم الاحترافية - Advanced 2026 SEO Workspace, Deep Audit & AI Assistant Engine
 Provides:
 1. Multi-factor on-page 2026 SEO audit (Title, Meta, Keyword, Headings, Images, Links, Readability).
 2. Keyword Density & Prominence Matrix (Title, First 100 words, Meta Description, Headings, Images, Slug).
@@ -876,7 +876,7 @@ def audit_article_seo(
         href_lower = href.lower()
         if href_lower.startswith('#') or href_lower.startswith('javascript:'):
             continue
-        elif href_lower.startswith('/') or (blog_domain and blog_domain in href_lower) or "blogspot.com" in href_lower or "tekmilo" in href_lower:
+        elif href_lower.startswith('/') or (blog_domain and blog_domain in href_lower) or "blogspot.com" in href_lower :
             internal_links_count += 1
         elif href_lower.startswith('http://') or href_lower.startswith('https://'):
             external_links_count += 1

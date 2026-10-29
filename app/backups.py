@@ -1,5 +1,5 @@
 """
-Tekmilo Studio Pro - Backup & Restore Center
+Blogger Studio Pro - لوحة التحكم الاحترافية - Backup & Restore Center
 Provides distinct backup types: Content Snapshot, Theme XML, and Local Configuration.
 Includes backup verification, preview, and safe selective restoration.
 """
@@ -14,7 +14,7 @@ from .db import get_connection, log_activity
 
 BASE_DIR = os.path.dirname(os.path.dirname(__file__))
 BACKUPS_DIR = os.path.join(BASE_DIR, "data", "backups")
-THEME_PATH = os.path.join(BASE_DIR, "theme", "Tekmilo-Deluxe-Master.xml")
+THEME_PATH = os.path.join(BASE_DIR, "theme", "Blogger-Studio-Deluxe-Master.xml")
 SETTINGS_PATH = os.path.join(BASE_DIR, "data", "settings.json")
 
 def init_backups_dir():
@@ -43,7 +43,7 @@ def list_all_backups() -> List[Dict[str, Any]]:
 def create_content_backup() -> Dict[str, Any]:
     init_backups_dir()
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"tekmilo_content_{ts}.json"
+    fname = f"studio_content_{ts}.json"
     fpath = os.path.join(BACKUPS_DIR, fname)
     
     conn = get_connection()
@@ -86,7 +86,7 @@ def create_theme_backup() -> Dict[str, Any]:
         return {"status": "error", "message": "Master theme file not found."}
         
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"tekmilo_theme_{ts}.xml"
+    fname = f"studio_theme_{ts}.xml"
     fpath = os.path.join(BACKUPS_DIR, fname)
     
     shutil.copy(THEME_PATH, fpath)
@@ -108,7 +108,7 @@ def create_theme_backup() -> Dict[str, Any]:
 def create_config_backup() -> Dict[str, Any]:
     init_backups_dir()
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
-    fname = f"tekmilo_config_{ts}.json"
+    fname = f"studio_config_{ts}.json"
     fpath = os.path.join(BACKUPS_DIR, fname)
     
     conn = get_connection()

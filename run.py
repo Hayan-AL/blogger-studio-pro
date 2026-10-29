@@ -17,15 +17,15 @@ import time
 def open_browser():
     time.sleep(1.2)
     url = "http://127.0.0.1:8000"
-    print(f"\n[Tekmilo Studio] Opening dashboard at: {url}")
+    print(f"\n[Blogger Studio] Opening dashboard at: {url}")
     webbrowser.open(url)
 
 if __name__ == "__main__":
-    print("=" * 60)
-    print("   🚀 TEKMILO STUDIO | لوحة تحكم تيكميلو الاحترافية")
+    print("=" * 64)
+    print("   🚀 BLOGGER STUDIO PRO | لوحة التحكم الاحترافية لمدونات بلوجر")
     print("   ⚡ Local Server: http://127.0.0.1:8000")
-    print("   🌐 Target Blog: https://tekmilo.blogspot.com/")
-    print("=" * 60)
+    print("   🌐 Dashboard: Comprehensive Blogger CMS & Studio")
+    print("=" * 64)
 
     # Launch browser in separate thread if not disabled
     if "--no-browser" not in sys.argv:

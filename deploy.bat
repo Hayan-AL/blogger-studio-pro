@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title Tekmilo Studio Pro - Deployment Wizard
+title Blogger Studio Pro - لوحة التحكم الاحترافية (Deployment Wizard)
 cd /d "%~dp0"
 
 where python >nul 2>nul

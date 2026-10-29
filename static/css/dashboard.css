@@ -807,31 +807,31 @@ body[dir="ltr"] .posts-table {
 }
 
 /* Reusable Content Components Inside Editor & Posts */
-.tekmilo-box {
+.studio-box, .tekmilo-box {
   padding: 16px;
   border-radius: var(--radius-sm);
   margin: 18px 0;
   border-right: 4px solid;
 }
 
-body[dir="ltr"] .tekmilo-box {
+body[dir="ltr"] .studio-box, .tekmilo-box {
   border-right: none;
   border-left: 4px solid;
 }
 
-.tekmilo-tip {
+.studio-tip, .tekmilo-tip {
   background: rgba(16, 185, 129, 0.08);
   border-color: var(--accent-emerald);
   color: var(--text-primary);
 }
 
-.tekmilo-info {
+.studio-info, .tekmilo-info {
   background: rgba(9, 104, 239, 0.08);
   border-color: var(--accent-blue);
   color: var(--text-primary);
 }
 
-.tekmilo-warning {
+.studio-warning, .tekmilo-warning {
   background: rgba(245, 158, 11, 0.08);
   border-color: var(--accent-amber);
   color: var(--text-primary);
@@ -4725,7 +4725,7 @@ html[dir="ltr"] .topbar {
 }
 
 /* Inserted Smart Content Components (Blogger Responsive CSS) */
-.tekmilo-download-card {
+.studio-download-card, .tekmilo-download-card {
   margin: 24px 0;
   padding: 18px 24px;
   background: linear-gradient(135deg, rgba(37, 99, 235, 0.08), rgba(15, 23, 42, 0.3));
@@ -4752,7 +4752,7 @@ html[dir="ltr"] .topbar {
 .tekmilo-download-btn:hover {
   background: #1d4ed8;
 }
-.tekmilo-related-box {
+.studio-related-box, .tekmilo-related-box {
   margin: 20px 0;
   padding: 14px 18px;
   background: rgba(59, 130, 246, 0.06);
@@ -4761,7 +4761,7 @@ html[dir="ltr"] .topbar {
   font-size: 13.5px;
   line-height: 1.6;
 }
-[dir="ltr"] .tekmilo-related-box {
+[dir="ltr"] .studio-related-box, .tekmilo-related-box {
   border-right: none;
   border-left: 4px solid #3b82f6;
 }
