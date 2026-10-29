@@ -1,0 +1,77 @@
+{
+  "blog": {
+    "name": "My Blogger Studio",
+    "url": "https://yourblog.blogspot.com",
+    "id": ""
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 8000,
+    "dashboard_url": "http://127.0.0.1:8000"
+  },
+  "categories": [
+    {
+      "id": "tech",
+      "ar": "تقنية وتطوير",
+      "en": "Tech & Development",
+      "tag_ar": "تقنية",
+      "tag_en": "Tech",
+      "slug": "tech"
+    },
+    {
+      "id": "ai",
+      "ar": "ذكاء اصطناعي",
+      "en": "AI Tools",
+      "tag_ar": "ذكاء اصطناعي",
+      "tag_en": "AI",
+      "slug": "ai"
+    }
+  ],
+  "default_covers": {
+    "tech": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=800",
+    "ai": "https://images.unsplash.com/photo-1677442136019-21780efad99a?w=800"
+  },
+  "blogger_settings": {
+    "basic": {
+      "title": "My Blogger Studio",
+      "description": "Comprehensive Blogger CMS & Studio",
+      "language": "ar",
+      "adult_content": false,
+      "google_analytics_id": ""
+    },
+    "privacy": {
+      "visible_to_search_engines": true
+    },
+    "publishing": {
+      "blog_address": "yourblog.blogspot.com",
+      "custom_domain": "",
+      "redirect_domain": false
+    },
+    "https": {
+      "https_availability": true,
+      "https_redirect": true
+    },
+    "permissions": {
+      "blog_authors": [
+        "Admin"
+      ],
+      "blog_readers": "public"
+    }
+  },
+  "studio_settings": {
+    "brand_name": "Blogger Studio Pro",
+    "brand_subtitle": "Comprehensive Blogger CMS & Studio",
+    "logo_url": "/static/uploads/studio_logo.png",
+    "accent_color": "#2563eb",
+    "default_language": "ar"
+  },
+  "connected_blogs": [],
+  "developer_support": {
+    "paypal": {
+      "url": "https://paypal.me/hayan5"
+    },
+    "binance": {
+      "pay_id": "870622823"
+    }
+  }
+}

@@ -1,0 +1,83 @@
+# ==========================================
+# Tekmilo Studio Pro - Production .gitignore
+# Strictly Protects Private Data & Secrets
+# ==========================================
+
+# 1. Private User Data & Databases (CRITICAL)
+data/*
+!data/*.example.json
+!data/.gitkeep
+*.db
+*.sqlite
+*.sqlite3
+
+# 2. Python Environment & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+.Python
+env/
+venv/
+.venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+
+# 3. Environment Variables & Secret Files
+.env
+.env.*
+*.pem
+*.key
+*.cert
+*.pfx
+
+# 4. Local Development Logs & Scratch Artifacts
+scratch/
+light_audit/
+*.log
+@AutomationLog.txt
+*.tmp
+*.bak
+*.swp
+*.dump
+
+# 5. Root Image/File Dumps from Audits
+*.png
+!static/**
+*.jpg
+!static/**
+
+# 6. IDE & Operating System Files
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+ehthumbs.db
+
+# 7. Cloudflare & Wrangler Local State
+.wrangler/
+.cloudflare/
+
+# 8. User Generated Favicons & Dynamic Uploads
+static/uploads/favicons/*
+!static/uploads/favicons/.gitkeep

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+  </defs>
+  <!-- Rounded Green Blogger Square -->
+  <rect width="64" height="64" rx="16" fill="url(#greenGrad)"/>
+  <!-- Iconic Blogger 'B' Geometry -->
+  <path d="M20 14h18c4.4 0 8 3.6 8 8 0 3-1.6 5.5-4 6.8 3.2 1.4 5.5 4.5 5.5 8.2 0 5-4 9-9 9H20c-3.3 0-6-2.7-6-6V20c0-3.3 2.7-6 6-6zm4 8v7h13a3.5 3.5 0 0 0 0-7H24zm0 13v8h14.5a4 4 0 0 0 0-8H24z" fill="#ffffff"/>
+</svg>
