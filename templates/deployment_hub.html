@@ -522,6 +522,37 @@
             </div>
           </div>
 
+          <!-- Repository Visibility: Public / Private Switcher with Instructions -->
+          <div class="form-group" style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px;margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+              <div>
+                <span class="form-label" style="margin-bottom:2px;font-size:13px;display:flex;align-items:center;gap:6px;">
+                  <i class="fas fa-shield-alt text-accent"></i> <span>مستوى خصوصية المستودع (GitHub Visibility):</span>
+                </span>
+                <div style="font-size:11.5px;color:var(--text-muted);">تحكم في من يستطيع رؤية الكود على الإنترنت (خاص بك أو عام)</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span class="badge-status badge-emerald" id="repo-visibility-badge" style="font-size:12px;padding:4px 12px;">
+                  <i class="fas fa-spinner fa-spin"></i> جاري الفحص...
+                </span>
+                <button type="button" class="btn-action btn-purple" id="btn-toggle-visibility" onclick="toggleRepoVisibility()" style="font-size:12px;padding:6px 14px;">
+                  <i class="fas fa-exchange-alt"></i> <span id="btn-toggle-visibility-text">تغيير الخصوصية</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Helpful Guidance Note -->
+            <div style="background:rgba(15,23,42,0.6);border-radius:8px;padding:10px 12px;font-size:11.5px;line-height:1.7;color:#cbd5e1;border-right:3px solid var(--accent-purple);margin-top:6px;">
+              <div id="visibility-desc-text">
+                🌐 <strong>مستودع عام (Public):</strong> الكود مفتوح ومتاح للجميع للاطلاع عليه والاستفادة منه، ولكنك أنت فقط من يملك صلاحية التعديل والرفع.<br>
+                🔒 <strong>مستودع خاص (Private):</strong> الكود مخفي ومحمي تماماً، ولا يستطيع أي شخص على وجه الأرض رؤيته أو الوصول إليه إلا أنت عبر حسابك.
+              </div>
+              <div style="margin-top:4px;color:#38bdf8;font-size:11px;">
+                💡 <em>استضافة Cloudflare Pages تستمر بالعمل والنشر بكفاءة 100% سواء كان المستودع عاماً أو خاصاً.</em>
+              </div>
+            </div>
+          </div>
+
           <!-- Token Auth Input / Re-authenticate Option -->
           <div class="form-group" style="margin-top:10px;">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
@@ -637,6 +668,68 @@
       }
     }
 
+    
+    let currentRepoIsPrivate = false;
+
+    function updateVisibilityUI(isPrivate) {
+      currentRepoIsPrivate = isPrivate;
+      const badge = document.getElementById('repo-visibility-badge');
+      const btn = document.getElementById('btn-toggle-visibility');
+      const btnText = document.getElementById('btn-toggle-visibility-text');
+      if (!badge || !btn || !btnText) return;
+
+      if (isPrivate) {
+        badge.className = 'badge-status badge-amber';
+        badge.innerHTML = '<i class="fas fa-lock"></i> مستودع خاص (Private) 🔒';
+        btnText.textContent = 'تحويل إلى مستودع عام 🌐';
+        btn.className = 'btn-action btn-emerald';
+        btn.title = 'جعل المستودع متاحاً للعامة';
+      } else {
+        badge.className = 'badge-status badge-emerald';
+        badge.innerHTML = '<i class="fas fa-globe"></i> مستودع عام (Public) 🌐';
+        btnText.textContent = 'تحويل إلى مستودع خاص 🔒';
+        btn.className = 'btn-action btn-purple';
+        btn.title = 'حماية وإخفاء المستودع عن الجميع';
+      }
+    }
+
+    async function toggleRepoVisibility() {
+      const targetIsPrivate = !currentRepoIsPrivate;
+      const actionName = targetIsPrivate ? 'خاص (Private) 🔒' : 'عام (Public) 🌐';
+      
+      if (!confirm(`هل أنت متأكد من تحويل مستودعك على GitHub ليصبح ${actionName}؟`)) {
+        return;
+      }
+
+      const btn = document.getElementById('btn-toggle-visibility');
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التعديل...';
+      log(`جاري إرسال طلب تعديل خصوصية المستودع إلى GitHub لجعله ${actionName}...`, 'info');
+
+      try {
+        const res = await fetch('/api/hub/github/toggle-visibility', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ is_private: targetIsPrivate })
+        });
+        const data = await res.json();
+        if (data.success) {
+          log('🎉 ' + data.message, 'success');
+          showToast(data.message);
+          updateVisibilityUI(data.is_private);
+        } else {
+          log('❌ ' + data.error, 'error');
+          alert('خطأ أثناء تعديل الخصوصية: ' + data.error);
+          updateVisibilityUI(currentRepoIsPrivate);
+        }
+      } catch (err) {
+        log('❌ خطأ في الاتصال: ' + err.message, 'error');
+        updateVisibilityUI(currentRepoIsPrivate);
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     async function loadInitialStatus() {
       try {
         const res = await fetch('/api/hub/status');
@@ -660,6 +753,9 @@
           document.getElementById('gh-name-display').textContent = data.github.name || data.github.username;
           const cleanRepoUrl = (data.github.repo_url || 'https://github.com/Hayan-AL/blogger-studio-pro').replace(/\.git$/, '');
           document.getElementById('gh-repo-url-input').value = cleanRepoUrl;
+          if (data.github.repo_info) {
+            updateVisibilityUI(data.github.repo_info.is_private);
+          }
           log(`تم التعرف على حساب GitHub المرتبط: ${data.github.username} (${data.github.name || ''})`, 'success');
         } else {
           ghBadge.className = 'badge-status badge-amber';

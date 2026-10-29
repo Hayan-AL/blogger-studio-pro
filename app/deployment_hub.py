@@ -130,6 +130,75 @@ def verify_github_token(token: str) -> Dict[str, Any]:
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+
+def get_github_repo_info() -> Dict[str, Any]:
+    """Fetch live repository visibility (public/private) and metadata from GitHub API."""
+    cfg = load_hub_config()
+    token = cfg.get("github", {}).get("token", "").strip()
+    repo_url = cfg.get("github", {}).get("repo_url", "").strip()
+    
+    slug = "Hayan-AL/blogger-studio-pro"
+    if "github.com/" in repo_url:
+        slug = repo_url.split("github.com/")[1].replace(".git", "").strip()
+        
+    req = urllib.request.Request(f"https://api.github.com/repos/{slug}")
+    if token:
+        req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("User-Agent", "BloggerStudioPro-Deployer")
+    req.add_header("Accept", "application/vnd.github.v3+json")
+    
+    try:
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            return {
+                "success": True,
+                "slug": slug,
+                "is_private": bool(data.get("private")),
+                "visibility": data.get("visibility", "public"),
+                "html_url": data.get("html_url", f"https://github.com/{slug}"),
+                "description": data.get("description", "")
+            }
+    except Exception as e:
+        return {"success": False, "error": str(e), "slug": slug, "is_private": False, "visibility": "public"}
+
+def set_github_repo_visibility(is_private: bool) -> Dict[str, Any]:
+    """Switch repository visibility between Public and Private via GitHub API."""
+    cfg = load_hub_config()
+    token = cfg.get("github", {}).get("token", "").strip()
+    if not token:
+        return {"success": False, "error": "رمز الـ Token غير متوفر لتعديل إعدادات المستودع."}
+        
+    repo_url = cfg.get("github", {}).get("repo_url", "").strip()
+    slug = "Hayan-AL/blogger-studio-pro"
+    if "github.com/" in repo_url:
+        slug = repo_url.split("github.com/")[1].replace(".git", "").strip()
+        
+    url = f"https://api.github.com/repos/{slug}"
+    payload = json.dumps({"private": is_private}).encode("utf-8")
+    
+    req = urllib.request.Request(url, data=payload, method="PATCH")
+    req.add_header("Authorization", f"Bearer {token}")
+    req.add_header("User-Agent", "BloggerStudioPro-Deployer")
+    req.add_header("Accept", "application/vnd.github.v3+json")
+    req.add_header("Content-Type", "application/json")
+    
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+            new_is_private = bool(data.get("private"))
+            status_text = "خاص (Private) 🔒" if new_is_private else "عام (Public) 🌐"
+            return {
+                "success": True,
+                "is_private": new_is_private,
+                "visibility": data.get("visibility", "private" if new_is_private else "public"),
+                "message": f"تم تحويل المستودع بنجاح إلى: مستودع {status_text}"
+            }
+    except urllib.error.HTTPError as e:
+        err_msg = e.read().decode("utf-8", errors="ignore")
+        return {"success": False, "error": f"خطأ من GitHub ({e.code}): {err_msg}"}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 def build_dist_bundle() -> bool:
     """Prepares clean dist/ directory for Cloudflare Pages."""
     dist_dir = os.path.join(BASE_DIR, "dist")

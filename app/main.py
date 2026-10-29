@@ -1658,7 +1658,8 @@ def api_deploy_github(req: DeployGithubRequest):
 # -------------------------------------------------------------
 from .deployment_hub import (
     load_hub_config, get_cloudflare_status, verify_github_token,
-    push_to_github, deploy_cloudflare as hub_deploy_cf, deploy_all as hub_deploy_all
+    push_to_github, deploy_cloudflare as hub_deploy_cf, deploy_all as hub_deploy_all,
+    get_github_repo_info, set_github_repo_visibility
 )
 
 class ConnectGithubTokenRequest(BaseModel):
@@ -1676,10 +1677,19 @@ def serve_deployment_hub():
 def api_hub_status():
     cfg = load_hub_config()
     cf = get_cloudflare_status()
+    gh = cfg.get("github", {})
+    gh["repo_info"] = get_github_repo_info()
     return {
-        "github": cfg.get("github", {}),
+        "github": gh,
         "cloudflare": cf
     }
+
+class ToggleRepoVisibilityRequest(BaseModel):
+    is_private: bool
+
+@app.post("/api/hub/github/toggle-visibility")
+def api_hub_toggle_visibility(req: ToggleRepoVisibilityRequest):
+    return set_github_repo_visibility(req.is_private)
 
 @app.post("/api/hub/github/connect")
 def api_hub_github_connect(req: ConnectGithubTokenRequest):
