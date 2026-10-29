@@ -41,7 +41,7 @@
     }
 
     .container {
-      max-width: 1120px;
+      max-width: 1080px;
       margin: 0 auto;
       padding: 30px 20px 60px;
       width: 100%;
@@ -115,97 +115,6 @@
       color: var(--accent-cyan);
     }
 
-    /* Live Quick Access Showcase Bar (Prominent Visit Links) */
-    .dual-links-showcase {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 18px;
-      margin-bottom: 25px;
-    }
-    @media (max-width: 768px) {
-      .dual-links-showcase { grid-template-columns: 1fr; }
-    }
-    .showcase-link-card {
-      background: linear-gradient(135deg, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
-      border: 1.5px solid rgba(255, 255, 255, 0.1);
-      border-radius: 16px;
-      padding: 18px 22px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-      position: relative;
-      overflow: hidden;
-      transition: all 0.25s ease;
-    }
-    .showcase-link-card.active-cf {
-      border-color: rgba(16, 185, 129, 0.4);
-      background: linear-gradient(135deg, rgba(6, 78, 59, 0.25), rgba(15, 23, 42, 0.85));
-    }
-    .showcase-link-card.active-gh {
-      border-color: rgba(168, 85, 247, 0.4);
-      background: linear-gradient(135deg, rgba(88, 28, 135, 0.25), rgba(15, 23, 42, 0.85));
-    }
-    .showcase-link-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(0,0,0,0.45);
-    }
-    .showcase-link-card.pulse-updated {
-      animation: pulseGlow 1.5s ease-out 2;
-    }
-    @keyframes pulseGlow {
-      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
-      70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
-    .showcase-info {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-    .showcase-icon {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-    .showcase-details h3 {
-      font-size: 15px;
-      font-weight: 800;
-      color: #fff;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .showcase-url {
-      font-family: 'Inter', monospace;
-      font-size: 12.5px;
-      color: var(--accent-cyan);
-      margin-top: 3px;
-      direction: ltr;
-      text-align: right;
-    }
-    .showcase-status {
-      font-size: 11px;
-      color: #34d399;
-      margin-top: 3px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .showcase-actions {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-shrink: 0;
-    }
-
     /* Security banner */
     .security-badge-bar {
       display: flex;
@@ -242,6 +151,15 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    }
+    .hub-card.card-pulse-success {
+      animation: cardPulse 1.4s ease-out 2;
+    }
+    @keyframes cardPulse {
+      0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); }
+      70% { box-shadow: 0 0 0 14px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
     }
     .card-top {
       display: flex;
@@ -507,65 +425,6 @@
       </div>
     </header>
 
-    <!-- LIVE QUICK ACCESS SHOWCASE (Direct Visit Links for Both Platforms) -->
-    <section class="dual-links-showcase" id="quick-links-section">
-      
-      <!-- Link 1: Cloudflare Pages Live Website -->
-      <div class="showcase-link-card active-cf" id="card-showcase-cf">
-        <div class="showcase-info">
-          <div class="showcase-icon" style="background:rgba(16, 185, 129, 0.2);color:#34d399;">
-            <i class="fas fa-globe"></i>
-          </div>
-          <div class="showcase-details">
-            <h3>
-              <span>لوحة التحكم الحية في السحاب</span>
-              <span class="badge-status badge-emerald" style="font-size:10.5px;padding:2px 8px;">Cloudflare Pages</span>
-            </h3>
-            <div class="showcase-url" id="showcase-cf-url">https://blogger-studio-pro.pages.dev</div>
-            <div class="showcase-status" id="showcase-cf-status">
-              <i class="fas fa-check-circle"></i> <span>منشور ويعمل 24/7 (حتى وجهازك مطفأ)</span>
-            </div>
-          </div>
-        </div>
-        <div class="showcase-actions">
-          <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://blogger-studio-pro.pages.dev', 'تم نسخ رابط الموقع الحي!')" title="نسخ الرابط">
-            <i class="fas fa-copy"></i>
-          </button>
-          <a href="https://blogger-studio-pro.pages.dev" target="_blank" rel="noopener noreferrer" class="btn-action btn-emerald" title="فتح الموقع الحي في المتصفح">
-            <i class="fas fa-external-link-alt"></i> <span>زيارة الموقع الحي ↗</span>
-          </a>
-        </div>
-      </div>
-
-      <!-- Link 2: GitHub Repository -->
-      <div class="showcase-link-card active-gh" id="card-showcase-gh">
-        <div class="showcase-info">
-          <div class="showcase-icon" style="background:rgba(168, 85, 247, 0.2);color:#c084fc;">
-            <i class="fab fa-github"></i>
-          </div>
-          <div class="showcase-details">
-            <h3>
-              <span>مستودع الأكواد المصدري</span>
-              <span class="badge-status badge-purple" style="font-size:10.5px;padding:2px 8px;">GitHub Repository</span>
-            </h3>
-            <div class="showcase-url" id="showcase-gh-url">https://github.com/Hayan-AL/blogger-studio-pro</div>
-            <div class="showcase-status" id="showcase-gh-status">
-              <i class="fas fa-code-branch"></i> <span>الفرع النشط: main • متزامن ومحمي 100%</span>
-            </div>
-          </div>
-        </div>
-        <div class="showcase-actions">
-          <button type="button" class="btn-action btn-secondary" onclick="copyUrl('https://github.com/Hayan-AL/blogger-studio-pro', 'تم نسخ رابط مستودع GitHub!')" title="نسخ الرابط">
-            <i class="fas fa-copy"></i>
-          </button>
-          <a href="https://github.com/Hayan-AL/blogger-studio-pro" target="_blank" rel="noopener noreferrer" class="btn-action btn-purple" title="فتح مستودع GitHub في المتصفح">
-            <i class="fab fa-github"></i> <span>زيارة المستودع ↗</span>
-          </a>
-        </div>
-      </div>
-
-    </section>
-
     <!-- Security Guarantee Bar -->
     <div class="security-badge-bar">
       <i class="fas fa-shield-alt" style="font-size:18px;"></i>
@@ -576,7 +435,7 @@
     <div class="hub-grid">
 
       <!-- CARD 1: Cloudflare Pages -->
-      <div class="hub-card">
+      <div class="hub-card" id="card-cf">
         <div>
           <div class="card-top">
             <div class="card-title-wrap">
@@ -625,7 +484,7 @@
       </div>
 
       <!-- CARD 2: GitHub Repository -->
-      <div class="hub-card">
+      <div class="hub-card" id="card-gh">
         <div>
           <div class="card-top">
             <div class="card-title-wrap">
@@ -769,23 +628,12 @@
       log('تم مسح السجل.', 'info');
     }
 
-    function pulseHighlightShowcase(platform) {
-      const cardCf = document.getElementById('card-showcase-cf');
-      const cardGh = document.getElementById('card-showcase-gh');
-      
-      if (platform === 'cf' || platform === 'all') {
-        cardCf.classList.remove('pulse-updated');
-        void cardCf.offsetWidth;
-        cardCf.classList.add('pulse-updated');
-        const now = new Date().toLocaleTimeString();
-        document.getElementById('showcase-cf-status').innerHTML = `<i class="fas fa-check-double" style="color:#10b981;"></i> <span>تم النشر والتحديث بنجاح [${now}]</span>`;
-      }
-      if (platform === 'gh' || platform === 'all') {
-        cardGh.classList.remove('pulse-updated');
-        void cardGh.offsetWidth;
-        cardGh.classList.add('pulse-updated');
-        const now = new Date().toLocaleTimeString();
-        document.getElementById('showcase-gh-status').innerHTML = `<i class="fas fa-check-double" style="color:#c084fc;"></i> <span>تم الرفع والتحديث إلى GitHub بنجاح [${now}]</span>`;
+    function pulseCard(cardId) {
+      const el = document.getElementById(cardId);
+      if (el) {
+        el.classList.remove('card-pulse-success');
+        void el.offsetWidth;
+        el.classList.add('card-pulse-success');
       }
     }
 
@@ -799,7 +647,6 @@
           document.getElementById('cf-email-display').textContent = data.cloudflare.email;
           document.getElementById('cf-project-display').textContent = data.cloudflare.project_name;
           document.getElementById('cf-live-url-input').value = data.cloudflare.live_url;
-          document.getElementById('showcase-cf-url').textContent = data.cloudflare.live_url;
         }
 
         // GitHub UI
@@ -813,7 +660,6 @@
           document.getElementById('gh-name-display').textContent = data.github.name || data.github.username;
           const cleanRepoUrl = (data.github.repo_url || 'https://github.com/Hayan-AL/blogger-studio-pro').replace(/\.git$/, '');
           document.getElementById('gh-repo-url-input').value = cleanRepoUrl;
-          document.getElementById('showcase-gh-url').textContent = cleanRepoUrl;
           log(`تم التعرف على حساب GitHub المرتبط: ${data.github.username} (${data.github.name || ''})`, 'success');
         } else {
           ghBadge.className = 'badge-status badge-amber';
@@ -867,7 +713,7 @@
         if (data.success) {
           log('🎉 ' + data.message, 'success');
           log('🌐 رابط الموقع الحي: ' + data.live_url, 'success');
-          pulseHighlightShowcase('cf');
+          pulseCard('card-cf');
           showToast('تم نشر وتحديث الموقع الحي بنجاح!');
         } else {
           log('❌ ' + data.error, 'error');
@@ -893,7 +739,7 @@
         if (data.success) {
           log('🎉 ' + data.message, 'success');
           log('🐙 المستودع المحدث: ' + data.repo_url, 'success');
-          pulseHighlightShowcase('gh');
+          pulseCard('card-gh');
           showToast('تم رفع وتحديث مستودع GitHub بنجاح!');
         } else {
           log('❌ ' + data.error, 'error');
@@ -921,12 +767,13 @@
           log('🎉 ' + data.message, 'success');
           log('🌐 رابط الموقع الحي: ' + data.cloudflare.live_url, 'success');
           log('🐙 رابط المستودع: ' + data.github.repo_url, 'success');
-          pulseHighlightShowcase('all');
+          pulseCard('card-cf');
+          pulseCard('card-gh');
           showToast('🎉 اكتمل النشر الشامل على المنصتين بنجاح!');
         } else {
           log('⚠️ ' + data.message, 'info');
-          if (data.cloudflare && data.cloudflare.success) pulseHighlightShowcase('cf');
-          if (data.github && data.github.success) pulseHighlightShowcase('gh');
+          if (data.cloudflare && data.cloudflare.success) pulseCard('card-cf');
+          if (data.github && data.github.success) pulseCard('card-gh');
         }
       } catch (err) {
         log('❌ خطأ: ' + err.message, 'error');
