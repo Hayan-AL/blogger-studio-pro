@@ -1,10 +1,5 @@
-# Blogger Studio Pro - لوحة التحكم الاحترافية (PowerShell Deployment Shortcut)
+# Blogger Studio Pro - Launch Native Deployment GUI
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 Set-Location -Path $PSScriptRoot
 
-if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
-    Write-Host "[ERROR] Python is not installed or not in PATH!" -ForegroundColor Red
-    exit 1
-}
-
-python deploy.py $args
+& "$PSScriptRoot\studio_deploy_gui.ps1"

@@ -10267,3 +10267,112 @@ function copySupportAddress(type, btn) {
     });
 }
 window.copySupportAddress = copySupportAddress;
+
+// -------------------------------------------------------------
+// CLOUD DEPLOYMENT MODAL CONTROLLER (Blogger Studio Pro)
+// -------------------------------------------------------------
+function openCloudDeploymentModal() {
+    const modal = document.getElementById('modal-cloud-deploy');
+    if (modal) {
+        modal.style.display = 'flex';
+        const log = document.getElementById('web-deploy-log');
+        if (log && log.textContent.includes('جاهز للنشر')) {
+            // refresh status
+            fetch('/api/deployment/status')
+                .then(r => r.json())
+                .then(d => {
+                    log.textContent = `[${new Date().toLocaleTimeString()}] اتصال Cloudflare نشط: ${d.cloudflare.email}\n[${new Date().toLocaleTimeString()}] مستودع GitHub: ${d.github.remote_url}\n[${new Date().toLocaleTimeString()}] جاهز للنشر المباشر.`;
+                })
+                .catch(() => {});
+        }
+    }
+}
+window.openCloudDeploymentModal = openCloudDeploymentModal;
+
+function closeCloudDeploymentModal() {
+    const modal = document.getElementById('modal-cloud-deploy');
+    if (modal) modal.style.display = 'none';
+}
+window.closeCloudDeploymentModal = closeCloudDeploymentModal;
+
+function appendDeployLog(msg) {
+    const log = document.getElementById('web-deploy-log');
+    if (log) {
+        const time = new Date().toLocaleTimeString();
+        log.textContent += `\n[${time}] ${msg}`;
+        log.scrollTop = log.scrollHeight;
+    }
+}
+
+async function executeWebDeployCloudflare() {
+    const btn = document.getElementById('btn-web-deploy-cf');
+    const spinner = document.getElementById('web-deploy-spinner');
+    if (btn) btn.disabled = true;
+    if (spinner) spinner.style.display = 'inline-block';
+    
+    appendDeployLog('⛅ جاري بناء الأصول ورفعها إلى Cloudflare Pages...');
+    try {
+        const res = await fetch('/api/deployment/cloudflare', { method: 'POST' });
+        const data = await res.json();
+        if (data.success) {
+            appendDeployLog('🎉 تم النشر بنجاح على Cloudflare Pages!');
+            appendDeployLog(`🌐 الرابط الحي: ${data.live_url}`);
+            showToast('تم نشر وتحديث الموقع بنجاح على Cloudflare Pages!', 'success');
+        } else {
+            appendDeployLog(`❌ فشل النشر على Cloudflare: ${data.error || 'خطأ غير معروف'}`);
+            showToast('فشل النشر على Cloudflare', 'error');
+        }
+    } catch (err) {
+        appendDeployLog(`❌ خطأ في الاتصال: ${err.message}`);
+    } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+    }
+}
+window.executeWebDeployCloudflare = executeWebDeployCloudflare;
+
+async function executeWebDeployGitHub() {
+    const btn = document.getElementById('btn-web-deploy-gh');
+    const spinner = document.getElementById('web-deploy-spinner');
+    const tokenInput = document.getElementById('input-web-github-token');
+    const token = tokenInput ? tokenInput.value.trim() : '';
+
+    if (btn) btn.disabled = true;
+    if (spinner) spinner.style.display = 'inline-block';
+    
+    appendDeployLog('🐙 جاري حفظ التغييرات والرفع إلى مستودع GitHub...');
+    try {
+        const res = await fetch('/api/deployment/github', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ token: token || null })
+        });
+        const data = await res.json();
+        if (data.success) {
+            appendDeployLog('🎉 تم رفع وتحديث الكود بنجاح على GitHub!');
+            appendDeployLog(`🐙 رابط المستودع: ${data.repo_url}`);
+            showToast('تم رفع المشروع بنجاح إلى GitHub!', 'success');
+        } else {
+            appendDeployLog(`❌ فشل الرفع إلى GitHub: ${data.output || data.error || 'تأكد من إدخال Token أو صحة الصلاحيات'}`);
+            showToast('فشل الرفع إلى GitHub', 'error');
+        }
+    } catch (err) {
+        appendDeployLog(`❌ خطأ في الاتصال: ${err.message}`);
+    } finally {
+        if (btn) btn.disabled = false;
+        if (spinner) spinner.style.display = 'none';
+    }
+}
+window.executeWebDeployGitHub = executeWebDeployGitHub;
+
+async function executeWebDeployAll() {
+    const btn = document.getElementById('btn-web-deploy-all');
+    if (btn) btn.disabled = true;
+    appendDeployLog('==================================================');
+    appendDeployLog('🚀 بدء النشر الشامل المزدوج (Cloudflare + GitHub)...');
+    await executeWebDeployCloudflare();
+    await executeWebDeployGitHub();
+    appendDeployLog('🏁 اكتملت مراحل النشر الشامل بنجاح!');
+    if (btn) btn.disabled = false;
+}
+window.executeWebDeployAll = executeWebDeployAll;

@@ -1632,3 +1632,24 @@ def api_generate_schema(req: SchemaGenRequest):
         "json_ld": json.dumps(data, ensure_ascii=False, indent=2),
         "script_tag": f'<script type="application/ld+json">\n{json.dumps(data, ensure_ascii=False, indent=2)}\n</script>'
     }
+
+
+# -------------------------------------------------------------
+# CLOUD DEPLOYMENT SERVICES (CLOUDFLARE PAGES & GITHUB)
+# -------------------------------------------------------------
+from .deployment import get_deployment_status, deploy_cloudflare, deploy_github
+
+class DeployGithubRequest(BaseModel):
+    token: Optional[str] = None
+
+@app.get("/api/deployment/status")
+def api_deployment_status():
+    return get_deployment_status()
+
+@app.post("/api/deployment/cloudflare")
+def api_deploy_cloudflare():
+    return deploy_cloudflare()
+
+@app.post("/api/deployment/github")
+def api_deploy_github(req: DeployGithubRequest):
+    return deploy_github(token=req.token)

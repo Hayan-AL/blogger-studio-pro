@@ -1,17 +1,13 @@
 @echo off
 chcp 65001 >nul
-title Blogger Studio Pro - لوحة التحكم الاحترافية (Deployment Wizard)
 cd /d "%~dp0"
 
-where python >nul 2>nul
-if %errorlevel% neq 0 (
-    echo [ERROR] Python is not installed or not in PATH!
-    echo Please install Python 3.9+ to run the deployment wizard.
+where powershell.exe >nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo [ERROR] PowerShell is required to run Blogger Studio Deployment Manager.
     pause
     exit /b 1
 )
 
-python deploy.py %*
-if %errorlevel% neq 0 (
-    pause
-)
+start "" powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0studio_deploy_gui.ps1"
+exit /b 0
