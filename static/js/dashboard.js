@@ -1448,6 +1448,7 @@ const I18N = {
         "pnl_tags": "وسوم (تصنيفات)",
         "card_publishing_options": "خيارات النشر",
         "btn_publish_now": "نشر الآن",
+        "btn_view_on_site": "عرض المقال في الموقع",
         "btn_preview_article": "معاينة المقال",
         "btn_save_draft": "حفظ كمسودة",
         "sec_pub_date": "تاريخ النشر",
@@ -1766,6 +1767,7 @@ const I18N = {
         "btn_live_preview": "Live Demo Button",
         "btn_preview_article": "Preview Post",
         "btn_publish_now": "Publish Now",
+        "btn_view_on_site": "View Post on Site",
         "btn_related_post": "Related Post Card",
         "btn_save_support_info": "Save & Update Support Details",
         "btn_summary_ar": "Arabic",
@@ -2547,6 +2549,10 @@ async function loadPosts(forceRefresh = false) {
         const res = await fetch(`/api/posts?blog_id=${activeId}&refresh=${forceRefresh}`);
         allPosts = await res.json();
         if (!Array.isArray(allPosts)) allPosts = [];
+        allPosts.forEach(p => {
+            p.content = p.content_html || p.content || '';
+            p.content_html = p.content_html || p.content || '';
+        });
         window.allPosts = allPosts;
         
         // Populate Categories dropdown filter
@@ -4561,6 +4567,7 @@ window.cleanGalleryHtmlForExport = cleanGalleryHtmlForExport;
 function processAndUnifyGalleryContent(rawContent, autoBuildGallery = true) {
     if (!rawContent || typeof rawContent !== 'string') {
         currentGalleryImages = [];
+        window.currentGalleryImages = [];
         renderGalleryGrid();
         return rawContent || '';
     }
@@ -4644,55 +4651,57 @@ function processAndUnifyGalleryContent(rawContent, autoBuildGallery = true) {
             addImage(candidateSrc, alt, caption);
         });
 
-        // 3. If no images found at all, return raw content
-        if (extractedImages.length === 0) {
-            currentGalleryImages = [];
-            renderGalleryGrid();
-            return rawContent;
-        }
-
-        // Update state
+        // 3. Update gallery images state
         currentGalleryImages = extractedImages;
         window.currentGalleryImages = currentGalleryImages;
         currentGalleryLayout = extractedLayout;
         renderGalleryGrid();
 
-        // 4. Remove ALL loose images & existing gallery blocks from temp to prevent stacked duplication!
+        // If no images OR only 1 image (and no existing gallery):
+        // PRESERVE 100% of raw content untouched! Single images stay in their natural place!
+        if (extractedImages.length <= 1 && existingGalleries.length === 0) {
+            return rawContent;
+        }
+
+        // 4. For multiple images (>= 2) or existing galleries:
+        // Group them into the unified gallery block WITHOUT DELETING ANY TEXT!
+        
+        // Remove existing gallery blocks first
         existingGalleries.forEach(gal => gal.remove());
 
+        // Find insertion location: position of the very first loose image
         const looseImgs = Array.from(temp.querySelectorAll('img'));
+        let insertionMarker = null;
+        if (looseImgs.length > 0) {
+            insertionMarker = document.createElement('div');
+            insertionMarker.className = 'studio-gallery-insertion-marker';
+            const firstImg = looseImgs[0];
+            const anchor = firstImg.closest('a');
+            const targetEl = (anchor && anchor.parentElement && anchor.textContent.trim().length === 0) ? anchor : firstImg;
+            targetEl.before(insertionMarker);
+        }
+
+        // Now remove ONLY the loose image tags and empty wrapper links
         looseImgs.forEach(img => {
-            let toRemove = img;
-            let current = img.parentElement;
+            const parentAnchor = img.closest('a');
+            const parentSeparator = img.closest('.separator, figure, p, div');
 
-            while (current && current !== temp) {
-                const isSeparator = current.classList && (current.classList.contains('separator') || current.classList.contains('tr_bq'));
-                const isCentered = current.style && (current.style.textAlign === 'center' || current.getAttribute('style')?.includes('text-align: center') || current.getAttribute('style')?.includes('text-align:center'));
-                const isFigure = current.tagName === 'FIGURE';
-                const isP = current.tagName === 'P';
-                const isAnchor = current.tagName === 'A';
-                const isDiv = current.tagName === 'DIV';
-
-                const text = current.textContent.trim();
-                if (isSeparator || isFigure || (isAnchor && current.href) || ((isP || isDiv || isCentered) && text.length === 0)) {
-                    toRemove = current;
-                    current = current.parentElement;
+            // If anchor only wraps this image without other text, remove anchor
+            if (parentAnchor && parentAnchor.parentElement) {
+                if (parentAnchor.textContent.trim().length === 0) {
+                    parentAnchor.remove();
                 } else {
-                    break;
+                    img.remove();
                 }
-            }
-
-            if (toRemove && toRemove.parentElement) {
-                toRemove.remove();
             } else if (img.parentElement) {
                 img.remove();
             }
-        });
 
-        // Clean up redundant empty tags
-        Array.from(temp.querySelectorAll('p, div')).forEach(el => {
-            if (el.children.length === 0 && !el.textContent.trim()) {
-                el.remove();
+            // If separator/wrapper has become completely empty (no text, no images), remove it
+            if (parentSeparator && parentSeparator !== temp && parentSeparator.parentElement) {
+                if (parentSeparator.textContent.trim().length === 0 && parentSeparator.querySelectorAll('img').length === 0) {
+                    parentSeparator.remove();
+                }
             }
         });
 
@@ -4703,16 +4712,19 @@ function processAndUnifyGalleryContent(rawContent, autoBuildGallery = true) {
             galWrap.innerHTML = galleryHtml;
             const newGalleryEl = galWrap.firstElementChild;
 
-            // Find best insertion spot: after first paragraph or heading
-            const blocks = Array.from(temp.children).filter(el => 
-                ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'SECTION'].includes(el.tagName) && 
-                el.textContent.trim().length > 10
-            );
-
-            if (blocks.length > 0) {
-                blocks[0].after(newGalleryEl);
+            if (insertionMarker && insertionMarker.parentElement) {
+                insertionMarker.replaceWith(newGalleryEl);
             } else {
-                temp.prepend(newGalleryEl);
+                // If no marker, insert after first paragraph or prepend
+                const blocks = Array.from(temp.children).filter(el => 
+                    ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'SECTION'].includes(el.tagName) && 
+                    el.textContent.trim().length > 10
+                );
+                if (blocks.length > 0) {
+                    blocks[0].after(newGalleryEl);
+                } else {
+                    temp.prepend(newGalleryEl);
+                }
             }
 
             // Ensure clean paragraph before and after gallery
@@ -5145,6 +5157,26 @@ function previewArticleLive() {
 }
 window.previewArticleLive = previewArticleLive;
 
+function viewArticleOnLiveSite() {
+    const currentId = window.currentEditingPostId || (typeof currentEditingPostId !== 'undefined' ? currentEditingPostId : null);
+    const post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(currentId));
+    if (post && post.url) {
+        window.open(post.url, '_blank');
+        showToast('جاري فتح المقال في صفحة جديدة على موقع المدونة... 🌐', 'info');
+        return;
+    }
+    const activeBlog = (window.connectedBlogs || []).find(b => String(b.id) === String(window.currentActiveBlogId)) || {};
+    const blogUrl = activeBlog.url || window.currentActiveBlogUrl || localStorage.getItem('studio_active_blog_url') || 'https://tekmilo.blogspot.com';
+    if (blogUrl) {
+        window.open(blogUrl, '_blank');
+        showToast('المقال قيد التحرير، تم فتح موقع المدونة في صفحة جديدة 🌐', 'info');
+    } else {
+        showToast('يرجى حفظ أو نشر المقال أولاً لتوليد رابطه المباشر على الموقع', 'warning');
+    }
+}
+window.viewArticleOnLiveSite = viewArticleOnLiveSite;
+
+
 // SAVE AS DRAFT — مسودة
 async function saveArticleDraft(isSilent = false) {
     const titleAr = document.getElementById('art-title')?.value || '';
@@ -5508,7 +5540,7 @@ function editPostInStudio(postId) {
     // Set Summary
     const summaryTextarea = document.getElementById('art-summary-text');
     if (summaryTextarea) {
-        const cleanSnip = (post.snippet || post.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        const cleanSnip = (post.snippet || '').trim() || (post.content_html || post.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
         summaryTextarea.value = cleanSnip.slice(0, 160);
         updateSummaryCount();
     }
@@ -5527,7 +5559,7 @@ function editPostInStudio(postId) {
     }
 
     // Set Editor Content
-    const initialContent = post.content || post.snippet || '';
+    const initialContent = post.content_html || post.content || post.snippet || '';
     const unifiedContent = processAndUnifyGalleryContent(initialContent, true);
     setEditorHtmlContent(unifiedContent);
     setEditorMode('advanced');

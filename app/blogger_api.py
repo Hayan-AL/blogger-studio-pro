@@ -239,6 +239,8 @@ def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None)
             r["language"] = r.get("lang") or "ar"
             r["snippet"] = r.get("snippet") or ""
             r["status"] = (r.get("status") or "LIVE").upper()
+            r["content_html"] = r.get("content_html") or ""
+            r["content"] = r.get("content_html") or ""
         return rows
         
     posts: List[Dict[str, Any]] = []
@@ -271,6 +273,7 @@ def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None)
                         "blog_id": blog_id,
                         "title": title,
                         "content": content,
+                        "content_html": content,
                         "snippet": snippet,
                         "url": url,
                         "published": pub_date,
@@ -344,6 +347,7 @@ def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None)
                     "blog_id": blog_id,
                     "title": title,
                     "content": content,
+                    "content_html": content,
                     "snippet": snippet,
                     "url": link,
                     "published": pub_date,
@@ -376,6 +380,8 @@ def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None)
             r["language"] = r.get("lang") or "ar"
             r["snippet"] = r.get("snippet") or ""
             r["status"] = (r.get("status") or "LIVE").upper()
+            r["content_html"] = r.get("content_html") or ""
+            r["content"] = r.get("content_html") or ""
         return rows
 
     # Filter out any trashed posts from external API items

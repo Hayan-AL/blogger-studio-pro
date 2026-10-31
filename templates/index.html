@@ -1768,11 +1768,11 @@
                 </button>
               </div>
 
-              <!-- Two Action Buttons (Preview / Save Draft) -->
+              <!-- Two Action Buttons (View On Site / Save Draft) -->
               <div class="publish-sub-actions-row">
-                <button type="button" class="btn-sub-action" onclick="previewArticleLive()">
-                  <span class="sub-icon">👁️</span>
-                  <span data-i18n="btn_preview_article">معاينة المقال</span>
+                <button type="button" class="btn-sub-action" id="btn-view-on-site" onclick="viewArticleOnLiveSite()" title="عرض المقال مباشرة على موقع المدونة في صفحة جديدة">
+                  <span class="sub-icon">🌐</span>
+                  <span id="btn-view-on-site-text" data-i18n="btn_view_on_site">عرض المقال في الموقع</span>
                 </button>
                 <button type="button" class="btn-sub-action" onclick="saveArticleDraft()">
                   <span class="sub-icon">💾</span>
