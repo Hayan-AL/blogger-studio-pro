@@ -283,6 +283,93 @@ def api_get_posts(
         
     return posts
 
+@app.get("/api/posts/trash")
+def api_get_trash_posts(blog_id: Optional[str] = None):
+    from .db import get_connection
+    from .blogger_api import load_settings
+    settings = load_settings()
+    active_blog_id = str(blog_id or settings.get("blog", {}).get("id", "")).strip()
+
+    id_aliases = [active_blog_id] if active_blog_id else []
+    if active_blog_id in ('3715457895504629620', '5132150821033221945'):
+        id_aliases = ['3715457895504629620', '5132150821033221945']
+    elif active_blog_id in ('6735965676618679814', '2026102901', '202'):
+        id_aliases = ['6735965676618679814', '2026102901', '202']
+    elif active_blog_id in ('4487851326088139307', '303'):
+        id_aliases = ['4487851326088139307', '303']
+
+    conn = get_connection()
+    c = conn.cursor()
+    if id_aliases:
+        placeholders = ','.join('?' for _ in id_aliases)
+        c.execute(f"SELECT * FROM trash_posts WHERE blog_id IN ({placeholders}) ORDER BY deleted_at DESC", tuple(id_aliases))
+    else:
+        c.execute("SELECT * FROM trash_posts ORDER BY deleted_at DESC")
+    rows = [dict(r) for r in c.fetchall()]
+    conn.close()
+
+    if not rows and active_blog_id:
+        try:
+            preseed_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "clean_preseeded_trash.json")
+            if os.path.exists(preseed_file):
+                with open(preseed_file, "r", encoding="utf-8") as pf:
+                    preseeded_all = json.load(pf)
+                canon = '6735965676618679814' if active_blog_id in ('6735965676618679814', '2026102901', '202') else ('4487851326088139307' if active_blog_id in ('4487851326088139307', '303') else '3715457895504629620')
+                rows = preseeded_all.get(canon, [])
+        except Exception:
+            pass
+
+    for r in rows:
+        try:
+            if isinstance(r.get("labels"), list):
+                pass
+            else:
+                r["labels"] = json.loads(r.get("labels_json") or "[]")
+        except Exception:
+            r["labels"] = []
+        r["display_date"] = (r.get("deleted_at") or r.get("published_at") or "")[:10]
+        r["language"] = r.get("lang") or r.get("language") or "ar"
+        r["image"] = r.get("image_url") or r.get("image") or ""
+        r["status"] = "TRASH"
+    return {"status": "success", "posts": rows, "count": len(rows)}
+
+
+@app.get("/api/posts/{post_id}")
+def api_get_post_by_id(post_id: str, blog_id: Optional[str] = None):
+    if post_id == "trash":
+        return api_get_trash_posts(blog_id=blog_id)
+    from .blogger_api import fetch_live_posts
+    posts = fetch_live_posts(force_refresh=False, blog_id=blog_id)
+    target = next((p for p in posts if str(p.get("id")) == str(post_id)), None)
+    if not target:
+        import sqlite3, json
+        from .db import get_connection
+        conn = get_connection()
+        conn.row_factory = sqlite3.Row
+        cur = conn.cursor()
+        row = cur.execute("SELECT * FROM posts WHERE id=?", (post_id,)).fetchone()
+        if row:
+            d = dict(row)
+            labels = []
+            try: labels = json.loads(d.get("labels_json") or "[]")
+            except: pass
+            target = {
+                "id": str(d.get("id")),
+                "blog_id": str(d.get("blog_id")),
+                "title": d.get("title") or "بدون عنوان",
+                "content": d.get("content_html") or "",
+                "content_html": d.get("content_html") or "",
+                "snippet": d.get("snippet") or "",
+                "url": d.get("url") or "",
+                "status": d.get("status") or "LIVE",
+                "labels": labels,
+                "published": d.get("published_at") or "",
+                "image_url": d.get("image_url") or ""
+            }
+    if not target:
+        raise HTTPException(status_code=404, detail="Post not found")
+    return target
+
 
 import re
 import urllib.request
@@ -468,30 +555,7 @@ def api_delete_post(req: PostDeleteRequest):
     return res
 
 
-@app.get("/api/posts/trash")
-def api_get_trash_posts(blog_id: Optional[str] = None):
-    from .db import get_connection
-    from .blogger_api import load_settings
-    settings = load_settings()
-    active_blog_id = str(blog_id or settings.get("blog", {}).get("id", "")).strip()
-    conn = get_connection()
-    c = conn.cursor()
-    if active_blog_id:
-        c.execute("SELECT * FROM trash_posts WHERE blog_id = ? ORDER BY deleted_at DESC", (active_blog_id,))
-    else:
-        c.execute("SELECT * FROM trash_posts ORDER BY deleted_at DESC")
-    rows = [dict(r) for r in c.fetchall()]
-    conn.close()
-    for r in rows:
-        try:
-            r["labels"] = json.loads(r.get("labels_json") or "[]")
-        except Exception:
-            r["labels"] = []
-        r["display_date"] = (r.get("deleted_at") or r.get("published_at") or "")[:10]
-        r["language"] = r.get("lang") or "ar"
-        r["image"] = r.get("image_url") or ""
-        r["status"] = "TRASH"
-    return {"status": "success", "posts": rows, "count": len(rows)}
+# trash route moved above /{post_id}
 
 class PostRestoreRequest(BaseModel):
     post_id: str
