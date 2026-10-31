@@ -168,7 +168,7 @@
 
     async function fetchBlogPosts(blogId, token) {
         if (!blogId || !token) return [];
-        const res = await fetch(`https://www.googleapis.com/blogger/v3/blogs/${blogId}/posts?maxResults=50`, {
+        const res = await fetch(`https://www.googleapis.com/blogger/v3/blogs/${blogId}/posts?status=live,draft,scheduled&maxResults=500`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         if (!res.ok) return [];

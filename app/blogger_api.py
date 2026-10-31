@@ -540,8 +540,8 @@ def create_post(
     }
 
 
-def update_post_cache_and_db(clean_id: str, orig_id: str, title: str, content: str, labels: List[str], is_draft: bool, lang: str):
-    new_status = "DRAFT" if is_draft else "LIVE"
+def update_post_cache_and_db(clean_id: str, orig_id: str, title: str, content: str, labels: List[str], is_draft: bool, lang: str, status: Optional[str] = None):
+    new_status = status if status else ("DRAFT" if is_draft else "LIVE")
     now_str = datetime.utcnow().isoformat()
 
     # 1. Update SQLite DB
@@ -697,7 +697,7 @@ def update_post(
             print("Warning: Blogger OAuth update exception:", e)
 
     # Always update both SQLite DB and posts.json cache
-    update_post_cache_and_db(clean_id, post_id, title, content, labels, is_draft, lang)
+    update_post_cache_and_db(clean_id, post_id, title, content, labels, is_draft, lang, post_status)
     log_activity("UPDATE_POST", f"Saved changes to post: {title} ({post_status})")
 
     status_lbl = "مسودة" if is_draft else ("مجدول" if is_scheduled else "منشور حي")

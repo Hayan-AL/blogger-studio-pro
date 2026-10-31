@@ -1251,6 +1251,7 @@ const I18N = {
         "opt_all_status": "كل الحالات",
         "opt_live": "منشور",
         "opt_draft": "مسودة",
+        "opt_scheduled": "مجدول",
         "btn_export_selected": "📥 تصدير المقالات المحددة",
         "th_post": "المقال",
         "th_lang": "اللغة",
@@ -1668,6 +1669,7 @@ const I18N = {
         "opt_all_status": "All Statuses",
         "opt_live": "Published (Live)",
         "opt_draft": "Draft",
+        "opt_scheduled": "Scheduled",
         "btn_export_selected": "📥 Export Selected (JSON)",
         "th_post": "Article",
         "th_lang": "Language",
@@ -2213,9 +2215,9 @@ async function loadPosts(forceRefresh = false) {
 
         renderPostsTable(allPosts);
         updateSidebarPostCounters(allPosts);
-        renderModernOverviewTable(allPosts);
-        populateOverviewCategoriesFilter();
-        updateSidebarCounters(allPosts);
+        if (typeof renderModernOverviewTable === 'function') renderModernOverviewTable(allPosts);
+        if (typeof populateOverviewCategoriesFilter === 'function') populateOverviewCategoriesFilter();
+        if (typeof updateSidebarCounters === 'function') updateSidebarCounters(allPosts);
         
 // Rendered via renderModernOverviewTable(allPosts)
 
@@ -2229,14 +2231,19 @@ function renderPostsTable(posts) {
     if (!tbody) return;
     
     if (!posts.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">لا توجد منشورات مطابقة لمعايير البحث</td></tr>';
+        const statusVal = (document.getElementById('posts-filter-status')?.value || 'all').toUpperCase();
+        let emptyMsg = 'لا توجد منشورات مطابقة لمعايير البحث';
+        if (statusVal === 'SCHEDULED') emptyMsg = 'لا توجد مقالات مجدولة حالياً 🕒';
+        else if (statusVal === 'DRAFT') emptyMsg = 'لا توجد مقالات في المسودات 📝';
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">${emptyMsg}</td></tr>`;
         return;
     }
 
     tbody.innerHTML = posts.map(p => {
         const isChecked = selectedPostIds.has(p.id);
         const catLabels = (p.labels || []).filter(l => !['ar', 'en'].includes(l)).slice(0, 2);
-        const isLive = p.status !== 'DRAFT';
+        const pStatus = (p.status || (p.is_draft ? 'DRAFT' : (p.is_scheduled ? 'SCHEDULED' : 'LIVE'))).toUpperCase();
+        const isLive = pStatus === 'LIVE';
 
         // Eye Preview button
         const previewBtn = p.url 
@@ -2248,9 +2255,11 @@ function renderPostsTable(posts) {
             ? `<button type="button" onclick="togglePostDraftStatus('${p.id}', true)" class="table-action-btn btn-draft" title="تحويل سريع إلى مسودة (Revert to Draft)"><i class="fas fa-file-alt"></i></button>`
             : `<button type="button" onclick="togglePostDraftStatus('${p.id}', false)" class="table-action-btn btn-publish" title="نشر المقال فوراً على الموقع (Publish Live)"><i class="fas fa-paper-plane"></i></button>`;
 
-        const statusBadge = p.status === 'DRAFT' 
+        const statusBadge = pStatus === 'DRAFT' 
             ? `<span class="badge" style="background:rgba(245,158,11,0.18);color:#f59e0b;border:1px solid rgba(245,158,11,0.35);font-size:10px;">📝 مسودة</span>`
-            : `<span class="badge en" style="font-size:10px;">🟢 منشور</span>`;
+            : (pStatus === 'SCHEDULED' 
+                ? `<span class="badge" style="background:rgba(59,130,246,0.18);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);font-size:10px;">🕒 مجدول</span>` 
+                : `<span class="badge en" style="font-size:10px;">🟢 منشور</span>`);
 
         return `
             <tr>
@@ -2294,13 +2303,31 @@ function filterPosts() {
     const search = (document.getElementById('posts-search-input')?.value || '').toLowerCase();
     const lang = document.getElementById('posts-filter-lang')?.value || 'all';
     const cat = document.getElementById('posts-filter-cat')?.value || 'all';
-    const status = document.getElementById('posts-filter-status')?.value || 'all';
+    const rawStatus = (document.getElementById('posts-filter-status')?.value || 'all');
+    const status = rawStatus.toUpperCase();
+
+    // Keep sidebar sub-item active state synchronized with dropdown filter
+    document.querySelectorAll('#posts-sub-menu .nav-sub-item').forEach(el => el.classList.remove('active'));
+    const subId = status === 'ALL' ? 'all-posts' : (status === 'DRAFT' ? 'drafts' : (status === 'SCHEDULED' ? 'scheduled' : (status === 'LIVE' ? 'published' : 'all-posts')));
+    const targetSub = document.getElementById(`nav-sub-${subId}`);
+    if (targetSub) targetSub.classList.add('active');
 
     const filtered = allPosts.filter(p => {
-        const matchesSearch = !search || p.title.toLowerCase().includes(search) || (p.snippet || '').toLowerCase().includes(search);
+        const titleStr = (p.title || '').toLowerCase();
+        const snippetStr = (p.snippet || '').toLowerCase();
+        const matchesSearch = !search || titleStr.includes(search) || snippetStr.includes(search);
         const matchesLang = lang === 'all' || p.language === lang;
         const matchesCat = cat === 'all' || (p.labels || []).includes(cat);
-        const matchesStatus = status === 'all' || p.status === status;
+        
+        const pStatus = (p.status || (p.is_draft ? 'DRAFT' : (p.is_scheduled ? 'SCHEDULED' : 'LIVE'))).toUpperCase();
+        let matchesStatus = (status === 'ALL');
+        if (status === 'DRAFT') {
+            matchesStatus = (pStatus === 'DRAFT' || Boolean(p.is_draft));
+        } else if (status === 'SCHEDULED') {
+            matchesStatus = (pStatus === 'SCHEDULED' || Boolean(p.is_scheduled));
+        } else if (status === 'LIVE') {
+            matchesStatus = (pStatus === 'LIVE' && !p.is_draft && !p.is_scheduled);
+        }
         return matchesSearch && matchesLang && matchesCat && matchesStatus;
     });
 
@@ -2315,8 +2342,8 @@ function toggleSelectAllPosts(masterCheckbox) {
         selectedPostIds.clear();
     }
     renderPostsTable(allPosts);
-        renderModernOverviewTable(allPosts);
-        populateOverviewCategoriesFilter();
+    if (typeof renderModernOverviewTable === 'function') renderModernOverviewTable(allPosts);
+    if (typeof populateOverviewCategoriesFilter === 'function') populateOverviewCategoriesFilter();
     updateBulkActionBar();
 }
 
@@ -7972,7 +7999,7 @@ async function refreshAllDataForActiveBlog(targetBlog, seq, isInitialLoad = fals
         const token = window.GoogleBloggerClient ? window.GoogleBloggerClient.getToken() : null;
         if (token) {
             try {
-                const gRes = await _nativeFetch(`https://www.googleapis.com/blogger/v3/blogs/${blogId}/posts?maxResults=50`, {
+                const gRes = await _nativeFetch(`https://www.googleapis.com/blogger/v3/blogs/${blogId}/posts?status=live,draft,scheduled&maxResults=500`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (gRes.ok) {
@@ -9383,9 +9410,20 @@ function navigateToPostsSection(filterType, event) {
     const postsPane = document.getElementById('tab-posts');
     if (postsPane) postsPane.classList.add('active');
 
+    const isEn = (window.currentLang === 'en' || document.documentElement.lang === 'en');
     const topbarTitle = document.getElementById('topbar-title-text');
     if (topbarTitle) {
-        topbarTitle.textContent = filterType === 'draft' ? 'المسودات' : (filterType === 'live' ? 'المقالات المنشورة' : (filterType === 'trash' ? 'سلة المحذوفات' : 'كل المقالات والمنشورات'));
+        if (filterType === 'draft') {
+            topbarTitle.textContent = isEn ? 'Drafts' : 'المسودات';
+        } else if (filterType === 'live') {
+            topbarTitle.textContent = isEn ? 'Published Posts' : 'المقالات المنشورة';
+        } else if (filterType === 'scheduled') {
+            topbarTitle.textContent = isEn ? 'Scheduled Posts' : 'المقالات المجدولة';
+        } else if (filterType === 'trash') {
+            topbarTitle.textContent = isEn ? 'Trash' : 'سلة المحذوفات';
+        } else {
+            topbarTitle.textContent = isEn ? 'All Posts & Articles' : 'كل المقالات والمنشورات';
+        }
     }
 
     // Set filter select on posts tab
@@ -9394,6 +9432,7 @@ function navigateToPostsSection(filterType, event) {
         if (filterType === 'all') statusSelect.value = 'all';
         else if (filterType === 'draft') statusSelect.value = 'DRAFT';
         else if (filterType === 'live') statusSelect.value = 'LIVE';
+        else if (filterType === 'scheduled') statusSelect.value = 'SCHEDULED';
         else statusSelect.value = 'all';
     }
 
@@ -9431,14 +9470,21 @@ function createNewArticle(event) {
 function updateSidebarPostCounters(posts) {
     if (!Array.isArray(posts)) return;
     const allCount = posts.length;
-    const draftCount = posts.filter(p => p.status === 'DRAFT').length;
-    const liveCount = posts.filter(p => p.status !== 'DRAFT').length;
+    const draftCount = posts.filter(p => (p.status || '').toUpperCase() === 'DRAFT' || p.is_draft).length;
+    const scheduledCount = posts.filter(p => (p.status || '').toUpperCase() === 'SCHEDULED' || p.is_scheduled).length;
+    const liveCount = posts.filter(p => {
+        const st = (p.status || 'LIVE').toUpperCase();
+        return st !== 'DRAFT' && st !== 'SCHEDULED' && !p.is_draft && !p.is_scheduled;
+    }).length;
 
     const elAll = document.getElementById('count-all-posts');
     if (elAll) elAll.textContent = allCount;
 
     const elDraft = document.getElementById('count-draft-posts');
     if (elDraft) elDraft.textContent = draftCount;
+
+    const elScheduled = document.getElementById('count-scheduled-posts');
+    if (elScheduled) elScheduled.textContent = scheduledCount;
 
     const elLive = document.getElementById('count-live-posts');
     if (elLive) elLive.textContent = liveCount;
