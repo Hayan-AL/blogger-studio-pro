@@ -31,5 +31,5 @@ if __name__ == "__main__":
     if "--no-browser" not in sys.argv:
         threading.Thread(target=open_browser, daemon=True).start()
 
-    # Run FastAPI via Uvicorn
-    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, log_level="info")
+    # Run FastAPI via Uvicorn with reload enabled
+    uvicorn.run("app.main:app", host="127.0.0.1", port=8000, log_level="info", reload=True)

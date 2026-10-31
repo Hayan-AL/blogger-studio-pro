@@ -78,7 +78,7 @@ def preflight_security_scan():
         tracked_list = tracked.splitlines()
         forbidden_patterns = [
             "data/oauth_accounts.json",
-            "data/tekmilo.db",
+            "data/bloggerstudio.db",
             "data/blogger_studio.db",
             "data/settings.json",
             "data/google_credentials.json",

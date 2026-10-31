@@ -1,7 +1,8 @@
 @echo off
+chcp 65001 >nul
 setlocal
 cd /d "%~dp0"
-title Blogger Studio Pro - لوحة التحكم الاحترافية (Port 8000)
+title Blogger Studio Server Control Center (Port 8000)
 
 where powershell.exe >nul 2>&1
 if %ERRORLEVEL% NEQ 0 (

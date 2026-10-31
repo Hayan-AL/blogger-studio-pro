@@ -12,7 +12,7 @@ from typing import Dict, List, Optional, Any
 
 DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data")
 DB_PATH = os.path.join(DATA_DIR, "blogger_studio.db")
-LEGACY_DB = os.path.join(DATA_DIR, "tekmilo.db")
+LEGACY_DB = os.path.join(DATA_DIR, "bloggerstudio.db")
 if not os.path.exists(DB_PATH) and os.path.exists(LEGACY_DB):
     try:
         import shutil

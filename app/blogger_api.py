@@ -129,19 +129,41 @@ def discover_user_blogs(account_id: Optional[str] = None) -> Dict[str, Any]:
         "blogs": blogs
     }
 
-def switch_active_blog(blog_id: str) -> Dict[str, Any]:
+def switch_active_blog(blog_id: str, blog_name: Optional[str] = None, blog_url: Optional[str] = None) -> Dict[str, Any]:
     from urllib.parse import urlparse
     discovery = discover_user_blogs()
     target_blog = None
     for b in discovery.get("blogs", []):
-        if b["id"] == str(blog_id):
+        if str(b.get("id")) == str(blog_id):
             target_blog = b
             break
             
-    if not target_blog:
-        return {"status": "error", "message": f"Blog ID {blog_id} not found."}
-        
     settings = load_settings()
+    if not target_blog:
+        for b in settings.get("connected_blogs", []):
+            if str(b.get("id")) == str(blog_id):
+                target_blog = b
+                break
+
+    if not target_blog and blog_name:
+        target_blog = {
+            "id": str(blog_id),
+            "name": blog_name,
+            "url": blog_url or f"https://{blog_name.lower().replace(' ', '')}.blogspot.com",
+            "description": f"{blog_name} - Blogger Blog"
+        }
+        connected = settings.get("connected_blogs", [])
+        connected = [b for b in connected if str(b.get("id")) != str(blog_id)]
+        connected.append(target_blog)
+        settings["connected_blogs"] = connected
+        
+    if not target_blog:
+        target_blog = {
+            "id": str(blog_id),
+            "name": blog_name or f"Blog {blog_id}",
+            "url": blog_url or f"https://blog-{blog_id}.blogspot.com",
+            "description": ""
+        }
     settings.setdefault("blog", {})
     settings["blog"]["id"] = target_blog["id"]
     settings["blog"]["name"] = target_blog["name"]
@@ -151,7 +173,7 @@ def switch_active_blog(blog_id: str) -> Dict[str, Any]:
     domain = urlparse(target_blog["url"]).hostname or "blogspot.com"
     settings.setdefault("blogger_settings", {}).setdefault("basic", {})
     settings["blogger_settings"]["basic"]["title"] = target_blog["name"]
-    settings["blogger_settings"]["basic"]["description"] = target_blog.get("description", "") or f"{target_blog['name']} - Official Blogger Blog"
+    settings["blogger_settings"]["basic"]["description"] = target_blog.get("description", "") or f"{target_blog['name']} - Blogger Blog"
     
     settings.setdefault("blogger_settings", {}).setdefault("publishing", {})
     settings["blogger_settings"]["publishing"]["blog_address"] = domain
@@ -427,33 +449,58 @@ def fetch_live_pages() -> List[Dict[str, Any]]:
 # -------------------------------------------------------------
 # CREATE / UPDATE / DELETE POSTS
 # -------------------------------------------------------------
-def create_post(title: str, content: str, labels: List[str], is_draft: bool = False, lang: str = "ar") -> Dict[str, Any]:
+def create_post(
+    title: str, 
+    content: str, 
+    labels: List[str], 
+    is_draft: bool = False, 
+    lang: str = "ar",
+    blog_id: Optional[str] = None,
+    publish_date: Optional[str] = None,
+    custom_meta: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    target_blog_id = str(blog_id or settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     
     # 1. Official API flow
-    if token:
+    if token and target_blog_id:
         try:
-            url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts?isDraft={'true' if is_draft else 'false'}"
-            body = {
+            is_scheduled = bool(publish_date and not is_draft)
+            query_is_draft = 'true' if is_draft else 'false'
+            url = f"https://www.googleapis.com/blogger/v3/blogs/{target_blog_id}/posts?isDraft={query_is_draft}"
+            
+            body: Dict[str, Any] = {
                 "kind": "blogger#post",
                 "title": title,
                 "content": content,
-                "labels": labels
+                "labels": labels or []
             }
+            
+            if publish_date:
+                body["published"] = publish_date
+                
+            if custom_meta and isinstance(custom_meta, dict):
+                if custom_meta.get("allow_comments") is False:
+                    body["readerComments"] = "DONT_ALLOW_HIDE"
+                elif custom_meta.get("allow_comments") is True:
+                    body["readerComments"] = "ALLOW"
+                    
             resp = requests.post(url, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}, json=body, timeout=15)
             if resp.status_code in [200, 201]:
                 res_data = resp.json()
                 post_id = str(res_data.get("id"))
-                log_activity("CREATE_POST_OAUTH", f"Created post: {title} (ID: {post_id}, Draft: {is_draft})")
+                remote_status = res_data.get("status", "DRAFT" if is_draft else ("SCHEDULED" if is_scheduled else "LIVE"))
+                log_activity("CREATE_POST_OAUTH", f"Created post: {title} (ID: {post_id}, Status: {remote_status})")
                 fetch_live_posts(force_refresh=True)
                 return {
                     "status": "success",
                     "mode": "official_oauth",
                     "post_id": post_id,
+                    "post_status": remote_status,
                     "url": res_data.get("url", ""),
-                    "message": f"Post '{title}' successfully created on Blogger!"
+                    "published": res_data.get("published", publish_date or ""),
+                    "message": f"تم حفظ المقال '{title}' بنجاح على Blogger ({'مسودة' if is_draft else ('مجدول' if is_scheduled else 'منشور حي')})!"
                 }
             else:
                 return {"status": "error", "message": f"Blogger API error: {resp.text}"}
@@ -465,26 +512,31 @@ def create_post(title: str, content: str, labels: List[str], is_draft: bool = Fa
     conn = get_connection()
     c = conn.cursor()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    pub_at = publish_date or now_str
     snippet = re.sub(r'<[^>]+>', ' ', content)[:180] + "..."
     word_count = len(re.findall(r'\w+', snippet))
+    
+    post_status = "DRAFT" if is_draft else ("SCHEDULED" if publish_date else "LOCAL_READY")
     
     c.execute("""
     INSERT INTO posts (id, blog_id, title, content_html, snippet, url, published_at, updated_at, status, lang, labels_json, image_url, word_count, synced_at)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
-        local_id, blog_id, title, content, snippet, "", now_str, now_str,
-        "DRAFT" if is_draft else "LOCAL_READY", lang, json.dumps(labels, ensure_ascii=False),
+        local_id, target_blog_id, title, content, snippet, "", pub_at, now_str,
+        post_status, lang, json.dumps(labels, ensure_ascii=False),
         extract_image(content), word_count, now_str
     ))
     conn.commit()
     conn.close()
     
-    log_activity("CREATE_POST_LOCAL", f"Saved local article: {title} (ID: {local_id})")
+    log_activity("CREATE_POST_LOCAL", f"Saved local article: {title} (ID: {local_id}, Status: {post_status})")
     return {
         "status": "success",
         "mode": "local_storage",
         "post_id": local_id,
-        "message": f"Article '{title}' saved locally as a draft. Connect Google Account to publish directly to Blogger!"
+        "post_status": post_status,
+        "url": "",
+        "message": f"تم حفظ المقال '{title}' محلياً كـ {('مسودة' if is_draft else ('مجدول' if publish_date else 'جاهز'))} بنجاح!"
     }
 
 
@@ -585,51 +637,75 @@ def toggle_post_status(post_id: str, is_draft: bool) -> Dict[str, Any]:
         "message": msg
     }
 
-def update_post(post_id: str, title: str, content: str, labels: List[str], is_draft: bool = False, lang: str = "ar") -> Dict[str, Any]:
+def update_post(
+    post_id: str, 
+    title: str, 
+    content: str, 
+    labels: List[str], 
+    is_draft: bool = False, 
+    lang: str = "ar",
+    blog_id: Optional[str] = None,
+    publish_date: Optional[str] = None,
+    custom_meta: Optional[Dict[str, Any]] = None
+) -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    target_blog_id = str(blog_id or settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     clean_id = post_id.split("post-")[-1] if "post-" in post_id else post_id
 
     oauth_success = False
     res_url = ""
-    if token and not clean_id.startswith("local-"):
+    is_scheduled = bool(publish_date and not is_draft)
+    post_status = "DRAFT" if is_draft else ("SCHEDULED" if is_scheduled else "LIVE")
+
+    if token and not clean_id.startswith("local-") and target_blog_id:
         try:
-            url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/{clean_id}"
-            body = {
+            url = f"https://www.googleapis.com/blogger/v3/blogs/{target_blog_id}/posts/{clean_id}"
+            body: Dict[str, Any] = {
                 "kind": "blogger#post",
                 "id": clean_id,
                 "title": title,
                 "content": content,
-                "labels": labels
+                "labels": labels or []
             }
+            if publish_date:
+                body["published"] = publish_date
+            if custom_meta and isinstance(custom_meta, dict):
+                if custom_meta.get("allow_comments") is False:
+                    body["readerComments"] = "DONT_ALLOW_HIDE"
+                elif custom_meta.get("allow_comments") is True:
+                    body["readerComments"] = "ALLOW"
+
             resp = requests.put(url, headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"}, json=body, timeout=15)
             if resp.status_code in [200, 201]:
                 res_data = resp.json()
                 res_url = res_data.get("url", "")
                 oauth_success = True
                 
-                # Check if draft status needs revert or publish on Blogger
+                # Manage publication state transition
                 if is_draft:
-                    requests.post(f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/{clean_id}/revert", 
+                    requests.post(f"https://www.googleapis.com/blogger/v3/blogs/{target_blog_id}/posts/{clean_id}/revert", 
                                   headers={"Authorization": f"Bearer {token}"}, timeout=10)
                 else:
-                    requests.post(f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/{clean_id}/publish", 
-                                  headers={"Authorization": f"Bearer {token}"}, timeout=10)
+                    pub_url = f"https://www.googleapis.com/blogger/v3/blogs/{target_blog_id}/posts/{clean_id}/publish"
+                    if publish_date:
+                        pub_url += f"?publishDate={publish_date}"
+                    requests.post(pub_url, headers={"Authorization": f"Bearer {token}"}, timeout=10)
 
-                log_activity("UPDATE_POST_OAUTH", f"Updated post: {title} (ID: {clean_id}) - Draft: {is_draft}")
+                log_activity("UPDATE_POST_OAUTH", f"Updated post: {title} (ID: {clean_id}) - Status: {post_status}")
         except Exception as e:
             print("Warning: Blogger OAuth update exception:", e)
 
     # Always update both SQLite DB and posts.json cache
     update_post_cache_and_db(clean_id, post_id, title, content, labels, is_draft, lang)
-    log_activity("UPDATE_POST", f"Saved changes to post: {title} ({'مسودة' if is_draft else 'منشور'})")
+    log_activity("UPDATE_POST", f"Saved changes to post: {title} ({post_status})")
 
-    status_lbl = "مسودة" if is_draft else "منشور حي"
+    status_lbl = "مسودة" if is_draft else ("مجدول" if is_scheduled else "منشور حي")
     return {
         "status": "success",
         "mode": "official_oauth" if oauth_success else "local_sqlite",
         "post_id": clean_id,
+        "post_status": post_status,
         "url": res_url,
         "message": f"تم حفظ تعديلات المقال '{title}' بنجاح ({status_lbl})!"
     }

@@ -286,7 +286,9 @@ def get_auth_status_safe() -> Dict[str, Any]:
         
     return {
         "has_credentials_configured": has_creds,
+        "client_id": creds.get("client_id", ""),
         "client_id_preview": creds.get("client_id", "")[:12] + "..." if creds.get("client_id") else "",
+        "has_client_secret": bool(creds.get("client_secret")),
         "redirect_uri": creds.get("redirect_uri", "http://127.0.0.1:8000/api/auth/google/callback"),
         "is_authenticated": bool(active_id and accounts_safe),
         "active_account_id": active_id,

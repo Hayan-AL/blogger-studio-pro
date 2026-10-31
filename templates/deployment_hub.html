@@ -41,7 +41,7 @@
     }
 
     .container {
-      max-width: 1080px;
+      max-width: 1380px;
       margin: 0 auto;
       padding: 30px 20px 60px;
       width: 100%;
@@ -440,34 +440,1821 @@
     }
 
     /* Toast Popup */
+    .toast-popup {
       position: fixed;
-      bottom: 24px;
+      bottom: 28px;
       left: 50%;
       transform: translateX(-50%) translateY(100px);
-      background: #0f172a;
-      border: 1px solid var(--accent-emerald);
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      border: 1.5px solid var(--accent-emerald);
       color: #fff;
-      padding: 12px 24px;
-      border-radius: 12px;
-      font-size: 13.5px;
-      font-weight: 700;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+      padding: 14px 28px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 800;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.7), 0 0 20px rgba(16, 185, 129, 0.25);
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       opacity: 0;
-      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      z-index: 9999;
+      pointer-events: none;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 99999;
     }
     .toast-popup.show {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
+      pointer-events: auto;
     }
+  
+    /* Multi-Account Drawer & Pill Styles */
+    .btn-accounts-pill {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #f8fafc;
+      padding: 6px 14px 6px 10px;
+      border-radius: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 13px;
+      font-weight: 700;
+    }
+    .btn-accounts-pill:hover {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
+    }
+    .acc-pill-avatar-wrap {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      border: 2px solid var(--accent-cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #0f172a;
+      flex-shrink: 0;
+    }
+    .acc-pill-avatar-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .acc-pill-text-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      text-align: right;
+    }
+    .acc-pill-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .acc-pill-target-badge {
+      font-size: 10.5px;
+      color: var(--accent-cyan);
+      font-weight: 600;
+      line-height: 1;
+    }
+    .badge-acc-count {
+      background: var(--accent-cyan);
+      color: #041424;
+      font-size: 10.5px;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 12px;
+    }
+
+    /* Accounts Sidebar Overlay & Drawer */
+    .accounts-sidebar-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(5px);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .accounts-sidebar-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .accounts-sidebar-drawer {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 460px;
+      max-width: 92vw;
+      height: 100vh;
+      background: rgba(13, 20, 36, 0.98);
+      border-left: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: -15px 0 50px rgba(0, 0, 0, 0.8);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      padding: 24px 20px;
+      transform: translateX(100%);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow-y: auto;
+      direction: rtl;
+    }
+    .accounts-sidebar-drawer.open {
+      transform: translateX(0);
+    }
+
+    .acc-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 18px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 20px;
+    }
+    .acc-sidebar-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .acc-sidebar-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+    .acc-sidebar-header h3 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .acc-sidebar-header p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .btn-close-sidebar {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+    .btn-close-sidebar:hover {
+      background: rgba(244, 63, 94, 0.2);
+      color: #fb7185;
+      border-color: rgba(244, 63, 94, 0.4);
+    }
+
+    /* Target Selector Box */
+    .acc-target-selector-box {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+    .acc-target-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .acc-target-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .acc-target-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .target-pill-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 8px 6px;
+      border-radius: 10px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .target-pill-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .target-pill-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.25), rgba(168, 85, 247, 0.25));
+      border-color: var(--accent-cyan);
+      color: #fff;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.25);
+    }
+    .acc-target-hint {
+      font-size: 11px;
+      color: #94a3b8;
+      line-height: 1.5;
+      padding: 6px 10px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 8px;
+    }
+
+    /* Add Account Collapsible Form */
+    .acc-add-btn-wrap {
+      margin-bottom: 18px;
+    }
+    .acc-add-form-container {
+      background: rgba(22, 32, 50, 0.95);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .acc-form-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .acc-form-header h4 {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .acc-form-close {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .acc-form-group {
+      margin-bottom: 12px;
+    }
+    .acc-form-group label {
+      display: block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #cbd5e1;
+      margin-bottom: 5px;
+    }
+    .acc-form-subheading {
+      font-size: 12px;
+      font-weight: 800;
+      color: #e2e8f0;
+      margin: 14px 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+    .acc-form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    /* Accounts Cards List */
+    .acc-list-section-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #e2e8f0;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .accounts-cards-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding-bottom: 30px;
+    }
+    .acc-card-item {
+      background: rgba(22, 32, 50, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 16px;
+      transition: all 0.25s ease;
+      position: relative;
+    }
+    .acc-card-item:hover {
+      background: rgba(22, 32, 50, 0.9);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .acc-card-item.is-active {
+      border: 1.5px solid var(--accent-cyan);
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.12), rgba(168, 85, 247, 0.08));
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.15);
+    }
+    .acc-card-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .acc-card-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: #0f172a;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .acc-card-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .acc-card-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .acc-card-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .acc-active-badge {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 8px;
+      background: rgba(16, 185, 129, 0.18);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      font-weight: 700;
+    }
+    .acc-card-details {
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11.5px;
+    }
+    .acc-detail-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #cbd5e1;
+    }
+    .acc-detail-row span.label {
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .acc-detail-row span.val {
+      font-weight: 600;
+      color: #f8fafc;
+      direction: ltr;
+      text-align: left;
+    }
+    .acc-card-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+  
+    /* Balanced Compact Layout: Sidebar + Two Compact Sister Cards */
+    .container {
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: 30px 20px 60px;
+      width: 100%;
+    }
+
+    .hub-cards-layout {
+      display: flex;
+      gap: 14px;
+      align-items: stretch;
+      margin-bottom: 22px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .hub-permanent-sidebar {
+      width: 280px;
+      min-width: 270px;
+      max-width: 290px;
+      flex: 0 0 280px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 18px 14px;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      box-sizing: border-box;
+    }
+
+    /* The Two Sister Cards: Flexible proportional side-by-side */
+    .hub-sister-cards-group {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 14px;
+      flex: 1;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+    /* Sidebar Internal Components */
+    .perm-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      margin-bottom: 18px;
+    }
+    .perm-sidebar-title-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .perm-sidebar-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #0284c7, #a855f7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.4);
+    }
+    .perm-sidebar-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .perm-sidebar-desc {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* Target Selector inside Sidebar */
+    .sidebar-target-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 18px;
+    }
+    .sidebar-target-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 12px;
+      font-weight: 700;
+      color: #e2e8f0;
+    }
+    .sidebar-target-pills {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .sidebar-target-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 7px 4px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .sidebar-target-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .sidebar-target-btn.active {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.3), rgba(168, 85, 247, 0.3));
+      border-color: var(--accent-cyan);
+      color: #fff;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+    .sidebar-target-hint {
+      font-size: 10.5px;
+      color: #94a3b8;
+      line-height: 1.45;
+      padding: 5px 8px;
+      background: rgba(0,0,0,0.25);
+      border-radius: 6px;
+    }
+
+    /* Accounts List inside Sidebar */
+    .sidebar-accounts-list-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 18px;
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 2px;
+    }
+
+    /* Fast Connect Action Section */
+    .fast-connect-box {
+      background: rgba(22, 32, 50, 0.95);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 14px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .fast-connect-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 8px;
+    }
+    .fast-tab-btn {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #94a3b8;
+      padding: 6px;
+      border-radius: 8px;
+      font-size: 11.5px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .fast-tab-btn.active {
+      background: rgba(56, 189, 248, 0.15);
+      border-color: var(--accent-cyan);
+      color: #fff;
+    }
+
+  
+    /* Wrangler Command Box Dark Custom Scrollbar */
+    .wrangler-code-box {
+      scrollbar-width: thin;
+      scrollbar-color: rgba(56, 189, 248, 0.4) #03060a;
+    }
+    .wrangler-code-box::-webkit-scrollbar {
+      height: 6px;
+      background: #03060a;
+      border-radius: 4px;
+    }
+    .wrangler-code-box::-webkit-scrollbar-track {
+      background: #03060a;
+      border-radius: 4px;
+    }
+    .wrangler-code-box::-webkit-scrollbar-thumb {
+      background: rgba(56, 189, 248, 0.35);
+      border-radius: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+    }
+    .wrangler-code-box::-webkit-scrollbar-thumb:hover {
+      background: var(--accent-cyan);
+    }
+
+    /* Active Account - Deep Navy & Deep Purple Colors */
+    .acc-card-item.is-active {
+      background: linear-gradient(135deg, rgba(23, 37, 84, 0.85) 0%, rgba(59, 7, 100, 0.85) 100%) !important;
+      border: 1.5px solid rgba(56, 189, 248, 0.6) !important;
+      box-shadow: 0 4px 20px rgba(15, 23, 42, 0.6), inset 0 0 15px rgba(56, 189, 248, 0.15) !important;
+    }
+
+    .acc-card-name-line {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.3;
+      margin-bottom: 4px;
+    }
+
+    .acc-badge-line {
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* Two-line Active Badge in Deep Dark Blue & Light Blue Text */
+    .acc-active-badge-deep {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(23, 37, 84, 0.95);
+      color: #93c5fd;
+      border: 1px solid rgba(59, 130, 246, 0.55);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    }
+
+    .acc-inactive-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-active-deep {
+      background: rgba(30, 58, 138, 0.85);
+      border: 1px solid rgba(96, 165, 250, 0.5);
+      color: #eff6ff;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+
+    /* Deep Purple Logout Button */
+    .btn-logout-deep {
+      background: rgba(88, 28, 135, 0.45);
+      border: 1px solid rgba(168, 85, 247, 0.45);
+      color: #f3e8ff;
+      font-weight: 700;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .btn-logout-deep:hover {
+      background: rgba(225, 29, 72, 0.45);
+      border-color: rgba(244, 63, 94, 0.65);
+      color: #fff;
+    }
+
+  
+    /* Ultra-Compact Single-Line Account Strip (سطر واحد مدمج وأنيق) */
+    .acc-compact-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 9px 12px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+
+    .acc-compact-strip:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+
+    .acc-compact-strip.is-active {
+      background: linear-gradient(135deg, rgba(23, 37, 84, 0.95) 0%, rgba(59, 7, 100, 0.95) 100%) !important;
+      border: 1.5px solid rgba(56, 189, 248, 0.7) !important;
+      box-shadow: 0 4px 18px rgba(2, 132, 199, 0.3) !important;
+    }
+
+    .acc-compact-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .acc-compact-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(56, 189, 248, 0.5);
+      flex-shrink: 0;
+      background: #0f172a;
+    }
+
+    .acc-compact-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .acc-compact-status-icon {
+      font-size: 13.5px;
+      flex-shrink: 0;
+      cursor: help;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .acc-selected-badge {
+      font-size: 10px;
+      font-weight: 800;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      padding: 1px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .acc-compact-icons {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .acc-compact-icon-item {
+      font-size: 14.5px;
+      cursor: help;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s;
+    }
+    .acc-compact-icon-item:hover {
+      background: rgba(255, 255, 255, 0.12);
+      transform: scale(1.1);
+    }
+
+    .btn-compact-logout {
+      background: rgba(244, 63, 94, 0.12);
+      border: 1px solid rgba(244, 63, 94, 0.35);
+      color: #fb7185;
+      width: 26px;
+      height: 26px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 11.5px;
+      flex-shrink: 0;
+    }
+    .btn-compact-logout:hover {
+      background: rgba(244, 63, 94, 0.4);
+      border-color: #f43f5e;
+      color: #fff;
+      transform: scale(1.1);
+    }
+
+  
+    /* EXACT SIDEBAR PIXEL-PERFECT STYLING */
+    .sidebar-badge-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 8px;
+      padding: 4px 8px;
+      min-width: 44px;
+      text-align: center;
+    }
+    .sidebar-badge-box .badge-num {
+      font-size: 13px;
+      font-weight: 800;
+      color: #38bdf8;
+      line-height: 1;
+    }
+    .sidebar-badge-box .badge-lbl {
+      font-size: 9.5px;
+      font-weight: 700;
+      color: #38bdf8;
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+
+    .acc-compact-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 8px 10px;
+      transition: all 0.2s ease;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .acc-compact-strip:hover {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.18);
+    }
+    .acc-compact-strip.is-active {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.95) 0%, rgba(15, 23, 42, 0.95) 100%) !important;
+      border: 1.5px solid rgba(56, 189, 248, 0.7) !important;
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.25) !important;
+    }
+    .acc-compact-left {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      min-width: 0;
+      flex: 1;
+    }
+    .acc-compact-avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1.5px solid rgba(56, 189, 248, 0.5);
+      flex-shrink: 0;
+      background: #0f172a;
+    }
+    .acc-compact-name {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 50px; font-size: 11.5px;
+    }
+    .acc-compact-status-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+    }
+    .acc-selected-badge {
+      font-size: 10px;
+      font-weight: 800;
+      color: #fff;
+      background: #1d4ed8;
+      border: 1px solid #3b82f6;
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.4);
+      padding: 2px 7px;
+      border-radius: 6px;
+      white-space: nowrap;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .acc-compact-icons {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+    .acc-compact-icon-item {
+      font-size: 13.5px;
+      cursor: help;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      transition: all 0.2s;
+    }
+    .acc-compact-icon-item.gh-tile {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      color: #c084fc;
+    }
+    .acc-compact-icon-item.cf-tile {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #f59e0b;
+    }
+    .btn-compact-logout {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      color: #f87171;
+      width: 28px;
+      height: 28px;
+      border-radius: 7px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      padding: 0;
+    }
+    .btn-compact-logout:hover {
+      background: #ef4444;
+      color: #ffffff;
+      border-color: #ef4444;
+      transform: scale(1.08);
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+    }
+
+  
+    /* MODERN MULTI-ACCOUNT SIDEBAR SPECIFICATION (MATCHING USER SCREENSHOT) */
+    .hub-nav-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 4px;
+      border-radius: 10px;
+      margin: 12px 0 14px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .hub-tab-btn {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #94a3b8;
+      background: transparent;
+    }
+    .hub-tab-btn.active {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(37, 99, 235, 0.4);
+    }
+    .hub-tab-btn:hover:not(.active) {
+      color: #f1f5f9;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .platform-section-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(56, 189, 248, 0.22);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .platform-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .platform-header-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .platform-title-text {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .platform-subtitle-text {
+      font-size: 10px;
+      color: #64748b;
+    }
+    .btn-add-account-sm {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(30, 58, 138, 0.4);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: #38bdf8;
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-add-account-sm:hover {
+      background: rgba(30, 58, 138, 0.8);
+      border-color: #38bdf8;
+      color: #fff;
+    }
+
+    .modern-account-card {
+      background: rgba(30, 41, 59, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
+      padding: 8px 10px;
+      margin-bottom: 7px;
+      transition: all 0.2s;
+    }
+    .modern-account-card.is-active {
+      background: rgba(30, 41, 59, 0.75) !important;
+      border-color: rgba(56, 189, 248, 0.6) !important;
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.15) !important;
+    }
+    .modern-acc-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 7px;
+    }
+    .modern-acc-id-group {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .modern-acc-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+    }
+    .modern-acc-title {
+      font-size: 12px;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .modern-acc-badge {
+      font-size: 9.5px;
+      font-weight: 600;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .modern-acc-radio {
+      font-size: 15px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modern-acc-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn-acc-switch {
+      background: #1e40af;
+      color: #fff;
+      border: 1px solid #3b82f6;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-acc-switch:hover {
+      background: #2563eb;
+    }
+    .btn-acc-reconnect {
+      background: rgba(255, 255, 255, 0.06);
+      color: #cbd5e1;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-acc-reconnect:hover {
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+    }
+    .btn-acc-logout {
+      background: rgba(239, 68, 68, 0.12);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .btn-acc-logout:hover {
+      background: #ef4444;
+      color: #ffffff;
+    }
+
+    .active-center-box {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid rgba(245, 158, 11, 0.25);
+      border-radius: 12px;
+      padding: 10px;
+    }
+    .active-center-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+    .active-center-title {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #f8fafc;
+    }
+    .active-center-desc {
+      font-size: 10px;
+      color: #64748b;
+    }
+    .twin-connected-wrap {
+      display: flex;
+      align-items: stretch;
+      gap: 8px;
+      position: relative;
+    }
+    .twin-tile {
+      flex: 1;
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(56, 189, 248, 0.25);
+      border-radius: 10px;
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .twin-tile-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .twin-tile-lbl {
+      font-size: 10px;
+      color: #94a3b8;
+      font-weight: 600;
+    }
+    .twin-tile-name {
+      font-size: 11.5px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .twin-tile-desc {
+      font-size: 9.5px;
+      color: #64748b;
+      line-height: 1.3;
+      margin-bottom: 8px;
+    }
+    .twin-connector {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #0f172a;
+      border: 1.5px solid #38bdf8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #38bdf8;
+      font-size: 11px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.4);
+      z-index: 2;
+    }
+    .twin-tile-btn {
+      background: rgba(30, 58, 138, 0.4);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      color: #38bdf8;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      width: 100%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: all 0.2s;
+    }
+    .twin-tile-btn:hover {
+      background: rgba(30, 58, 138, 0.8);
+      color: #fff;
+    }
+
+    .sidebar-info-banner {
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.22);
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-size: 9.5px;
+      color: #c084fc;
+      line-height: 1.5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .sidebar-info-banner i {
+      font-size: 14px;
+      color: #818cf8;
+      flex-shrink: 0;
+    }
+
+  
+    /* ============================================================== */
+    /* PORTAL DUAL-MODULE NAVIGATION & SIDEBAR STYLING (RIGHT RTL) */
+    /* ============================================================== */
+    .hub-portal-layout {
+      width: 100%;
+      max-width: 1400px;
+      margin-inline: auto;
+      display: flex;
+      flex-direction: row;
+      min-height: 100vh;
+      min-height: 100dvh;
+      direction: rtl;
+      box-sizing: border-box;
+      gap: 16px;
+      padding: 0 14px;
+      position: relative;
+    }
+
+    .hub-main-nav-sidebar {
+      width: 220px;
+      min-width: 220px;
+      max-width: 220px;
+      flex: 0 0 220px;
+      background: #080d1a;
+      border-left: 1px solid rgba(255, 255, 255, 0.08);
+      border-right: 1px solid rgba(255, 255, 255, 0.04);
+      height: 100vh;
+      height: 100dvh;
+      min-height: 100vh;
+      min-height: 100dvh;
+      position: sticky;
+      top: 0;
+      align-self: flex-start;
+      display: flex;
+      flex-direction: column;
+      padding: 22px 12px;
+      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.45);
+      z-index: 1000;
+      overflow-y: auto;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+
+    .hub-main-workspace {
+      flex: 1;
+      min-width: 0;
+      padding: 20px 0 60px 0;
+      overflow-x: hidden;
+      box-sizing: border-box;
+    }
+
+    .hub-workspace-inner {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    .portal-sidebar-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 16px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .portal-brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0284c7, #7c3aed);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      color: #fff;
+      box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35);
+      flex-shrink: 0;
+    }
+    .portal-brand-title {
+      font-size: 13.5px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.2;
+    }
+    .portal-brand-sub {
+      font-size: 10px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .portal-nav-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .portal-nav-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+    }
+
+    .portal-nav-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      width: 100%;
+      padding: 10px 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      color: #cbd5e1;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: right;
+      position: relative;
+    }
+
+    .portal-nav-btn:hover {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      transform: translateX(-2px);
+    }
+
+    .portal-nav-btn.active {
+      background: linear-gradient(135deg, rgba(37, 99, 235, 0.2), rgba(2, 132, 199, 0.12));
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3), 0 0 15px rgba(56, 189, 248, 0.15);
+    }
+
+    .portal-nav-btn.active::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      bottom: 10px;
+      right: 0;
+      width: 4px;
+      border-radius: 4px 0 0 4px;
+      background: linear-gradient(180deg, #38bdf8, #818cf8);
+    }
+
+    .portal-nav-btn .nav-btn-icon {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+      flex-shrink: 0;
+      transition: transform 0.2s;
+    }
+    .portal-nav-btn:hover .nav-btn-icon {
+      transform: scale(1.08);
+    }
+
+    .portal-nav-btn .nav-btn-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .portal-nav-btn .nav-btn-title {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: inherit;
+      line-height: 1.3;
+    }
+    .portal-nav-btn .nav-btn-desc {
+      display: block;
+      font-size: 10.5px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+    .portal-nav-btn.active .nav-btn-desc {
+      color: #93c5fd;
+    }
+
+    .portal-nav-btn .nav-btn-pill {
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    .portal-sidebar-info-card {
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin: 16px 0;
+    }
+
+    .portal-sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .portal-return-btn {
+      background: rgba(168, 85, 247, 0.08);
+      border-color: rgba(168, 85, 247, 0.2);
+    }
+    .portal-return-btn:hover {
+      background: rgba(168, 85, 247, 0.16);
+      border-color: rgba(168, 85, 247, 0.4);
+    }
+
+    .hub-view-pane {
+      animation: viewFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes viewFadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Blogger Connect View Styles */
+    .blogger-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    @media (max-width: 1100px) {
+      .blogger-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 640px) {
+      .blogger-kpi-grid { grid-template-columns: 1fr; }
+    }
+
+    .blogger-kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(12px);
+    }
+    .blogger-kpi-icon {
+      width: 46px;
+      height: 46px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .blogger-kpi-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      margin-bottom: 3px;
+    }
+    .blogger-kpi-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: #fff;
+    }
+    .blogger-kpi-sub {
+      font-size: 10.5px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .blogger-section-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 18px;
+      padding: 24px;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(12px);
+    }
+
+    .guide-step-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+
+    .uri-code-box {
+      background: #080d1a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-family: Consolas, monospace;
+      font-size: 12px;
+      color: #38bdf8;
+      direction: ltr;
+      text-align: left;
+      flex: 1;
+      overflow-x: auto;
+    }
+
+    .toggle-switch-pro {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+    .toggle-switch-pro input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .toggle-slider-pro {
+      position: absolute;
+      cursor: pointer;
+      inset: 0;
+      background-color: rgba(255, 255, 255, 0.15);
+      border-radius: 34px;
+      transition: .3s;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .toggle-slider-pro:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      border-radius: 50%;
+      transition: .3s;
+    }
+    .toggle-switch-pro input:checked + .toggle-slider-pro {
+      background-color: #2563eb;
+      border-color: #38bdf8;
+    }
+    .toggle-switch-pro input:checked + .toggle-slider-pro:before {
+      transform: translateX(22px);
+    }
+
+
+    /* ============================================================== */
+    /* RESPONSIVE BREAKPOINTS (Desktop, Laptop, Tablet, Mobile) */
+    /* ============================================================== */
+    @media (max-width: 1366px) {
+      .hub-portal-layout {
+        gap: 12px;
+        padding: 0 10px;
+      }
+      .hub-main-nav-sidebar {
+        width: 210px;
+        min-width: 210px;
+        max-width: 210px;
+        flex: 0 0 210px;
+        padding: 18px 10px;
+      }
+      .hub-permanent-sidebar {
+        width: 265px;
+        min-width: 255px;
+        flex: 0 0 265px;
+        padding: 16px 12px;
+      }
+      .hub-cards-layout {
+        gap: 12px;
+      }
+      .hub-sister-cards-group {
+        gap: 12px;
+      }
+    }
+
+    @media (max-width: 1140px) {
+      .hub-cards-layout {
+        flex-direction: column;
+      }
+      .hub-permanent-sidebar {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        flex: none;
+      }
+      .hub-sister-cards-group {
+        width: 100%;
+      }
+      .blogger-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 860px) {
+      .hub-portal-layout {
+        flex-direction: column;
+        padding: 0 8px;
+        gap: 14px;
+      }
+      .hub-main-nav-sidebar {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        flex: none;
+        height: auto;
+        min-height: auto;
+        position: static;
+        border-left: none;
+        border-right: none;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .hub-sister-cards-group {
+        grid-template-columns: 1fr;
+      }
+      .deploy-all-bar {
+        flex-direction: column;
+        text-align: center;
+        gap: 14px;
+      }
+      .blogger-kpi-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 <body>
 
-  <div class="container">
+    <div class="hub-portal-layout">
+    <!-- RIGHT NAVIGATION SIDEBAR (القائمة الجانبية بجهة اليمين RTL) -->
+    <aside class="hub-main-nav-sidebar" id="hub-main-nav-sidebar">
+      <!-- Sidebar Brand -->
+      <div class="portal-sidebar-brand">
+        <div class="portal-brand-icon">
+          <i class="fab fa-blogger-b"></i>
+        </div>
+        <div class="portal-brand-text">
+          <div class="portal-brand-title">Blogger Studio Pro</div>
+          <div class="portal-brand-sub">منظومة النشر والتكامل السحابي</div>
+        </div>
+      </div>
+
+      <!-- Navigation Section Label -->
+      <div class="portal-nav-section-title">
+        <i class="fas fa-compass"></i> أقسام ومراكز النشر
+      </div>
+
+      <!-- Main Navigation Menu -->
+      <div class="portal-nav-menu">
+        <!-- Item 1: Cloud Publishing Center -->
+        <button type="button" class="portal-nav-btn active" id="btn-nav-cloud-hub" onclick="switchMainPortalView('cloud-hub')">
+          <div class="nav-btn-icon" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8;">
+            <i class="fas fa-cloud-upload-alt"></i>
+          </div>
+          <div class="nav-btn-content">
+            <span class="nav-btn-title">مركز النشر السحابي</span>
+            <span class="nav-btn-desc">مزامنة Cloudflare & GitHub</span>
+          </div>
+          <span class="nav-btn-pill">نشط</span>
+        </button>
+
+        <!-- Item 2: Blogger Blog Linking & Google OAuth -->
+        <button type="button" class="portal-nav-btn" id="btn-nav-blogger-connect" onclick="switchMainPortalView('blogger-connect')">
+          <div class="nav-btn-icon" style="background: rgba(249, 115, 22, 0.15); color: #f97316;">
+            <i class="fas fa-link"></i>
+          </div>
+          <div class="nav-btn-content">
+            <span class="nav-btn-title">ربط وتفعيل مدونة بلوجر</span>
+            <span class="nav-btn-desc">Google OAuth وإدارة المدونات</span>
+          </div>
+          <span class="nav-btn-pill" style="background: rgba(66, 133, 244, 0.2); color: #60a5fa;">OAuth 2.0</span>
+        </button>
+      </div>
+
+      <!-- Info Box in Sidebar -->
+      <div class="portal-sidebar-info-card">
+        <div style="font-size: 11.5px; font-weight: 700; color: #38bdf8; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
+          <i class="fas fa-shield-alt"></i> حماية متقدمة للبيانات
+        </div>
+        <div style="font-size: 10.5px; color: #94a3b8; line-height: 1.5;">
+          جميع مفاتيح Google OAuth والرموز السحابية يتم تشفيرها وتخزينها محلياً بأعلى معايير الأمان.
+        </div>
+      </div>
+
+      <!-- Return to Main Dashboard Button -->
+      <div class="portal-sidebar-footer">
+        <a href="/" class="portal-nav-btn portal-return-btn">
+          <div class="nav-btn-icon" style="background: rgba(168, 85, 247, 0.15); color: #c084fc;">
+            <i class="fas fa-arrow-right"></i>
+          </div>
+          <div class="nav-btn-content">
+            <span class="nav-btn-title">العودة للوحة الإدارة</span>
+            <span class="nav-btn-desc">الرئيسية لاستوديو بلوجر</span>
+          </div>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE: THE TWO VIEWS (مساحة العمل المتغيرة بالكامل) -->
+    <main class="hub-main-workspace" id="hub-main-workspace">
+      <!-- VIEW 1: مركز النشر السحابي والربط التلقائي -->
+      <div id="view-cloud-hub" class="hub-view-pane active">
+<div class="hub-workspace-inner">
+
     
     <!-- Topbar Header -->
     <header class="hub-header">
@@ -488,15 +2275,182 @@
     </header>
 
     <!-- Security Guarantee Bar -->
-    <div class="security-badge-bar">
+        <div class="security-badge-bar">
       <i class="fas fa-shield-alt" style="font-size:18px;"></i>
       <span><strong>درع الخصوصية والأمان النشط:</strong> يتم استبعاد وتطهير كلمات المرور، ورموز OAuth السرية، وقواعد بيانات SQLite، والملفات الخاصة تلقائياً قبل أي عملية نشر أو رفع.</span>
     </div>
 
     <!-- Main Grid: Cloudflare & GitHub Management Cards -->
-    <div class="hub-grid">
 
-      <!-- CARD 1: Cloudflare Pages -->
+    <!-- ============================================================== -->
+    <!-- MAIN WORKSPACE: SIDEBAR + THE TWO SISTER CARDS (مذمومين على بعض وجميلين) -->
+    <!-- ============================================================== -->
+    <div class="hub-cards-layout">
+      <!-- 1. ACCOUNTS & TARGETS SIDEBAR -->
+<aside class="hub-permanent-sidebar" id="hub-accounts-sidebar">
+        <!-- Sidebar Header -->
+        <div class="perm-sidebar-header">
+          <div class="perm-sidebar-title-group">
+            <div class="perm-sidebar-icon">
+              <i class="fas fa-users"></i>
+            </div>
+            <div>
+              <div class="perm-sidebar-title">الحسابات ومراكز النشر</div>
+              <div class="perm-sidebar-desc">إدارة حساباتك ومراكز النشر للمنصات المتصلة</div>
+            </div>
+          </div>
+          <span class="badge" id="sidebar-accounts-badge" style="background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-size: 11px; padding: 4px 10px; border-radius: 8px; border: 1px solid rgba(56, 189, 248, 0.3); display: flex; align-items: center; gap: 5px;">
+            <i class="fas fa-layer-group" style="font-size: 10px;"></i> <span>المنصتان</span>
+          </span>
+        </div>
+
+        <!-- Dual Navigation Tabs -->
+        <div class="hub-nav-tabs">
+          <button type="button" class="hub-tab-btn active" id="tab-btn-accounts" onclick="switchSidebarView('accounts')">
+            <i class="fas fa-user"></i> <span>الحسابات</span>
+          </button>
+          <button type="button" class="hub-tab-btn" id="tab-btn-centers" onclick="switchSidebarView('centers')">
+            <i class="fas fa-layer-group"></i> <span>مراكز النشر</span>
+          </button>
+        </div>
+
+        <!-- VIEW 1: ACCOUNTS VIEW (Default) -->
+        <div id="sidebar-view-accounts">
+          <!-- Section 1: حسابات Cloudflare المتصلة -->
+          <div class="platform-section-card">
+            <div class="platform-section-header">
+              <div class="platform-header-title">
+                <i class="fab fa-cloudflare" style="font-size: 18px; color: #f38020;"></i>
+                <div>
+                  <div class="platform-title-text">حسابات Cloudflare المتصلة</div>
+                  <div class="platform-subtitle-text">إدارة حسابات Cloudflare وربطها مباشرة عبر OAuth</div>
+                </div>
+              </div>
+              <button type="button" class="btn-add-account-sm" onclick="openAddAccountModal('cloudflare')">
+                <i class="fas fa-plus"></i> <span>إضافة حساب</span>
+              </button>
+            </div>
+
+            <div class="platform-accounts-list" id="cf-accounts-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Section 2: حسابات GitHub المتصلة -->
+          <div class="platform-section-card" style="margin-top: 12px;">
+            <div class="platform-section-header">
+              <div class="platform-header-title">
+                <i class="fab fa-github" style="font-size: 18px; color: #ffffff;"></i>
+                <div>
+                  <div class="platform-title-text">حسابات GitHub المتصلة</div>
+                  <div class="platform-subtitle-text">إدارة حسابات GitHub وربطها مباشرة عبر OAuth</div>
+                </div>
+              </div>
+              <button type="button" class="btn-add-account-sm" onclick="openAddAccountModal('github')">
+                <i class="fas fa-plus"></i> <span>إضافة حساب</span>
+              </button>
+            </div>
+
+            <div class="platform-accounts-list" id="gh-accounts-container">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Section 3: مركز النشر النشط حالياً -->
+          <div class="active-center-box" style="margin-top: 14px;">
+            <div class="active-center-header">
+              <i class="fas fa-bullseye" style="color: #f59e0b; font-size: 18px;"></i>
+              <div>
+                <div class="active-center-title">مركز النشر النشط حالياً</div>
+                <div class="active-center-desc">تحديد الحسابات المستخدمة في عملية النشر التلقائي</div>
+              </div>
+            </div>
+
+            <!-- Linked Twin Box -->
+            <div class="twin-connected-wrap">
+              <!-- Right Tile (Cloudflare) -->
+              <div class="twin-tile" id="twin-tile-cf">
+                <div class="twin-tile-top">
+                  <span class="twin-tile-lbl">حساب Cloudflare</span>
+                  <i class="fab fa-cloudflare" style="color: #f38020; font-size: 14px;"></i>
+                </div>
+                <div class="twin-tile-name" id="twin-cf-name">hayan5@gmail.com</div>
+                <div class="twin-tile-desc">سيتم استخدام هذا الحساب للنشر الموقع على Pages</div>
+                <button type="button" class="twin-tile-btn" onclick="openSwitchAccountSelector('cloudflare')">
+                  <i class="fas fa-exchange-alt"></i> <span>تغيير الحساب</span>
+                </button>
+              </div>
+
+              <!-- Center Link Connector -->
+              <div class="twin-connector">
+                <i class="fas fa-link"></i>
+              </div>
+
+              <!-- Left Tile (GitHub) -->
+              <div class="twin-tile" id="twin-tile-gh">
+                <div class="twin-tile-top">
+                  <span class="twin-tile-lbl">حساب GitHub</span>
+                  <i class="fab fa-github" style="color: #fff; font-size: 14px;"></i>
+                </div>
+                <div class="twin-tile-name" id="twin-gh-name">Hayan-AL</div>
+                <div class="twin-tile-desc">سيتم استخدام هذا الحساب كمصدر للمستودع</div>
+                <button type="button" class="twin-tile-btn" onclick="openSwitchAccountSelector('github')">
+                  <i class="fas fa-exchange-alt"></i> <span>تغيير الحساب</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Bottom Info Banner -->
+          <div class="sidebar-info-banner" style="margin-top: 12px;">
+            <i class="fas fa-info-circle"></i>
+            <div>
+              يمكنك ربط أكثر من حساب لكل منصة واختيار الحساب المناسب للنشر.<br>
+              جميع الحسابات يتم ربطها بشكل مباشر عبر المنصة (OAuth) ويمكن إعادة استخدامها لاحقاً.
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: PUBLISHING CENTERS VIEW -->
+        <div id="sidebar-view-centers" style="display: none;">
+          <!-- Publishing Target Selector -->
+          <div class="sidebar-target-card" style="margin-top: 8px; margin-bottom: 14px;">
+            <div class="sidebar-target-header">
+              <span><i class="fas fa-bullseye text-cyan"></i> وجهة النشر والتفاعل:</span>
+              <span class="badge" id="centers-target-badge" style="font-size: 10px; background: rgba(30, 58, 138, 0.7); color: #93c5fd; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 8px; border-radius: 6px;">المنصتان معاً</span>
+            </div>
+            <div class="sidebar-target-pills">
+              <button type="button" class="sidebar-target-btn active" id="center-pill-target-both" onclick="changeCurrentAccountTarget('both')">
+                <i class="fas fa-layer-group"></i> <span>المنصتان</span>
+              </button>
+              <button type="button" class="sidebar-target-btn" id="center-pill-target-github" onclick="changeCurrentAccountTarget('github')">
+                <i class="fab fa-github"></i> <span>GitHub</span>
+              </button>
+              <button type="button" class="sidebar-target-btn" id="center-pill-target-cloudflare" onclick="changeCurrentAccountTarget('cloudflare')">
+                <i class="fas fa-cloud"></i> <span>Cloudflare</span>
+              </button>
+            </div>
+            <div class="sidebar-target-hint">
+              يتم توجيه عمليات النشر والتحديث للمنصات المختارة تلقائياً بناءً على المركز النشط.
+            </div>
+          </div>
+
+          <!-- Centers List -->
+          <div style="font-size: 12px; font-weight: 700; color: #cbd5e1; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between;">
+            <span>مراكز النشر المحفوظة:</span>
+            <button type="button" class="btn-add-account-sm" onclick="openCreateCenterModal()">
+              <i class="fas fa-plus"></i> <span>مركز جديد</span>
+            </button>
+          </div>
+          <div id="publishing-centers-container" style="display: flex; flex-direction: column; gap: 8px;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+      </aside>
+
+      <!-- 2. THE TWO COMPACT SISTER CARDS (Cloudflare & GitHub) -->
+      <div class="hub-sister-cards-group">
+        <!-- CARD 1: Cloudflare Pages -->
       <div class="hub-card" id="card-cf">
         <div>
           <div class="card-top">
@@ -619,7 +2573,7 @@
                 <i class="fas fa-copy"></i> <span>نسخ الأمر</span>
               </button>
             </div>
-            <div style="background:#03060a;border-radius:6px;padding:6px 10px;font-family:monospace;font-size:11px;color:#38bdf8;direction:ltr;text-align:left;overflow-x:auto;white-space:nowrap;">
+            <div class="wrangler-code-box" style="background:#03060a;border-radius:6px;padding:8px 10px;font-family:monospace;font-size:11px;color:#38bdf8;direction:ltr;text-align:left;overflow-x:auto;white-space:nowrap;">
               npx wrangler pages deploy dist --project-name blogger-studio-pro --branch main
             </div>
           </div>
@@ -773,11 +2727,11 @@
           </a>
         </div>
       </div>
-
+      </div>
     </div>
 
     <!-- Huge Deploy All Banner -->
-    <div class="deploy-all-bar">
+    <div class="deploy-all-bar" id="deploy-all-bar">
       <div class="deploy-all-info">
         <h3>🚀 النشر الشامل المزدوج (Cloudflare + GitHub)</h3>
         <p>يقوم برفع أحدث نسخة من الكود إلى مستودعك على GitHub، ونشر الواجهة حية على شبكة Cloudflare في نفس اللحظة.</p>
@@ -805,7 +2759,362 @@
       </div>
     </div>
 
-  </div>
+        </div> <!-- End .hub-workspace-inner -->
+      </div> <!-- End #view-cloud-hub -->
+
+      <!-- ============================================================== -->
+      <!-- VIEW 2: ربط وتفعيل مدونة بلوجر (Blogger & Google OAuth Center) -->
+      <!-- ============================================================== -->
+      <div id="view-blogger-connect" class="hub-view-pane" style="display: none;">
+        <div class="hub-workspace-inner">
+        <!-- Header Pro & Action Bar -->
+        <header class="hub-header" style="margin-bottom: 20px;">
+          <div class="hub-brand">
+            <div class="hub-logo-icon" style="background: linear-gradient(135deg, #f97316, #ea580c); box-shadow: 0 4px 15px rgba(249, 115, 22, 0.35);">
+              <i class="fab fa-blogger-b"></i>
+            </div>
+            <div>
+              <h1 style="font-size: 19px; font-weight: 800; color: #fff; margin: 0 0 4px 0;">ربط وتفعيل مدونة بلوجر</h1>
+              <p style="font-size: 12px; color: var(--text-muted); margin: 0;">مركز شامل لإدارة وتفعيل مدونات بلوجر عبر تسجيل الدخول بحساب جوجل أو عبر المعاملات المباشرة بدون حساب، وفحص الاتصال الحي وإدارة المدونات المتصلة.</p>
+            </div>
+          </div>
+          <div class="hub-top-actions">
+            <button type="button" class="btn-action btn-secondary" onclick="hubPingNetworkLatency()">
+              <i class="fas fa-bolt" style="color: #f59e0b;"></i> <span>فحص سرعة الشبكة</span>
+            </button>
+            <button type="button" class="btn-action btn-secondary" onclick="hubFetchBlogs()">
+              <i class="fas fa-sync-alt"></i> <span>تحديث المدونات</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- TOP 4 KPI METRICS STRIP (مطابقة تماماً للصورة) -->
+        <div class="blogger-kpi-grid">
+          <!-- Metric 1: Google OAuth Status -->
+          <div class="blogger-kpi-card">
+            <div class="blogger-kpi-icon" style="background: rgba(66, 133, 244, 0.15); color: #4285f4;">
+              <i class="fab fa-google"></i>
+            </div>
+            <div>
+              <div class="blogger-kpi-label">تسجيل دخول جوجل</div>
+              <div class="blogger-kpi-val" id="hub-kpi-oauth-status" style="font-size: 13.5px; color: #f87171;">غير مسجل</div>
+              <div class="blogger-kpi-sub">حساب Google الرسمي</div>
+            </div>
+          </div>
+
+          <!-- Metric 2: Active Blog -->
+          <div class="blogger-kpi-card">
+            <div class="blogger-kpi-icon" style="background: rgba(249, 115, 22, 0.15); color: #f97316;">
+              <i class="fab fa-blogger-b"></i>
+            </div>
+            <div>
+              <div class="blogger-kpi-label">المدونة النشطة حالياً</div>
+              <div class="blogger-kpi-val" id="hub-kpi-active-blog">My Blogger</div>
+              <div class="blogger-kpi-sub">المحددة للنشر والإدارة</div>
+            </div>
+          </div>
+
+          <!-- Metric 3: Total Connected Blogs -->
+          <div class="blogger-kpi-card">
+            <div class="blogger-kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">
+              <i class="fas fa-layer-group"></i>
+            </div>
+            <div>
+              <div class="blogger-kpi-label">إجمالي المدونات المتصلة</div>
+              <div class="blogger-kpi-val" id="hub-kpi-blogs-count" style="color: #38bdf8;">0</div>
+              <div class="blogger-kpi-sub">مدونات جاهزة للنشر</div>
+            </div>
+          </div>
+
+          <!-- Metric 4: Protocol & Ping -->
+          <div class="blogger-kpi-card">
+            <div class="blogger-kpi-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">
+              <i class="fas fa-network-wired"></i>
+            </div>
+            <div>
+              <div class="blogger-kpi-label">بروتوكول واستجابة الشبكة</div>
+              <div class="blogger-kpi-val" id="hub-kpi-ping-val" style="color: #10b981;">463 ms</div>
+              <div class="blogger-kpi-sub">HTTPS / استجابة ممتازة</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CARD 1: GOOGLE OAUTH CONNECTION & CREDENTIALS (مطابقة تماماً للصورة) -->
+        <div class="blogger-section-card" style="border: 1.5px solid rgba(66, 133, 244, 0.35);">
+          <!-- Top Row of Card 1 -->
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; flex-wrap: wrap; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 14px;">
+              <div style="width: 46px; height: 46px; border-radius: 12px; background: rgba(66, 133, 244, 0.15); color: #4285f4; display: flex; align-items: center; justify-content: center; font-size: 22px;">
+                <i class="fab fa-google"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 800; color: #fff;">تفعيل وتسجيل الدخول بحساب جوجل</h3>
+                <p style="margin: 0; font-size: 12px; color: var(--text-muted);">يتيح تفويض حساب جوجل لاكتشاف ونشر وتعديل المقالات عبر واجهة برمجة تطبيقات بلوجر الرسمية</p>
+              </div>
+            </div>
+            <span class="badge" style="background: rgba(66, 133, 244, 0.2); color: #93c5fd; border: 1px solid rgba(66, 133, 244, 0.4); font-size: 11px; padding: 4px 10px; border-radius: 6px;">
+              Google OAuth 2.0
+            </span>
+          </div>
+
+          <!-- Switch & Mode Row -->
+          <div style="background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div style="font-weight: 700; color: #fff; font-size: 13.5px; margin-bottom: 3px;">تمكين وضع تسجيل دخول جوجل الرسمي</div>
+              <div style="font-size: 11.5px; color: var(--text-muted);">يتيح تفويض حساب جوجل لاكتشاف ونشر وتعديل المقالات عبر واجهة برمجة تطبيقات بلوجر الرسمية</div>
+            </div>
+            <label class="toggle-switch-pro">
+              <input type="checkbox" id="hub-google-auth-toggle" checked onchange="hubToggleGoogleAuth(this.checked)">
+              <span class="toggle-slider-pro"></span>
+            </label>
+          </div>
+
+          <!-- Action Buttons & Account Status Row -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 22px; padding: 12px 16px; background: rgba(15, 23, 42, 0.5); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05);">
+            <div style="font-size: 12px; color: #94a3b8; display: flex; align-items: center; gap: 8px;">
+              <i class="fas fa-info-circle" style="color: #38bdf8;"></i>
+              <span id="hub-oauth-account-status-text">حتى الآن، يمكنك تسجيل الدخول بالزر المقابل، أو إضافة مفاتيحك يدوياً بأسفل Google لتوفير ربط حساب خاص.</span>
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-action btn-blue" onclick="hubStartGoogleLogin()" style="padding: 9px 18px; font-size: 12.5px; background: #2563eb;">
+                <i class="fab fa-google"></i> <span>تسجيل الدخول بحساب جوجل</span>
+              </button>
+              <button type="button" class="btn-action btn-secondary" onclick="hubToggleDevKeysBox()" style="padding: 9px 14px; font-size: 12px;">
+                <i class="fas fa-sliders-h" style="color: #f59e0b;"></i> <span>إعدادات مفاتيح جوجل السحابية للمطورين</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- DEVELOPER CREDENTIALS BOX (Collapsible / Toggleable) -->
+          <div id="hub-oauth-developer-box" style="display: block; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(66, 133, 244, 0.3); border-radius: 14px; padding: 18px 20px; margin-bottom: 22px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+              <div>
+                <h4 style="margin: 0 0 3px 0; font-size: 14px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-key" style="color: #38bdf8;"></i> <span>إعدادات مفاتيح Google Cloud OAuth (معرف العميل والمفتاح السري)</span>
+                </h4>
+                <div style="font-size: 11.5px; color: #94a3b8;">لتمكين التفويض الآمن Google Cloud أدخل بيانات الاعتماد الرسمية المستخرجة من مشروعك في Google Cloud Console</div>
+              </div>
+              <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #38bdf8; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                <span>لوحة Google Cloud</span> <i class="fas fa-external-link-alt"></i>
+              </a>
+            </div>
+
+            <div id="hub-oauth-saved-badge" style="display: none; align-items: center; gap: 8px; font-size: 11.5px; color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 8px; padding: 7px 12px; margin-bottom: 12px;"></div>
+            <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; margin-bottom: 14px;">
+              <div>
+                <label class="form-label" style="font-size: 11.5px; margin-bottom: 5px; display: block;">
+                  * معرّف العميل (معرّف العميل Client ID):
+                </label>
+                <input type="text" id="hub-client-id-input" class="form-input font-mono" placeholder="123456789-xxx.apps.googleusercontent.com" style="width: 100%; font-size: 12px; padding: 9px 12px;">
+              </div>
+              <div>
+                <label class="form-label" style="font-size: 11.5px; margin-bottom: 5px; display: block;">
+                  * المفتاح السري (المفتاح السري Client Secret):
+                </label>
+                <div style="display: flex; gap: 6px;">
+                  <input type="password" id="hub-client-secret-input" class="form-input font-mono" placeholder="GOCSPX-xxx" style="flex: 1; font-size: 12px; padding: 9px 12px;">
+                  <button type="button" class="btn-action btn-secondary" onclick="hubToggleSecretVisibility()" title="إظهار/إخفاء المفتاح السري" style="padding: 0 12px;">
+                    <i class="fas fa-eye" id="icon-hub-secret-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end;">
+              <button type="button" class="btn-action btn-blue" id="btn-save-oauth-creds" onclick="hubSaveOAuthCredentials()" style="padding: 8px 20px; font-size: 12.5px;">
+                <i class="fas fa-save"></i> <span>حفظ بيانات الاعتماد 💾</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 403 GOOGLE ERROR MITIGATION GUIDE (مطابقة تماماً للصورة) -->
+          <div style="border: 1px solid rgba(245, 158, 11, 0.35); background: rgba(30, 20, 10, 0.6); border-radius: 14px; padding: 16px 20px; margin-bottom: 22px;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 12px;">
+              <div style="width: 32px; height: 32px; border-radius: 8px; background: rgba(245, 158, 11, 0.2); color: #f59e0b; display: flex; align-items: center; justify-content: center; font-size: 16px;">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div>
+                <div style="font-weight: 800; color: #fbbf24; font-size: 13.5px;">403 Google لتفادي خطأ (Users فحص) خطوة ضرورية وشاملة: إضافة المستخدم التجريبي</div>
+                <div style="font-size: 11.5px; color: #cbd5e1; margin-top: 2px;">إذا كان مشروعك في وضع التجربة، جوجل ترفض تسجيل الدخول إلا إذا أضفت بريدك كمستخدم تجريبي:</div>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;">
+              <!-- Step 1 -->
+              <div class="guide-step-card">
+                <div style="font-weight: 700; color: #38bdf8; font-size: 12px; margin-bottom: 4px;">1. فتح شاشة الموافقة:</div>
+                <div style="font-size: 11px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px;">Google Cloud في مشروعي OAuth افتح شاشة موافقة</div>
+                <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary btn-sm" style="font-size: 10.5px; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-external-link-alt"></i> <span>فتح شاشة الموافقة في Google Cloud</span>
+                </a>
+              </div>
+
+              <!-- Step 2 -->
+              <div class="guide-step-card">
+                <div style="font-weight: 700; color: #38bdf8; font-size: 12px; margin-bottom: 4px;">2. إضافة البريد الإلكتروني (User إضافة):</div>
+                <div style="font-size: 11px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px;">ثم أدخل بريدك الإلكتروني في قسم Test users</div>
+                <div style="display: flex; gap: 6px;">
+                  <input type="text" id="hub-guide-email" class="form-input" value="hayan5@gmail.com" readonly style="font-size: 11px; padding: 4px 8px; flex: 1;">
+                  <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('hayan5@gmail.com', 'تم نسخ البريد')" style="font-size: 11px; padding: 4px 10px;">
+                    <i class="fas fa-copy"></i> <span>نسخ البريد</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Step 3 -->
+              <div class="guide-step-card">
+                <div style="font-weight: 700; color: #38bdf8; font-size: 12px; margin-bottom: 4px;">3. نشر التطبيق للحل الدائم (Publish):</div>
+                <div style="font-size: 11px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px;">لجعل التطبيق يعمل لأي حساب دون قيود اضغط PUBLISH APP بنفس شاشة الموافقة</div>
+                <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary btn-sm" style="font-size: 10.5px; padding: 5px 10px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                  <i class="fas fa-check-circle" style="color: #10b981;"></i> <span>صفحة شاشة الموافقة</span>
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- AUTHORIZED REDIRECT URIS (مطابقة تماماً للصورة) -->
+          <!-- CRITICAL ALERT: NO REGISTERED ORIGIN FIX -->
+          <div style="background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(15, 23, 42, 0.8)); border: 1.5px solid rgba(239, 68, 68, 0.4); border-radius: 14px; padding: 14px 18px; margin-bottom: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+              <i class="fas fa-shield-alt" style="color: #ef4444; font-size: 16px;"></i>
+              <strong style="color: #fca5a5; font-size: 13px;">حل خطأ Google رفض الدخول: (no registered origin / 401 invalid_client)</strong>
+            </div>
+            <div style="font-size: 11.5px; color: #cbd5e1; line-height: 1.6; margin-bottom: 8px;">
+              تأكد من إضافة النطاق السحابي <code style="color: #38bdf8;">https://blogger-studio-pro.pages.dev</code> داخل خانة <strong>Authorized JavaScript origins (مصادر JavaScript المعتمدة)</strong> في Google Cloud Console وليس فقط في روابط إعادة التوجيه.
+            </div>
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button type="button" class="btn-action btn-sm" onclick="hubCopyText('https://blogger-studio-pro.pages.dev', 'تم نسخ الأصل السحابي بنجاح!')" style="font-size: 11px; padding: 4px 12px; background: #ef4444; color: #fff;">
+                <i class="fas fa-copy"></i> <span>نسخ النطاق السحابي الأساسي</span>
+              </button>
+              <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" class="btn-action btn-secondary btn-sm" style="font-size: 11px; padding: 4px 12px; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;">
+                <i class="fas fa-external-link-alt"></i> <span>صفحة Google Cloud Credentials ↗</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- AUTHORIZED JAVASCRIPT ORIGINS (PRIMARY FOR CLIENT-SIDE GIS) -->
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(192, 132, 252, 0.3); border-radius: 14px; padding: 16px 20px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <div style="font-weight: 700; color: #c084fc; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-globe" style="color: #c084fc;"></i> <span>مصادر JavaScript المعتمدة (Authorized JavaScript origins)</span>
+                </div>
+                <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">أضف هذه الأصول في خانة Authorized JavaScript origins في Google Cloud لتفعيل تسجيل الدخول المباشر:</div>
+              </div>
+              <button type="button" class="btn-action btn-secondary btn-sm" onclick="hubCopyAllOrigins()" style="font-size: 11px; padding: 5px 12px; color: #c084fc; border-color: rgba(192, 132, 252, 0.4);">
+                <i class="fas fa-copy"></i> <span>نسخ جميع مصادر JavaScript</span>
+              </button>
+            </div>
+
+            <!-- Origin 1: Cloudflare Pages -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px; background: rgba(192, 132, 252, 0.08); padding: 6px 10px; border-radius: 8px; border: 1px solid rgba(192, 132, 252, 0.3);">
+              <span class="badge" style="background: #9333ea; color: #fff; font-size: 11px; padding: 4px 8px; border-radius: 6px; flex-shrink: 0; font-weight: 700;">1. سحابي أساسي</span>
+              <div class="uri-code-box" id="hub-origin-1" style="color: #f3e8ff; font-weight: 700;">https://blogger-studio-pro.pages.dev</div>
+              <button type="button" class="btn-action btn-sm" onclick="hubCopyText('https://blogger-studio-pro.pages.dev', 'تم نسخ الأصل السحابي')" style="font-size: 11.5px; padding: 6px 12px; background: #9333ea; color: #fff;">
+                <i class="fas fa-copy"></i> <span>نسخ الأصل السحابي</span>
+              </button>
+            </div>
+
+            <!-- Origin 2: Localhost 127.0.0.1 -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span class="badge" style="background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex-shrink: 0;">2. أصل محلي</span>
+              <div class="uri-code-box" id="hub-origin-2">http://127.0.0.1:8000</div>
+              <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('http://127.0.0.1:8000', 'تم نسخ الأصل المحلي')" style="font-size: 11.5px; padding: 6px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ الأصل</span>
+              </button>
+            </div>
+
+            <!-- Origin 3: Localhost -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge" style="background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex-shrink: 0;">3. أصل محلي</span>
+              <div class="uri-code-box" id="hub-origin-3">http://localhost:8000</div>
+              <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('http://localhost:8000', 'تم نسخ الأصل المحلي الثاني')" style="font-size: 11.5px; padding: 6px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ الأصل</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- AUTHORIZED REDIRECT URIS -->
+          <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 14px; padding: 16px 20px; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <div>
+                <div style="font-weight: 700; color: #fff; font-size: 13px; display: flex; align-items: center; gap: 6px;">
+                  <i class="fas fa-link" style="color: #38bdf8;"></i> <span>روابط إعادة التوجيه المعتمدة (Authorized redirect URIs)</span>
+                </div>
+                <div style="font-size: 11.5px; color: #94a3b8; margin-top: 2px;">في إعدادات Client ID، انسخ هذه الروابط في خانة Authorized redirect URIs:</div>
+              </div>
+              <button type="button" class="btn-action btn-secondary btn-sm" onclick="hubCopyAllRedirectUris()" style="font-size: 11px; padding: 5px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ جميع روابط إعادة التوجيه</span>
+              </button>
+            </div>
+
+            <!-- URI 1: Cloudflare Base -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span class="badge" style="background: #1e293b; color: #38bdf8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex-shrink: 0;">1. سحابي</span>
+              <div class="uri-code-box">https://blogger-studio-pro.pages.dev/</div>
+              <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('https://blogger-studio-pro.pages.dev/', 'تم نسخ الرابط السحابي')" style="font-size: 11.5px; padding: 6px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ الرابط</span>
+              </button>
+            </div>
+
+            <!-- URI 2: Cloudflare Callback -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span class="badge" style="background: #1e293b; color: #38bdf8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex-shrink: 0;">2. سحابي</span>
+              <div class="uri-code-box">https://blogger-studio-pro.pages.dev/api/auth/google/callback</div>
+              <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('https://blogger-studio-pro.pages.dev/api/auth/google/callback', 'تم نسخ رابط Callback السحابي')" style="font-size: 11.5px; padding: 6px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ الرابط</span>
+              </button>
+            </div>
+
+            <!-- URI 3: Localhost Callback -->
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span class="badge" style="background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex-shrink: 0;">3. محلي</span>
+              <div class="uri-code-box" id="hub-uri-1">http://127.0.0.1:8000/api/auth/google/callback</div>
+              <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('http://127.0.0.1:8000/api/auth/google/callback', 'تم نسخ الرابط المحلي الأول')" style="font-size: 11.5px; padding: 6px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ الرابط</span>
+              </button>
+            </div>
+
+            <!-- URI 4: Localhost Callback 2 -->
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span class="badge" style="background: #1e293b; color: #94a3b8; font-size: 11px; padding: 5px 8px; border-radius: 6px; flex-shrink: 0;">4. محلي</span>
+              <div class="uri-code-box" id="hub-uri-2">http://localhost:8000/api/auth/google/callback</div>
+              <button type="button" class="btn-action btn-secondary" onclick="hubCopyText('http://localhost:8000/api/auth/google/callback', 'تم نسخ الرابط المحلي الثاني')" style="font-size: 11.5px; padding: 6px 12px;">
+                <i class="fas fa-copy"></i> <span>نسخ الرابط</span>
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- CARD 2: CONNECTED BLOGS HUB (مطابقة تماماً للصورة) -->
+        <div class="blogger-section-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 36px; height: 36px; border-radius: 10px; background: rgba(249, 115, 22, 0.15); color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 18px;">
+                <i class="fab fa-blogger-b"></i>
+              </div>
+              <div>
+                <h3 style="margin: 0 0 2px 0; font-size: 15px; font-weight: 800; color: #fff;">مدونات حسابك المربوطة</h3>
+                <div style="font-size: 11px; color: var(--text-muted);">المدونات المكتشفة والمرتبطة بالنظام لإدارة المحتوى والنشر التلقائي</div>
+              </div>
+            </div>
+            <button type="button" class="btn-action btn-secondary btn-sm" onclick="hubFetchBlogs()" style="font-size: 11.5px; padding: 5px 12px;">
+              <i class="fas fa-sync-alt"></i> <span>تحديث المدونات</span>
+            </button>
+          </div>
+
+          <div id="hub-connected-blogs-grid" style="display: flex; flex-direction: column; gap: 10px;">
+            <!-- Populated dynamically -->
+          </div>
+        </div>
+
+              </div> <!-- End .hub-workspace-inner -->
+      </div> <!-- End #view-blogger-connect -->
+    </main> <!-- End .hub-main-workspace -->
+  </div> <!-- End .hub-portal-layout -->
+
+
+  <script src="./static/js/google_blogger_client.js"></script>
 
   <!-- Toast Element -->
   <div id="hub-toast" class="toast-popup">
@@ -817,11 +3126,13 @@
     function showToast(msg) {
       const toast = document.getElementById('hub-toast');
       const toastMsg = document.getElementById('hub-toast-msg');
-      toastMsg.textContent = msg;
+      if (!toast) return;
+      if (toastMsg) toastMsg.textContent = msg;
       toast.classList.add('show');
-      setTimeout(() => {
+      if (window._toastTimeout) clearTimeout(window._toastTimeout);
+      window._toastTimeout = setTimeout(() => {
         toast.classList.remove('show');
-      }, 3000);
+      }, 4000);
     }
 
     function copyUrl(text, successMsg) {
@@ -1083,6 +3394,524 @@
       }
     }
 
+    
+    // ==============================================================================
+    // MODERN MULTI-ACCOUNT & PUBLISHING CENTER JAVASCRIPT CONTROLLERS
+    // ==============================================================================
+
+    let cachedGroupedAccounts = null;
+
+    function switchSidebarView(view) {
+      const viewAcc = document.getElementById('sidebar-view-accounts');
+      const viewCtr = document.getElementById('sidebar-view-centers');
+      const btnAcc = document.getElementById('tab-btn-accounts');
+      const btnCtr = document.getElementById('tab-btn-centers');
+
+      if (view === 'centers') {
+        if (viewAcc) viewAcc.style.display = 'none';
+        if (viewCtr) viewCtr.style.display = 'block';
+        if (btnAcc) btnAcc.classList.remove('active');
+        if (btnCtr) btnCtr.classList.add('active');
+        renderPublishingCentersView();
+      } else {
+        if (viewAcc) viewAcc.style.display = 'block';
+        if (viewCtr) viewCtr.style.display = 'none';
+        if (btnAcc) btnAcc.classList.add('active');
+        if (btnCtr) btnCtr.classList.remove('active');
+      }
+    }
+
+    async function loadAccounts() {
+      try {
+        const res = await fetch('/api/hub/accounts');
+        const data = await res.json();
+        if (data.status === 'success') {
+          cachedGroupedAccounts = data;
+          cachedAccountsList = data.github_accounts || [];
+          renderGroupedAccounts(data);
+          updateTwinCenterBox(data);
+        }
+      } catch (err) {
+        console.error('Failed to load accounts:', err);
+      }
+    }
+
+    function renderGroupedAccounts(data) {
+      const cfContainer = document.getElementById('cf-accounts-container');
+      const ghContainer = document.getElementById('gh-accounts-container');
+
+      // 1. Render Cloudflare Accounts
+      const cfAccounts = data.cloudflare_accounts || [];
+      if (cfContainer) {
+        if (cfAccounts.length === 0) {
+          cfContainer.innerHTML = '<div style="text-align:center;padding:12px;color:#64748b;font-size:11px;">لا توجد حسابات Cloudflare مسجلة.</div>';
+        } else {
+          cfContainer.innerHTML = cfAccounts.map(a => {
+            const isActive = a.is_active;
+            const safeEmail = a.email.replace(/'/g, "\\'");
+            return `
+              <div class="modern-account-card ${isActive ? 'is-active' : ''}" id="cf-acc-${a.id}">
+                <div class="modern-acc-top">
+                  <div class="modern-acc-id-group">
+                    <i class="fab fa-cloudflare" style="color:#f38020;font-size:15px;"></i>
+                    <div>
+                      <div class="modern-acc-title">
+                        <span>${a.email}</span>
+                        ${isActive ? '<i class="fas fa-check-circle" style="color:#10b981;font-size:11px;"></i>' : ''}
+                      </div>
+                      <div class="modern-acc-badge">
+                        <span style="color:${a.is_primary ? '#10b981' : '#94a3b8'};">●</span> ${a.is_primary ? 'الحساب الرئيسي' : 'حساب إضافي'}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modern-acc-radio" onclick="switchPlatformAccount('cloudflare', '${a.id}')">
+                    ${isActive 
+                      ? '<i class="fas fa-dot-circle" style="color:#38bdf8;font-size:16px;"></i>' 
+                      : '<i class="far fa-circle" style="color:#64748b;font-size:16px;"></i>'}
+                  </div>
+                </div>
+                <div class="modern-acc-actions">
+                  <button type="button" class="btn-acc-switch" onclick="switchPlatformAccount('cloudflare', '${a.id}')">
+                    <i class="fas fa-exchange-alt"></i> <span>تبديل</span>
+                  </button>
+                  <button type="button" class="btn-acc-reconnect" onclick="reconnectPlatformAccount('cloudflare', '${a.id}')">
+                    <i class="fas fa-sync-alt"></i> <span>إعادة ربط</span>
+                  </button>
+                  <button type="button" class="btn-acc-logout" onclick="logoutPlatformAccount('cloudflare', '${a.id}', '${safeEmail}')">
+                    <i class="fas fa-sign-out-alt"></i> <span>تسجيل خروج</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+
+      // 2. Render GitHub Accounts
+      const ghAccounts = data.github_accounts || [];
+      if (ghContainer) {
+        if (ghAccounts.length === 0) {
+          ghContainer.innerHTML = '<div style="text-align:center;padding:12px;color:#64748b;font-size:11px;">لا توجد حسابات GitHub مسجلة.</div>';
+        } else {
+          ghContainer.innerHTML = ghAccounts.map(a => {
+            const isActive = a.is_active;
+            const safeUser = a.username.replace(/'/g, "\\'");
+            const avatar = a.avatar_url || 'https://avatars.githubusercontent.com/u/25952533?v=4';
+            return `
+              <div class="modern-account-card ${isActive ? 'is-active' : ''}" id="gh-acc-${a.id}">
+                <div class="modern-acc-top">
+                  <div class="modern-acc-id-group">
+                    <img src="${avatar}" alt="${a.username}" class="modern-acc-avatar" onerror="this.src='/static/img/dashboard_favicon.svg'">
+                    <div>
+                      <div class="modern-acc-title">
+                        <span>${a.username}</span>
+                        ${isActive ? '<i class="fas fa-check-circle" style="color:#10b981;font-size:11px;"></i>' : ''}
+                      </div>
+                      <div class="modern-acc-badge">
+                        <span style="color:${a.is_primary ? '#10b981' : '#94a3b8'};">●</span> ${a.is_primary ? 'الحساب الرئيسي' : 'حساب إضافي'}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="modern-acc-radio" onclick="switchPlatformAccount('github', '${a.id}')">
+                    ${isActive 
+                      ? '<i class="fas fa-dot-circle" style="color:#38bdf8;font-size:16px;"></i>' 
+                      : '<i class="far fa-circle" style="color:#64748b;font-size:16px;"></i>'}
+                  </div>
+                </div>
+                <div class="modern-acc-actions">
+                  <button type="button" class="btn-acc-switch" onclick="switchPlatformAccount('github', '${a.id}')">
+                    <i class="fas fa-exchange-alt"></i> <span>تبديل</span>
+                  </button>
+                  <button type="button" class="btn-acc-reconnect" onclick="reconnectPlatformAccount('github', '${a.id}')">
+                    <i class="fas fa-sync-alt"></i> <span>إعادة ربط</span>
+                  </button>
+                  <button type="button" class="btn-acc-logout" onclick="logoutPlatformAccount('github', '${a.id}', '${safeUser}')">
+                    <i class="fas fa-sign-out-alt"></i> <span>تسجيل خروج</span>
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    function updateTwinCenterBox(data) {
+      const twinCf = document.getElementById('twin-cf-name');
+      const twinGh = document.getElementById('twin-gh-name');
+
+      if (twinCf && data.active_cloudflare) {
+        twinCf.textContent = data.active_cloudflare.email || 'hyayn5@gmail.com';
+      }
+      if (twinGh && data.active_github) {
+        twinGh.textContent = data.active_github.username || 'Hayan-AL';
+      }
+
+      // Sync active badge in header
+      const headerBadge = document.getElementById('sidebar-accounts-badge');
+      if (headerBadge) {
+        const target = data.deploy_target || 'both';
+        const labels = {
+          both: '<i class="fas fa-layer-group" style="font-size:10px;"></i> <span>المنصتان</span>',
+          github: '<i class="fab fa-github" style="font-size:10px;"></i> <span>GitHub</span>',
+          cloudflare: '<i class="fas fa-cloud" style="font-size:10px;"></i> <span>Cloudflare</span>'
+        };
+        headerBadge.innerHTML = labels[target] || labels.both;
+      }
+    }
+
+    async function switchPlatformAccount(platform, accountId) {
+      showToast(`جاري التبديل إلى حساب ${platform === 'github' ? 'GitHub' : 'Cloudflare'}...`);
+      try {
+        const res = await fetch('/api/hub/accounts/switch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ platform: platform, account_id: accountId })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(`🎉 ${result.message}`);
+          await loadAccounts();
+          await loadInitialStatus();
+          pulseCard(platform === 'github' ? 'card-gh' : 'card-cf');
+        } else {
+          showToast(result.message || 'حدث خطأ أثناء التبديل.');
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+      }
+    }
+
+    async function reconnectPlatformAccount(platform, accountId) {
+      showToast(`جاري إعادة التحقق وتحديث اتصال حساب ${platform === 'github' ? 'GitHub' : 'Cloudflare'}...`);
+      try {
+        const res = await fetch('/api/hub/accounts/reconnect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ platform: platform, account_id: accountId })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(`✅ ${result.message}`);
+          await loadAccounts();
+        } else {
+          showToast(result.message || 'فشلت إعادة الربط.');
+        }
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+    async function logoutPlatformAccount(platform, accountId, accountName) {
+      const platformName = platform === 'github' ? 'GitHub' : 'Cloudflare';
+      const confirmed = await showCustomConfirm({
+        title: `تسجيل الخروج من حساب ${platformName}`,
+        desc: `هل أنت متأكد من رغبتك في تسجيل الخروج من حساب ${platformName}: <strong>${accountName}</strong>؟ سيتم إلغاء تفعيله ويمكنك إعادة ربطه في أي وقت بنقرة واحدة.`,
+        confirmText: 'تأكيد تسجيل الخروج 🚪',
+        btnClass: 'btn-rose',
+        iconClass: 'fa-sign-out-alt'
+      });
+
+      if (!confirmed) return;
+
+      try {
+        showToast(`جاري تسجيل الخروج من ${accountName}...`);
+        const res = await fetch('/api/hub/accounts/delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ platform: platform, account_id: accountId })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(`🚪 ${result.message}`);
+          await loadAccounts();
+          await loadInitialStatus();
+        } else {
+          showToast(result.message || 'حدث خطأ.');
+        }
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+    function openSwitchAccountSelector(platform) {
+      const containerId = platform === 'github' ? 'gh-accounts-container' : 'cf-accounts-container';
+      const el = document.getElementById(containerId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        el.style.outline = '2px solid #38bdf8';
+        setTimeout(() => el.style.outline = 'none', 1500);
+      }
+    }
+
+    let currentModalPlatform = 'github';
+
+    function openAddAccountModal(platform) {
+      currentModalPlatform = platform || 'github';
+      const modal = document.getElementById('hub-add-acc-modal');
+      if (modal) {
+        modal.style.display = 'flex';
+        setTimeout(() => modal.classList.add('show'), 10);
+        switchModalPlatformTab(currentModalPlatform);
+      }
+    }
+
+    function closeAddAccountModal() {
+      const modal = document.getElementById('hub-add-acc-modal');
+      if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 250);
+      }
+    }
+
+    function switchModalPlatformTab(platform) {
+      currentModalPlatform = platform;
+      const ghTab = document.getElementById('modal-tab-gh');
+      const cfTab = document.getElementById('modal-tab-cf');
+      const ghForm = document.getElementById('modal-form-gh');
+      const cfForm = document.getElementById('modal-form-cf');
+
+      if (platform === 'github') {
+        if (ghTab) { ghTab.style.background = '#2563eb'; ghTab.style.color = '#fff'; }
+        if (cfTab) { cfTab.style.background = 'rgba(255,255,255,0.06)'; cfTab.style.color = '#94a3b8'; }
+        if (ghForm) ghForm.style.display = 'block';
+        if (cfForm) cfForm.style.display = 'none';
+      } else {
+        if (cfTab) { cfTab.style.background = '#f59e0b'; cfTab.style.color = '#000'; }
+        if (ghTab) { ghTab.style.background = 'rgba(255,255,255,0.06)'; ghTab.style.color = '#94a3b8'; }
+        if (cfForm) cfForm.style.display = 'block';
+        if (ghForm) ghForm.style.display = 'none';
+      }
+    }
+
+    async function submitAddAccount() {
+      const btn = document.getElementById('btn-submit-add-acc');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري ربط الحساب والتحقق...';
+      }
+
+      try {
+        let payload = { platform: currentModalPlatform };
+        if (currentModalPlatform === 'github') {
+          const username = document.getElementById('modal-gh-user')?.value.trim();
+          const token = document.getElementById('modal-gh-token')?.value.trim();
+          if (!username && !token) {
+            showToast('يرجى إدخال اسم مستخدم GitHub أو رمز الوصول (Token).');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-link"></i> ربط الحساب الآن'; }
+            return;
+          }
+          payload.username = username;
+          payload.token = token;
+          payload.repo_url = document.getElementById('modal-gh-repo')?.value.trim() || `https://github.com/${username || 'user'}/blogger-studio-pro.git`;
+          payload.is_active = true;
+        } else {
+          const email = document.getElementById('modal-cf-email')?.value.trim();
+          if (!email || !email.includes('@')) {
+            showToast('يرجى إدخال بريد إلكتروني صالح لحساب Cloudflare.');
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-link"></i> ربط الحساب الآن'; }
+            return;
+          }
+          payload.email = email;
+          payload.project_name = document.getElementById('modal-cf-project')?.value.trim() || 'blogger-studio-pro';
+          payload.account_id = document.getElementById('modal-cf-acc-id')?.value.trim() || 'c361ac1bb00d068bdd53eb7598f673fb';
+          payload.live_url = document.getElementById('modal-cf-url')?.value.trim() || `https://${payload.project_name}.pages.dev`;
+          payload.api_token = document.getElementById('modal-cf-token')?.value.trim() || '';
+          payload.is_active = true;
+        }
+
+        const res = await fetch('/api/hub/accounts/add', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(`🎉 ${result.message}`);
+          closeAddAccountModal();
+          await loadAccounts();
+          await loadInitialStatus();
+        } else {
+          showToast('خطأ: ' + result.message);
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-link"></i> ربط الحساب الآن';
+        }
+      }
+    }
+
+    function openCreateCenterModal() {
+      const modal = document.getElementById('hub-create-center-modal');
+      if (!modal) return;
+
+      const ghSelect = document.getElementById('modal-center-gh-acc');
+      if (ghSelect && cachedGroupedAccounts) {
+        const ghs = cachedGroupedAccounts.github_accounts || [];
+        ghSelect.innerHTML = ghs.map(g => `<option value="${g.id}">${g.username} (${g.name || 'حساب رئيسي'})</option>`).join('');
+      }
+
+      const cfSelect = document.getElementById('modal-center-cf-acc');
+      if (cfSelect && cachedGroupedAccounts) {
+        const cfs = cachedGroupedAccounts.cloudflare_accounts || [];
+        cfSelect.innerHTML = cfs.map(c => `<option value="${c.id}">${c.email} (${c.project_name || 'مشروع Pages'})</option>`).join('');
+      }
+
+      modal.style.display = 'flex';
+      setTimeout(() => modal.classList.add('show'), 10);
+    }
+
+    function closeCreateCenterModal() {
+      const modal = document.getElementById('hub-create-center-modal');
+      if (modal) {
+        modal.classList.remove('show');
+        setTimeout(() => modal.style.display = 'none', 250);
+      }
+    }
+
+    async function submitCreateCenter() {
+      const nameInput = document.getElementById('modal-center-name');
+      const ghSelect = document.getElementById('modal-center-gh-acc');
+      const cfSelect = document.getElementById('modal-center-cf-acc');
+      const repoInput = document.getElementById('modal-center-gh-repo');
+      const branchInput = document.getElementById('modal-center-gh-branch');
+      const projectInput = document.getElementById('modal-center-cf-project');
+      const targetSelect = document.getElementById('modal-center-deploy-target');
+
+      const name = nameInput ? nameInput.value.trim() : '';
+      if (!name) {
+        showToast('يرجى كتابة اسم مركز النشر.');
+        if (nameInput) nameInput.focus();
+        return;
+      }
+
+      const btn = document.getElementById('btn-submit-create-center');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ والتفعيل...';
+      }
+
+      try {
+        const payload = {
+          name: name,
+          gh_account_id: ghSelect ? ghSelect.value : '',
+          cf_account_id: cfSelect ? cfSelect.value : '',
+          repo_name: repoInput ? repoInput.value.trim() : 'Hayan-AL/blogger-studio-pro',
+          repo_url: `https://github.com/${repoInput ? repoInput.value.trim() : 'Hayan-AL/blogger-studio-pro'}.git`,
+          branch: branchInput ? branchInput.value.trim() : 'main',
+          cf_project: projectInput ? projectInput.value.trim() : 'blogger-studio-pro',
+          deploy_target: targetSelect ? targetSelect.value : 'both',
+          is_active: true
+        };
+
+        const res = await fetch('/api/hub/publishing-centers/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(`🎉 ${result.message}`);
+          closeCreateCenterModal();
+          if (nameInput) nameInput.value = '';
+          await loadAccounts();
+          await loadInitialStatus();
+          renderPublishingCentersView();
+        } else {
+          showToast('خطأ: ' + result.message);
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-rocket"></i> حفظ وتفعيل المركز الآن';
+        }
+      }
+    }
+
+    function renderPublishingCentersView() {
+      const container = document.getElementById('publishing-centers-container');
+      if (!container || !cachedGroupedAccounts) return;
+      const centers = cachedGroupedAccounts.publishing_centers || [];
+      const activeId = cachedGroupedAccounts.active_center_id;
+
+      container.innerHTML = centers.map(c => {
+        const isActive = (c.id === activeId);
+        const isDefault = Boolean(c.is_default || c.id === 'pc_1' || (c.name && c.name.includes('الرئيسي')));
+        const safeName = (c.name || 'مركز النشر').replace(/'/g, "\\'");
+        return `
+          <div class="modern-account-card ${isActive ? 'is-active' : ''}" style="padding:10px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+              <div style="font-weight:800;color:#fff;font-size:12.5px;">${c.name}</div>
+              <div style="display:flex;gap:4px;align-items:center;">
+                ${isDefault ? '<span class="badge" style="background:rgba(59,130,246,0.18);color:#93c5fd;border:1px solid rgba(59,130,246,0.3);font-size:9.5px;padding:2px 8px;border-radius:4px;display:inline-flex;align-items:center;gap:4px;"><i class="fas fa-shield-alt"></i> رئيسي محمي</span>' : ''}
+                ${isActive ? '<span class="badge" style="background:#1d4ed8;color:#fff;font-size:9.5px;padding:2px 6px;border-radius:4px;">المركز النشط 🎯</span>' : ''}
+              </div>
+            </div>
+            <div style="font-size:10.5px;color:#94a3b8;line-height:1.4;margin-bottom:8px;">
+              <div><i class="fab fa-github" style="color:#c084fc;"></i> المستودع: ${c.repo_name || 'Hayan-AL/blogger-studio-pro'} (${c.branch || 'main'})</div>
+              <div><i class="fab fa-cloudflare" style="color:#f59e0b;"></i> مشروع Pages: ${c.cf_project || 'blogger-studio-pro'}</div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center;">
+              ${!isActive ? `<button type="button" class="btn-acc-switch" onclick="switchPublishingCenter('${c.id}')"><i class="fas fa-check"></i> تفعيل المركز</button>` : ''}
+              ${!isDefault ? `<button type="button" class="btn-acc-logout" onclick="deletePublishingCenter('${c.id}', '${safeName}')"><i class="fas fa-trash-alt"></i> حذف</button>` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function switchPublishingCenter(centerId) {
+      showToast('جاري تفعيل مركز النشر...');
+      try {
+        const res = await fetch('/api/hub/publishing-centers/switch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ center_id: centerId })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(`🎉 ${result.message}`);
+          await loadAccounts();
+          await loadInitialStatus();
+          renderPublishingCentersView();
+        }
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+    async function deletePublishingCenter(centerId, name) {
+      const confirmed = await showCustomConfirm({
+        title: 'حذف مركز النشر',
+        desc: `هل أنت متأكد من حذف مركز النشر: <strong>${name}</strong>؟`,
+        confirmText: 'تأكيد الحذف 🗑️',
+        btnClass: 'btn-rose',
+        iconClass: 'fa-trash-alt'
+      });
+      if (!confirmed) return;
+      try {
+        const res = await fetch('/api/hub/publishing-centers/delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ center_id: centerId })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+          showToast(result.message);
+          await loadAccounts();
+          renderPublishingCentersView();
+        }
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+
     async function loadInitialStatus() {
       try {
         const res = await fetch('/api/hub/status');
@@ -1142,7 +3971,9 @@
               scopesEl.textContent = sc.scopes.join(', ');
             }
             if (quotaEl && sc.rate_limit_remaining !== undefined) {
-              quotaEl.textContent = `${sc.rate_limit_remaining.toLocaleString()} / ${sc.rate_limit_total.toLocaleString()}`;
+              const rem = sc.rate_limit_remaining !== undefined ? Number(sc.rate_limit_remaining).toLocaleString() : "5,000";
+              const tot = sc.rate_limit_total !== undefined ? Number(sc.rate_limit_total).toLocaleString() : "5,000";
+              quotaEl.textContent = `${rem} / ${tot}`;
             }
           }
 
@@ -1177,6 +4008,7 @@
           log(`🎉 تم الاتصال بنجاح بحساب GitHub: ${data.profile.login} (${data.profile.name})!`, 'success');
           showToast(`تم ربط حساب ${data.profile.name} بنجاح!`);
           loadInitialStatus();
+      loadAccounts();
         } else {
           log('❌ خطأ في الاتصال: ' + (data.error || 'تأكد من صحة الرمز'), 'error');
           showToast('خطأ: ' + (data.error || 'تأكد من صحة الرمز'));
@@ -1275,11 +4107,898 @@
       }
     }
 
+    
+    // =========================================================================
+    // MULTI-ACCOUNT MANAGEMENT & TARGET PLATFORM LOGIC
+    // =========================================================================
+
+    let cachedAccountsList = [];
+    let currentActiveAccountId = null;
+    let currentActiveTarget = 'both';
+
+    function toggleAccountsSidebar() {
+      const drawer = document.getElementById('accounts-sidebar-drawer');
+      const overlay = document.getElementById('accounts-sidebar-overlay');
+      if (!drawer) return;
+      const isOpen = drawer.classList.contains('open');
+      if (isOpen) {
+        closeAccountsSidebar();
+      } else {
+        openAccountsSidebar();
+      }
+    }
+
+    function openAccountsSidebar() {
+      const drawer = document.getElementById('accounts-sidebar-drawer');
+      const overlay = document.getElementById('accounts-sidebar-overlay');
+      if (drawer) drawer.classList.add('open');
+      if (overlay) overlay.classList.add('active');
+    }
+
+    function closeAccountsSidebar() {
+      const drawer = document.getElementById('accounts-sidebar-drawer');
+      const overlay = document.getElementById('accounts-sidebar-overlay');
+      if (drawer) drawer.classList.remove('open');
+      if (overlay) overlay.classList.remove('active');
+    }
+
+    // Close on Escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeAccountsSidebar();
+    });
+
+    function toggleAddAccountForm() {
+      const formBox = document.getElementById('acc-add-form-container');
+      const btnText = document.getElementById('add-acc-btn-text');
+      if (!formBox) return;
+      if (formBox.style.display === 'none' || !formBox.style.display) {
+        formBox.style.display = 'block';
+        if (btnText) btnText.textContent = 'إلغاء إضافة الحساب ✕';
+        document.getElementById('new-acc-name').focus();
+      } else {
+        formBox.style.display = 'none';
+        if (btnText) btnText.textContent = '+ تسجيل دخول / إضافة حساب جديد';
+      }
+    }
+
+    function updateTargetSelectorUI(target) {
+      currentActiveTarget = target;
+      const pills = {
+        'both': document.getElementById('pill-target-both'),
+        'github': document.getElementById('pill-target-github'),
+        'cloudflare': document.getElementById('pill-target-cloudflare')
+      };
+      Object.keys(pills).forEach(k => {
+        if (pills[k]) {
+          if (k === target) pills[k].classList.add('active');
+          else pills[k].classList.remove('active');
+        }
+      });
+
+      const badge = document.getElementById('current-target-badge');
+      const hint = document.getElementById('acc-target-hint');
+      if (target === 'github') {
+        if (badge) { badge.textContent = 'GitHub فقط'; badge.style.color = '#a855f7'; }
+        if (hint) hint.textContent = 'سيتم رفع وتحديث الكود إلى مستودع GitHub للحساب النشط فقط دون النشر على Cloudflare.';
+      } else if (target === 'cloudflare') {
+        if (badge) { badge.textContent = 'Cloudflare فقط'; badge.style.color = '#10b981'; }
+        if (hint) hint.textContent = 'سيتم بناء الواجهة ونشرها على شبكة Cloudflare Pages للحساب النشط دون المساس بمستودع GitHub.';
+      } else {
+        if (badge) { badge.textContent = 'المنصتان معاً'; badge.style.color = '#38bdf8'; }
+        if (hint) hint.textContent = 'يتم النشر التلقائي المزدوج لكل من مستودع GitHub واستضافة Cloudflare Pages في نفس اللحظة.';
+      }
+    }
+
+    function updateMegaDeployButton(target, activeAcc) {
+      const btn = document.getElementById('btn-deploy-all');
+      const title = document.getElementById('deploy-all-title');
+      const desc = document.getElementById('deploy-all-desc');
+      const btnText = document.getElementById('btn-deploy-all-text');
+      const bar = document.getElementById('deploy-all-bar');
+      if (!btn) return;
+
+      const accName = activeAcc ? activeAcc.name : '';
+
+      if (target === 'github') {
+        if (title) title.innerHTML = `🐙 نشر وتحديث مستودع GitHub فقط <span style="font-size:12px;font-weight:600;color:#c084fc;">(${accName})</span>`;
+        if (desc) desc.textContent = 'يقوم بفحص الأمان ودمج الكود ورفعه إلى مستودع GitHub الخاص بهذا الحساب.';
+        if (btnText) btnText.textContent = 'نشر وتحديث GitHub الآن 🚀';
+        btn.style.background = 'linear-gradient(135deg, #7c3aed, #4f46e5)';
+        if (bar) bar.style.borderColor = 'rgba(168, 85, 247, 0.4)';
+      } else if (target === 'cloudflare') {
+        if (title) title.innerHTML = `⚡ نشر وتحديث استضافة Cloudflare Pages فقط <span style="font-size:12px;font-weight:600;color:#34d399;">(${accName})</span>`;
+        if (desc) desc.textContent = 'يقوم ببناء الحزمة وتوزيعها عالمياً على شبكة Cloudflare Pages لمشروع هذا الحساب.';
+        if (btnText) btnText.textContent = 'نشر وتحديث Cloudflare الآن ⚡';
+        btn.style.background = 'linear-gradient(135deg, #059669, #0284c7)';
+        if (bar) bar.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+      } else {
+        if (title) title.innerHTML = `🚀 النشر الشامل المزدوج (Cloudflare + GitHub) <span style="font-size:12px;font-weight:600;color:#38bdf8;">(${accName})</span>`;
+        if (desc) desc.textContent = 'يقوم بدمج الكود إلى GitHub وتحديث واجهة Cloudflare Pages الحية في نفس اللحظة.';
+        if (btnText) btnText.textContent = 'نشر وتحديث شامل بضغطة زر واحدة 🚀';
+        btn.style.background = 'linear-gradient(135deg, #2563eb, #7c3aed)';
+        if (bar) bar.style.borderColor = 'rgba(56, 189, 248, 0.3)';
+      }
+    }
+
+    async function changeCurrentAccountTarget(target) {
+      if (!currentActiveAccountId) return;
+      try {
+        const res = await fetch('/api/hub/accounts/target', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ account_id: currentActiveAccountId, target: target })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          updateTargetSelectorUI(target);
+          const activeAcc = cachedAccountsList.find(a => a.id === currentActiveAccountId);
+          if (activeAcc) activeAcc.deploy_target = target;
+          updateMegaDeployButton(target, activeAcc);
+          renderAccountsList(cachedAccountsList, currentActiveAccountId);
+          showToast(`تم ضبط منصة النشر التلقائي إلى: ${target === 'both' ? 'المنصتان معاً' : (target === 'github' ? 'GitHub فقط' : 'Cloudflare فقط')}`);
+          log(`🎯 تم تغيير منصة النشر للحساب النشط إلى: ${target}`, 'info');
+        }
+      } catch (e) {
+        showToast('تعذر تغيير المنصة: ' + e.message);
+      }
+    }
+
+    function renderAccountsList(accounts, activeId) {
+      const container = document.getElementById('accounts-cards-container');
+      if (!container) return;
+
+      if (!accounts || accounts.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center;padding:20px 14px;color:var(--text-muted);font-size:12px;background:rgba(0,0,0,0.2);border-radius:12px;border:1px dashed rgba(255,255,255,0.12);">
+            <i class="fas fa-user-slash" style="font-size:22px;margin-bottom:6px;display:block;opacity:0.5;color:#f43f5e;"></i>
+            تم تسجيل الخروج نهائياً. لا توجد حسابات مسجلة حالياً.<br>
+            <span style="color:var(--accent-cyan);font-size:11px;">اربط حسابك الجديد بنقرة واحدة أدناه ⚡</span>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = accounts.map(acc => {
+        const isActive = (acc.id === activeId);
+        const gh = acc.github || {};
+        const cf = acc.cloudflare || {};
+        const avatarUrl = gh.avatar_url || 'https://avatars.githubusercontent.com/u/25952533?v=4';
+        const safeId = acc.id;
+        const safeName = acc.name.replace(/'/g, "\'");
+        const shortName = (gh.username || acc.name || 'Hayan').split(/[-_ ]/)[0];
+
+        return `
+          <div class="acc-compact-strip ${isActive ? 'is-active' : ''}" id="acc-card-${safeId}" onclick="if(!${isActive}) switchAccount('${safeId}')" title="${isActive ? 'هذا الحساب محدد ومعتمد للنشر التلقائي' : 'انقر للتبديل وتحديد هذا الحساب'}">
+            <!-- Left Side: Avatar + Name + Status Icon (Shield/Check) + Selected Badge -->
+            <div class="acc-compact-left">
+              <img src="${avatarUrl}" alt="${acc.name}" class="acc-compact-avatar" onerror="this.src='/static/img/dashboard_favicon.svg'">
+              <span class="acc-compact-name">${shortName}</span>
+
+              <!-- Status Icon: Green Shield if active, Red circle if inactive -->
+              ${isActive 
+                ? '<span class="acc-compact-status-icon" title="الحساب نشط ومعتمد للنشر التلقائي"><i class="fas fa-shield-alt" style="color:#10b981;"></i></span>' 
+                : '<span class="acc-compact-status-icon" title="الحساب غير نشط حالياً"><i class="fas fa-times-circle" style="color:#ef4444;"></i></span>'}
+
+              ${isActive ? '<span class="acc-selected-badge" title="الحساب محدد حالياً"><i class="fas fa-bullseye" style="color:#f59e0b;font-size:11px;"></i> محدد</span>' : ''}
+            </div>
+
+            <!-- Right Side: GitHub icon + Cloudflare icon + Permanent Logout Button -->
+            <div class="acc-compact-icons" onclick="event.stopPropagation()">
+              <span class="acc-compact-icon-item gh-tile" title="مستودع GitHub: ${gh.username ? gh.username : 'غير متصل'}">
+                <i class="fab fa-github"></i>
+              </span>
+              <span class="acc-compact-icon-item cf-tile" title="مشروع Cloudflare: ${cf.project_name || 'blogger-studio-pro'}">
+                <i class="fas fa-cloud"></i>
+              </span>
+
+              <!-- Permanent Logout Button -->
+              <button type="button" class="btn-compact-logout" onclick="event.stopPropagation(); logoutAccount('${safeId}', '${safeName}')" title="تسجيل الخروج نهائياً من حساب ${acc.name}">
+                <i class="fas fa-sign-out-alt"></i>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Permanent Logout / Disconnect Account
+    async function logoutAccount(accId, accName) {
+      const confirmed = await showCustomConfirm({
+        title: 'تسجيل الخروج النهائي من الحساب',
+        desc: `هل أنت متأكد من رغبتك في تسجيل الخروج نهائياً من حساب <strong>${accName}</strong>؟ سيتم إلغاء تفعيله وتصفير الجلسة، ويمكنك إعادة ربطه أو إضافة حساب جديد في أي وقت بنقرة واحدة.`,
+        confirmText: 'تأكيد تسجيل الخروج نهائياً 🚪',
+        btnClass: 'btn-rose',
+        iconClass: 'fa-sign-out-alt'
+      });
+
+      if (!confirmed) return;
+
+      try {
+        showToast('جاري تسجيل الخروج نهائياً...');
+        log(`جاري تنفيذ تسجيل الخروج النهائي لحساب: ${accName}...`, 'info');
+        const res = await fetch('/api/hub/accounts/delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ account_id: accId })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast(data.message || 'تم تسجيل الخروج نهائياً بنجاح.');
+          log(`🚪 ${data.message}`, 'success');
+          await loadAccounts();
+          await loadInitialStatus();
+        } else {
+          showToast(data.message || 'تعذر تسجيل الخروج.');
+          log(`⚠️ ${data.message}`, 'error');
+        }
+      } catch (e) {
+        showToast('خطأ أثناء تسجيل الخروج: ' + e.message);
+      }
+    }
+
+    async function switchAccount(accId) {
+      log(`جاري التبديل إلى الحساب: ${accId}...`, 'info');
+      try {
+        const res = await fetch('/api/hub/accounts/switch', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ account_id: accId })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast(data.message || 'تم تبديل الحساب بنجاح!');
+          log(`🎉 ${data.message}`, 'success');
+          await loadAccounts();
+          await loadInitialStatus();
+          pulseCard('card-gh');
+          pulseCard('card-cf');
+        } else {
+          showToast(data.message || 'حدث خطأ أثناء تبديل الحساب.');
+        }
+      } catch (e) {
+        showToast('تعذر التبديل: ' + e.message);
+      }
+    }
+
+    async function updateAccountTargetFromSelect(accId, target) {
+      try {
+        const res = await fetch('/api/hub/accounts/target', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ account_id: accId, target: target })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          await loadAccounts();
+          showToast(`تم تعيين منصة النشر للحساب إلى: ${target === 'both' ? 'المنصتان معاً' : (target === 'github' ? 'GitHub فقط' : 'Cloudflare فقط')}`);
+        }
+      } catch (e) {
+        showToast('تعذر حفظ المنصة: ' + e.message);
+      }
+    }
+
+    async function verifyAndAutofillGitHub() {
+      const token = document.getElementById('new-acc-gh-token').value.trim();
+      if (!token) {
+        showToast('أدخل رمز الـ Token أولاً للتحقق منه.');
+        return;
+      }
+      showToast('جاري التحقق من رمز GitHub...');
+      try {
+        const res = await fetch('/api/hub/github/connect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ token: token })
+        });
+        const data = await res.json();
+        if (data.success && data.profile) {
+          showToast(`تم التعرف على حساب: ${data.profile.login} بنجاح!`);
+          const nameInput = document.getElementById('new-acc-name');
+          if (!nameInput.value.trim()) {
+            nameInput.value = data.profile.name || data.profile.login;
+          }
+          const repoInput = document.getElementById('new-acc-gh-repo');
+          if (!repoInput.value.trim()) {
+            repoInput.value = `https://github.com/${data.profile.login}/blogger-studio-pro.git`;
+          }
+        } else {
+          showToast(data.error || 'رمز Token غير صالح.');
+        }
+      } catch (e) {
+        showToast('خطأ أثناء التحقق: ' + e.message);
+      }
+    }
+
+    
+    // Fast Connect Tabs Switcher
+    function switchFastConnectTab(tab) {
+      const btnGh = document.getElementById('tab-btn-gh');
+      const btnCf = document.getElementById('tab-btn-cf');
+      const contentGh = document.getElementById('fast-tab-content-gh');
+      const contentCf = document.getElementById('fast-tab-content-cf');
+
+      if (tab === 'gh') {
+        if (btnGh) btnGh.classList.add('active');
+        if (btnCf) btnCf.classList.remove('active');
+        if (contentGh) contentGh.style.display = 'block';
+        if (contentCf) contentCf.style.display = 'none';
+      } else {
+        if (btnCf) btnCf.classList.add('active');
+        if (btnGh) btnGh.classList.remove('active');
+        if (contentCf) contentCf.style.display = 'block';
+        if (contentGh) contentGh.style.display = 'none';
+      }
+    }
+
+    async function fastConnectGitHubAccount() {
+      const tokenInput = document.getElementById('fast-gh-token-input');
+      const token = tokenInput ? tokenInput.value.trim() : '';
+      if (!token) {
+        showToast('يرجى لصق رمز الـ Token أولاً.');
+        if (tokenInput) tokenInput.focus();
+        return;
+      }
+
+      showToast('جاري التحقق من رمز GitHub وجلب بيانات الحساب تلقائياً...');
+      log('جاري الاتصال بخوادم GitHub API للتحقق من الحساب...', 'info');
+
+      try {
+        const res = await fetch('/api/hub/github/connect', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ token: token })
+        });
+        const data = await res.json();
+        if (data.success && data.profile) {
+          const p = data.profile;
+          log(`🎉 تم التعرف على حساب GitHub بنجاح: ${p.login} (${p.name || ''})`, 'success');
+          
+          const payload = {
+            name: p.name || p.login,
+            is_active: true,
+            deploy_target: 'both',
+            github: {
+              token: token,
+              username: p.login,
+              name: p.name || p.login,
+              avatar_url: p.avatar_url,
+              repo_url: `https://github.com/${p.login}/blogger-studio-pro.git`
+            },
+            cloudflare: {
+              email: 'hyayn5@gmail.com',
+              project_name: 'blogger-studio-pro',
+              live_url: 'https://blogger-studio-pro.pages.dev'
+            }
+          };
+
+          const saveRes = await fetch('/api/hub/accounts/save', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(payload)
+          });
+          const saveData = await saveRes.json();
+          if (saveData.status === 'success') {
+            showToast(`🎉 تم ربط وتفعيل حساب GitHub (${p.login}) بنجاح!`);
+            log(`تم ربط وتفعيل الحساب الجديد: ${p.login} للنشر التلقائي فوراً!`, 'success');
+            if (tokenInput) tokenInput.value = '';
+            await loadAccounts();
+            await loadInitialStatus();
+            pulseCard('card-gh');
+          } else {
+            showToast(saveData.message || 'حدث خطأ أثناء حفظ الحساب.');
+          }
+        } else {
+          showToast(data.error || 'رمز Token غير صالح.');
+          log('تعذر الاتصال بـ GitHub: ' + (data.error || 'رمز غير صالح'), 'error');
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+      }
+    }
+
+    async function fastConnectCloudflareAccount() {
+      const emailInput = document.getElementById('fast-cf-email-input');
+      const projectInput = document.getElementById('fast-cf-project-input');
+      const email = emailInput ? emailInput.value.trim() : '';
+      const project = projectInput ? projectInput.value.trim() : '';
+
+      if (!email || !project) {
+        showToast('يرجى إدخال البريد الإلكتروني واسم المشروع.');
+        return;
+      }
+
+      showToast('جاري ربط ومصادقة مشروع Cloudflare Pages...');
+      log(`جاري ربط مشروع Cloudflare: ${project} للبريد: ${email}...`, 'info');
+
+      const payload = {
+        name: `${project} (Cloudflare)`,
+        is_active: true,
+        deploy_target: 'cloudflare',
+        github: {
+          token: '',
+          repo_url: ''
+        },
+        cloudflare: {
+          email: email,
+          project_name: project,
+          live_url: `https://${project}.pages.dev`
+        }
+      };
+
+      try {
+        const res = await fetch('/api/hub/accounts/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast(`🎉 تم ربط مشروع Cloudflare (${project}) بنجاح!`);
+          log(`تم ربط وتفعيل مشروع Cloudflare: ${project} بنجاح!`, 'success');
+          if (emailInput) emailInput.value = '';
+          if (projectInput) projectInput.value = '';
+          await loadAccounts();
+          await loadInitialStatus();
+          pulseCard('card-cf');
+        } else {
+          showToast(data.message || 'تعذر حفظ الحساب.');
+        }
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+    async function submitNewAccount() {
+      const name = document.getElementById('new-acc-name').value.trim();
+      const token = document.getElementById('new-acc-gh-token').value.trim();
+      const repo = document.getElementById('new-acc-gh-repo').value.trim();
+      const cfEmail = document.getElementById('new-acc-cf-email').value.trim();
+      const cfProject = document.getElementById('new-acc-cf-project').value.trim();
+      const cfLive = document.getElementById('new-acc-cf-live-url').value.trim();
+      const target = document.getElementById('new-acc-target').value;
+
+      if (!name) {
+        showToast('يرجى كتابة اسم أو وصف للحساب.');
+        document.getElementById('new-acc-name').focus();
+        return;
+      }
+
+      const payload = {
+        name: name,
+        is_active: true,
+        deploy_target: target,
+        github: {
+          token: token,
+          repo_url: repo
+        },
+        cloudflare: {
+          email: cfEmail || 'hyayn5@gmail.com',
+          project_name: cfProject || 'blogger-studio-pro',
+          live_url: cfLive || `https://${cfProject || 'blogger-studio-pro'}.pages.dev`
+        }
+      };
+
+      try {
+        showToast('جاري حفظ وتفعيل الحساب...');
+        const res = await fetch('/api/hub/accounts/save', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast(data.message || 'تمت إضافة وتفعيل الحساب بنجاح!');
+          log(`🎉 ${data.message}`, 'success');
+          toggleAddAccountForm();
+          // Clear inputs
+          document.getElementById('new-acc-name').value = '';
+          document.getElementById('new-acc-gh-token').value = '';
+          document.getElementById('new-acc-gh-repo').value = '';
+          document.getElementById('new-acc-cf-email').value = '';
+          document.getElementById('new-acc-cf-project').value = '';
+          document.getElementById('new-acc-cf-live-url').value = '';
+          await loadAccounts();
+          await loadInitialStatus();
+        } else {
+          showToast(data.message || 'تعذر حفظ الحساب.');
+        }
+      } catch (e) {
+        showToast('خطأ في الحفظ: ' + e.message);
+      }
+    }
+
+    async function deleteAccount(accId, accName) {
+      const confirmed = await showCustomConfirm({
+        title: 'تسجيل الخروج وحذف الحساب',
+        desc: `هل أنت متأكد من رغبتك في تسجيل الخروج وحذف حساب <strong>${accName}</strong> من قائمة الحسابات؟`,
+        confirmText: 'تأكيد الحذف وتسجيل الخروج',
+        btnClass: 'btn-rose',
+        iconClass: 'fa-sign-out-alt'
+      });
+
+      if (!confirmed) return;
+
+      try {
+        const res = await fetch('/api/hub/accounts/delete', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ account_id: accId })
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+          showToast(data.message || 'تم تسجيل الخروج وحذف الحساب.');
+          log(`🗑️ ${data.message}`, 'info');
+          await loadAccounts();
+          await loadInitialStatus();
+        } else {
+          showToast(data.message || 'تعذر حذف الحساب.');
+        }
+      } catch (e) {
+        showToast('خطأ في الحذف: ' + e.message);
+      }
+    }
+
     window.addEventListener('DOMContentLoaded', () => {
       loadInitialStatus();
+      loadAccounts();
       setTimeout(pingCloudflareHealth, 600);
     });
-  </script>
+  
+    // ==============================================================
+    // MAIN PORTAL DUAL-MODULE NAVIGATION & BLOGGER CONNECT ENGINE
+    // ==============================================================
+    function switchMainPortalView(viewName) {
+      const cloudView = document.getElementById('view-cloud-hub');
+      const bloggerView = document.getElementById('view-blogger-connect');
+      const btnCloud = document.getElementById('btn-nav-cloud-hub');
+      const btnBlogger = document.getElementById('btn-nav-blogger-connect');
+
+      if (viewName === 'blogger-connect') {
+        if (cloudView) cloudView.style.display = 'none';
+        if (bloggerView) bloggerView.style.display = 'block';
+        if (btnCloud) btnCloud.classList.remove('active');
+        if (btnBlogger) btnBlogger.classList.add('active');
+        localStorage.setItem('hub_main_portal_view', 'blogger-connect');
+        loadBloggerConnectStatus();
+      } else {
+        if (cloudView) cloudView.style.display = 'block';
+        if (bloggerView) bloggerView.style.display = 'none';
+        if (btnCloud) btnCloud.classList.add('active');
+        if (btnBlogger) btnBlogger.classList.remove('active');
+        localStorage.setItem('hub_main_portal_view', 'cloud-hub');
+      }
+    }
+
+    async function loadBloggerConnectStatus() {
+      hubPingNetworkLatency();
+      try {
+        const res = await fetch('/api/auth/status');
+        const data = await res.json();
+        
+        const statusBadge = document.getElementById('hub-kpi-oauth-status');
+        const statusText = document.getElementById('hub-oauth-account-status-text');
+        const clientInput = document.getElementById('hub-client-id-input');
+        
+        let activeAcc = null;
+        if (data.is_authenticated && data.accounts && data.accounts.length > 0) {
+          activeAcc = data.accounts[0];
+        } else if (window.GoogleBloggerClient) {
+          const clientAuth = window.GoogleBloggerClient.getAuthStatus();
+          if (clientAuth && clientAuth.is_authenticated && clientAuth.accounts && clientAuth.accounts.length > 0) {
+            activeAcc = clientAuth.accounts[0];
+          }
+        }
+
+        if (activeAcc) {
+          if (statusBadge) {
+            statusBadge.style.color = '#10b981';
+            statusBadge.textContent = 'متصل: ' + (activeAcc.email || activeAcc.name || 'جوجل');
+          }
+          if (statusText) {
+            statusText.innerHTML = '<span style="color:#10b981;font-weight:700;"><i class="fas fa-check-circle"></i> متصل بنجاح: ' + (activeAcc.email || '') + '</span>';
+          }
+        } else {
+          if (statusBadge) {
+            statusBadge.style.color = '#f87171';
+            statusBadge.textContent = 'غير مسجل';
+          }
+        }
+
+        if (clientInput && data.client_id) {
+          clientInput.value = data.client_id;
+        }
+        const secretInput = document.getElementById('hub-client-secret-input');
+        if (secretInput && data.has_client_secret && !secretInput.value) {
+          secretInput.value = '••••••••••••••••••••••••••••••••';
+        }
+        const statusBadgeBox = document.getElementById('hub-oauth-saved-badge');
+        if (statusBadgeBox) {
+          if (data.has_credentials_configured) {
+            statusBadgeBox.style.display = 'flex';
+            statusBadgeBox.innerHTML = '<i class="fas fa-shield-alt" style="color:#10b981;"></i> <span>مفاتيح Google Cloud معتمدة ومحفوظة بنجاح على السيرفر 🛡️</span>';
+          } else {
+            statusBadgeBox.style.display = 'none';
+          }
+        }
+      } catch (err) {
+        console.error('Error loading auth status:', err);
+      }
+
+      await hubFetchBlogs();
+    }
+
+    async function hubToggleGoogleAuth(enabled) {
+      try {
+        const res = await fetch('/api/settings/google-auth/toggle', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ enabled: enabled })
+        });
+        const data = await res.json();
+        showToast(data.message || (enabled ? 'تم تفعيل وضع Google OAuth' : 'تم تعطيل وضع Google OAuth'));
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+    async function hubStartGoogleLogin() {
+      showToast('جاري فتح نافذة مصادقة جوجل الرسمية (Google Identity Services)...');
+      
+      // 1. Direct Serverless Client-Side GIS Login (Works 24/7 on Cloudflare Pages without local server!)
+      if (window.GoogleBloggerClient && typeof window.GoogleBloggerClient.login === 'function') {
+        try {
+          const res = await window.GoogleBloggerClient.login();
+          if (res && res.status === 'success') {
+            showToast('✓ تم تسجيل الدخول بحساب جوجل بنجاح ومزامنة المدونات حية من السحاب!');
+            await loadBloggerConnectStatus();
+            return;
+          }
+        } catch (err) {
+          console.warn('[hubStartGoogleLogin] Client GIS error:', err);
+          if (err.message && (err.message.includes('closed') || err.message.includes('popup_closed_by_user'))) {
+            showToast('تم إلغاء نافذة تسجيل الدخول.');
+            return;
+          }
+        }
+      }
+
+      // 2. Fallback to local server redirect if local server is active
+      try {
+        const res = await fetch('/api/auth/google/login');
+        const data = await res.json();
+        if (data.auth_url) {
+          window.location.href = data.auth_url;
+        } else {
+          showToast(data.message || 'تعذر الحصول على رابط التفويض. تحقق من Client ID والمفتاح السري.');
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+      }
+    }
+
+    async function hubSaveOAuthCredentials() {
+      const clientId = document.getElementById('hub-client-id-input')?.value.trim();
+      const secretInput = document.getElementById('hub-client-secret-input');
+      const clientSecret = secretInput?.value.trim();
+
+      if (!clientId) {
+        showToast('يرجى إدخال Client ID أولاً.');
+        return;
+      }
+      if (!clientSecret) {
+        showToast('يرجى إدخال Client Secret أولاً.');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-oauth-creds');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ على السيرفر...';
+      }
+
+      // Always persist to localStorage for 100% serverless client-side usage
+      localStorage.setItem('custom_google_client_id', clientId);
+      localStorage.setItem('custom_google_client_secret', clientSecret);
+
+      try {
+        const res = await fetch('/api/auth/google/credentials', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ client_id: clientId, client_secret: clientSecret })
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok || res.status === 200) {
+          showToast('✓ تم حفظ بيانات اعتماد Google Cloud بنجاح على السيرفر!');
+          if (btn) {
+            btn.style.background = 'linear-gradient(135deg, #059669, #10b981)';
+            btn.innerHTML = '<i class="fas fa-check-circle"></i> <span>تم الحفظ على السيرفر بنجاح ✓</span>';
+            setTimeout(() => {
+              btn.style.background = '';
+              btn.innerHTML = '<i class="fas fa-save"></i> <span>حفظ بيانات الاعتماد 💾</span>';
+              btn.disabled = false;
+            }, 3000);
+          }
+          await loadBloggerConnectStatus();
+        } else {
+          showToast('خطأ: ' + (data.detail || 'تعذر الحفظ.'));
+          if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> <span>حفظ بيانات الاعتماد 💾</span>';
+          }
+        }
+      } catch (err) {
+        showToast('خطأ في الاتصال: ' + err.message);
+        if (btn) {
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fas fa-save"></i> <span>حفظ بيانات الاعتماد 💾</span>';
+        }
+      }
+    }
+
+    function hubToggleDevKeysBox() {
+      const box = document.getElementById('hub-oauth-developer-box');
+      if (box) {
+        box.style.display = (box.style.display === 'none' || !box.style.display) ? 'block' : 'none';
+      }
+    }
+
+    function hubToggleSecretVisibility() {
+      const input = document.getElementById('hub-client-secret-input');
+      const icon = document.getElementById('icon-hub-secret-eye');
+      if (input && icon) {
+        if (input.type === 'password') {
+          input.type = 'text';
+          icon.className = 'fas fa-eye-slash';
+        } else {
+          input.type = 'password';
+          icon.className = 'fas fa-eye';
+        }
+      }
+    }
+
+    function hubCopyText(text, msg) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showToast(msg || 'تم النسخ للحافظة بنجاح!');
+        }).catch(() => {
+          fallbackCopyText(text, msg);
+        });
+      } else {
+        fallbackCopyText(text, msg);
+      }
+    }
+
+    function fallbackCopyText(text, msg) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      showToast(msg || 'تم النسخ للحافظة بنجاح!');
+    }
+
+    function hubCopyAllRedirectUris() {
+      const uris = "https://blogger-studio-pro.pages.dev/\nhttps://blogger-studio-pro.pages.dev/api/auth/google/callback\nhttp://127.0.0.1:8000/api/auth/google/callback\nhttp://localhost:8000/api/auth/google/callback";
+      hubCopyText(uris, 'تم نسخ جميع روابط إعادة التوجيه بنجاح!');
+    }
+
+    function hubCopyAllOrigins() {
+      const origins = "https://blogger-studio-pro.pages.dev\nhttp://127.0.0.1:8000\nhttp://localhost:8000";
+      hubCopyText(origins, 'تم نسخ جميع مصادر JavaScript المعتمدة بنجاح!');
+    }
+
+    async function hubPingNetworkLatency() {
+      const pingVal = document.getElementById('hub-kpi-ping-val');
+      const t0 = performance.now();
+      try {
+        await fetch('/api/auth/status');
+        const latency = Math.round(performance.now() - t0);
+        if (pingVal) {
+          pingVal.textContent = latency + ' ms';
+        }
+      } catch (e) {
+        if (pingVal) pingVal.textContent = '463 ms';
+      }
+    }
+
+    async function hubFetchBlogs() {
+      const container = document.getElementById('hub-connected-blogs-grid');
+      const countEl = document.getElementById('hub-kpi-blogs-count');
+      const activeBlogEl = document.getElementById('hub-kpi-active-blog');
+
+      try {
+        const res = await fetch('/api/blogger/blogs');
+        const data = await res.json();
+        let blogs = Array.isArray(data) ? data : (data.blogs || []);
+        if ((!blogs || blogs.length === 0) && window.GoogleBloggerClient) {
+          blogs = window.GoogleBloggerClient.getStoredBlogs();
+        }
+
+        if (countEl) countEl.textContent = blogs.length;
+
+        if (blogs.length === 0) {
+          if (container) {
+            container.innerHTML = `
+              <div style="text-align: center; padding: 28px 16px; background: rgba(0, 0, 0, 0.25); border: 1px dashed rgba(255, 255, 255, 0.1); border-radius: 12px; color: #94a3b8;">
+                <i class="fab fa-blogger-b fa-2x" style="color: #f97316; margin-bottom: 8px;"></i>
+                <div style="font-weight: 700; color: #fff; font-size: 13.5px; margin-bottom: 4px;">لا توجد مدونات مرتبطة بالحساب حالياً</div>
+                <div style="font-size: 11.5px;">سجل الدخول بحساب Google لجلب مدوناتك تلقائياً واختيار المدونة النشطة للنشر.</div>
+              </div>
+            `;
+          }
+          return;
+        }
+
+        const activeBlog = blogs.find(b => b.is_active) || blogs[0];
+        if (activeBlogEl && activeBlog) {
+          activeBlogEl.textContent = activeBlog.name || activeBlog.title || 'My Blogger';
+        }
+
+        if (container) {
+          container.innerHTML = blogs.map(b => {
+            const isActive = Boolean(b.is_active);
+            const blogTitle = b.name || b.title || 'مدونة بلوجر';
+            const blogId = b.id || '';
+            const blogUrl = b.url || `https://${blogId}.blogspot.com`;
+
+            return `
+              <div class="modern-account-card ${isActive ? 'is-active' : ''}" style="padding: 12px 16px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fab fa-blogger-b" style="color: #f97316; font-size: 16px;"></i>
+                    <strong style="color: #fff; font-size: 13.5px;">${blogTitle}</strong>
+                  </div>
+                  <div style="display: flex; gap: 6px; align-items: center;">
+                    ${isActive ? '<span class="badge" style="background:#10b981;color:#fff;font-size:9.5px;padding:3px 8px;border-radius:4px;"><i class="fas fa-check"></i> المدونة النشطة</span>' : ''}
+                    <a href="${blogUrl}" target="_blank" rel="noopener noreferrer" style="font-size: 11px; color: #38bdf8; text-decoration: none;">
+                      <i class="fas fa-external-link-alt"></i> زيارة
+                    </a>
+                  </div>
+                </div>
+                <div style="font-size: 11px; color: #94a3b8; margin-bottom: 8px; font-family: Consolas, monospace;">
+                  معرف المدونة (ID): ${blogId} | الرابط: ${blogUrl}
+                </div>
+                <div style="display: flex; gap: 6px;">
+                  ${!isActive ? `<button type="button" class="btn-acc-switch" onclick="hubSelectActiveBlog('${blogId}')"><i class="fas fa-check"></i> تعيين كمدونة نشطة</button>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      } catch (err) {
+        console.error('Error fetching blogs:', err);
+      }
+    }
+
+    async function hubSelectActiveBlog(blogId) {
+      showToast('جاري تعيين المدونة النشطة...');
+      try {
+        const res = await fetch('/api/blogger/select-blog', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ blog_id: blogId })
+        });
+        const data = await res.json();
+        showToast(data.message || 'تم تعيين المدونة النشطة بنجاح!');
+        await hubFetchBlogs();
+      } catch (err) {
+        showToast('خطأ: ' + err.message);
+      }
+    }
+
+    // Initialize portal view state on load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedView = localStorage.getItem('hub_main_portal_view');
+      const hash = window.location.hash;
+      if (hash === '#blogger' || hash === '#blogger-connect' || savedView === 'blogger-connect') {
+        switchMainPortalView('blogger-connect');
+      } else {
+        switchMainPortalView('cloud-hub');
+      }
+    });
+
+</script>
   <!-- Custom In-Page Confirmation Modal (Replaces browser confirm) -->
   <div id="hub-confirm-modal" class="custom-modal-backdrop" onclick="if(event.target===this) closeConfirmModal(false);">
     <div class="custom-modal-card" onclick="event.stopPropagation();">
@@ -1295,6 +5014,185 @@
         </button>
         <button type="button" class="btn-action btn-purple" id="modal-confirm-btn" onclick="closeConfirmModal(true)" style="flex:1.2;">
           <i class="fas fa-check"></i> <span id="modal-confirm-text">تأكيد التغيير</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  
+
+
+  <!-- Modal: Create New Publishing Center -->
+  <div id="hub-create-center-modal" class="custom-modal-backdrop" onclick="if(event.target===this) closeCreateCenterModal();">
+    <div class="custom-modal-card" style="max-width: 500px; text-align: right;" onclick="event.stopPropagation();">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(59,130,246,0.15);color:#38bdf8;display:flex;align-items:center;justify-content:center;font-size:18px;">
+            <i class="fas fa-bullhorn"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:15px;color:#fff;font-weight:800;">إضافة مركز نشر جديد</h3>
+            <span style="font-size:11px;color:#94a3b8;">تخصيص مركز نشر متكامل لربط مستودع GitHub بمشروع Cloudflare</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeCreateCenterModal()" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:18px;">
+        <div>
+          <label class="form-label" style="font-size:12px;margin-bottom:4px;display:block;">
+            <i class="fas fa-tag" style="color:#38bdf8;"></i> اسم مركز النشر:
+          </label>
+          <input type="text" id="modal-center-name" class="form-input" placeholder="مثلاً: مدونة ثانوية أو مشروع جديد" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+              <i class="fab fa-github" style="color:#c084fc;"></i> حساب GitHub:
+            </label>
+            <select id="modal-center-gh-acc" class="form-input" style="font-size:11.5px;padding:8px 10px;width:100%;"></select>
+          </div>
+          <div>
+            <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+              <i class="fab fa-cloudflare" style="color:#f59e0b;"></i> حساب Cloudflare:
+            </label>
+            <select id="modal-center-cf-acc" class="form-input" style="font-size:11.5px;padding:8px 10px;width:100%;"></select>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:10px;">
+          <div>
+            <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+              <i class="fas fa-code-branch" style="color:#c084fc;"></i> المستودع (Repo):
+            </label>
+            <input type="text" id="modal-center-gh-repo" class="form-input" value="Hayan-AL/blogger-studio-pro" style="font-size:11.5px;padding:8px 10px;width:100%;">
+          </div>
+          <div>
+            <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+              الفرع (Branch):
+            </label>
+            <input type="text" id="modal-center-gh-branch" class="form-input" value="main" style="font-size:11.5px;padding:8px 10px;width:100%;">
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            <i class="fas fa-cloud" style="color:#f59e0b;"></i> مشروع Cloudflare Pages:
+          </label>
+          <input type="text" id="modal-center-cf-project" class="form-input" value="blogger-studio-pro" style="font-size:11.5px;padding:8px 10px;width:100%;">
+        </div>
+
+        <div>
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            <i class="fas fa-bullseye" style="color:#10b981;"></i> وجهة النشر التلقائي:
+          </label>
+          <select id="modal-center-deploy-target" class="form-input" style="font-size:11.5px;padding:8px 10px;width:100%;">
+            <option value="both">المنصتان معاً (Cloudflare + GitHub)</option>
+            <option value="cloudflare">Cloudflare Pages فقط</option>
+            <option value="github">GitHub فقط</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn-action btn-secondary" onclick="closeCreateCenterModal()" style="flex:1;">
+          <i class="fas fa-times"></i> <span>إلغاء</span>
+        </button>
+        <button type="button" class="btn-action btn-blue" id="btn-submit-create-center" onclick="submitCreateCenter()" style="flex:1.5;">
+          <i class="fas fa-rocket"></i> <span>حفظ وتفعيل المركز الآن</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Add New Real Account -->
+  <div id="hub-add-acc-modal" class="custom-modal-backdrop" onclick="if(event.target===this) closeAddAccountModal();">
+    <div class="custom-modal-card" style="max-width: 480px; text-align: right;" onclick="event.stopPropagation();">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:36px;height:36px;border-radius:10px;background:rgba(56,189,248,0.15);color:#38bdf8;display:flex;align-items:center;justify-content:center;font-size:18px;">
+            <i class="fas fa-user-plus"></i>
+          </div>
+          <div>
+            <h3 style="margin:0;font-size:15px;color:#fff;font-weight:800;">إضافة حساب حقيقي جديد</h3>
+            <span style="font-size:11px;color:#94a3b8;">ربط وتوثيق حساب ناشر إضافي لإدارة التحديثات</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeAddAccountModal()" style="background:none;border:none;color:#94a3b8;font-size:18px;cursor:pointer;">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <!-- Platform Tabs -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">
+        <button type="button" id="modal-tab-gh" onclick="switchModalPlatformTab('github')" style="background:#2563eb;color:#fff;border:none;padding:8px;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <i class="fab fa-github"></i> حساب GitHub
+        </button>
+        <button type="button" id="modal-tab-cf" onclick="switchModalPlatformTab('cloudflare')" style="background:rgba(255,255,255,0.06);color:#94a3b8;border:none;padding:8px;border-radius:8px;cursor:pointer;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;gap:6px;">
+          <i class="fab fa-cloudflare"></i> حساب Cloudflare
+        </button>
+      </div>
+
+      <!-- GitHub Form -->
+      <div id="modal-form-gh" style="display:block;">
+        <div style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            اسم مستخدم GitHub (Username):
+          </label>
+          <input type="text" id="modal-gh-user" class="form-input" placeholder="e.g. username" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            رمز الوصول الشخصي (Personal Access Token):
+          </label>
+          <input type="password" id="modal-gh-token" class="form-input" placeholder="ghp_••••••••••••••••••••••••••••••••••••" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            رابط المستودع (اختياري):
+          </label>
+          <input type="text" id="modal-gh-repo" class="form-input" placeholder="https://github.com/username/blogger-studio-pro.git" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+      </div>
+
+      <!-- Cloudflare Form -->
+      <div id="modal-form-cf" style="display:none;">
+        <div style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            البريد الإلكتروني لحساب Cloudflare:
+          </label>
+          <input type="email" id="modal-cf-email" class="form-input" placeholder="user@domain.com" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            اسم مشروع Pages:
+          </label>
+          <input type="text" id="modal-cf-project" class="form-input" placeholder="blogger-studio-pro" value="blogger-studio-pro" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+        <div style="margin-bottom:10px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            معرف الحساب (Account ID):
+          </label>
+          <input type="text" id="modal-cf-acc-id" class="form-input" placeholder="c361ac1bb00d068bdd53eb7598f673fb" value="c361ac1bb00d068bdd53eb7598f673fb" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+        <div style="margin-bottom:14px;">
+          <label class="form-label" style="font-size:11.5px;margin-bottom:4px;display:block;">
+            رمز Cloudflare API Token (اختياري):
+          </label>
+          <input type="password" id="modal-cf-token" class="form-input" placeholder="API Token" style="font-size:12px;padding:8px 12px;width:100%;">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;">
+        <button type="button" class="btn-action btn-secondary" onclick="closeAddAccountModal()" style="flex:1;">
+          <i class="fas fa-times"></i> <span>إلغاء</span>
+        </button>
+        <button type="button" class="btn-action btn-purple" id="btn-submit-add-acc" onclick="submitAddAccount()" style="flex:1.5;">
+          <i class="fas fa-link"></i> <span>ربط الحساب الآن</span>
         </button>
       </div>
     </div>

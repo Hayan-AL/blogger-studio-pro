@@ -10,17 +10,501 @@
       document.documentElement.setAttribute('data-theme', savedTheme);
     } catch(e) {}
   </script>
-  <link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="stylesheet" href="./static/css/dashboard.css?v=2.6">
+  <link rel="stylesheet" href="./static/css/dashboard.css?v=3.0">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="./static/img/dashboard_favicon.svg">
 <link rel="alternate icon" type="image/png" href="./static/img/dashboard_favicon.png">
 <link rel="shortcut icon" href="./static/img/dashboard_favicon.ico">
-  <!-- CodeMirror Studio IDE (High-Performance Unified Bundle) -->
-  <link rel="stylesheet" href="./static/vendor/codemirror/codemirror.bundle.min.css">
+  <!-- CodeMirror Studio IDE -->
+  <link rel="stylesheet" href="./static/vendor/codemirror/codemirror.min.css">
+  <link rel="stylesheet" href="./static/vendor/codemirror/addon/fold/foldgutter.min.css">
+  <link rel="stylesheet" href="./static/vendor/codemirror/addon/display/fullscreen.min.css">
+  <link rel="stylesheet" href="./static/vendor/codemirror/theme/material-darker.min.css">
+  <!-- Cloudflare & Local Maintenance Engine State -->
+  <script id="blogger-maintenance-state">
+    window.__MAINTENANCE_MODE__ = false;
+  </script>
+  <style id="blogger-maintenance-styles">
+    /* Prevent FOUC when maintenance mode is active */
+    html.in-maintenance-mode body > .app-container {
+      display: none !important;
+    }
+    #studio-maintenance-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999999;
+      background: radial-gradient(circle at 50% 20%, #0f172a 0%, #060810 100%);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      direction: rtl;
+      text-align: center;
+      color: #f1f5f9;
+      overflow-y: auto;
+    }
+    #studio-maintenance-overlay.active {
+      display: flex !important;
+    }
+    .maint-card {
+      background: rgba(15, 23, 42, 0.78);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.75), 0 0 40px rgba(245, 158, 11, 0.12);
+      border-radius: 24px;
+      max-width: 620px;
+      width: 100%;
+      padding: 38px 28px;
+      position: relative;
+      animation: maintFadeIn 0.4s ease-out;
+    }
+    @keyframes maintFadeIn {
+      from { opacity: 0; transform: translateY(12px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .maint-icon-wrapper {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      margin: 0 auto 20px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .maint-icon-ring {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      border: 2px dashed rgba(245, 158, 11, 0.6);
+      animation: maintSpin 18s linear infinite;
+    }
+    .maint-icon-ring-pulse {
+      position: absolute;
+      inset: -6px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%);
+      animation: maintPulse 2.5s ease-in-out infinite;
+    }
+    @keyframes maintSpin {
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes maintPulse {
+      0%, 100% { transform: scale(0.95); opacity: 0.5; }
+      50% { transform: scale(1.1); opacity: 0.9; }
+    }
+    .maint-icon-inner {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+      border: 1px solid rgba(245, 158, 11, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fbbf24;
+      font-size: 32px;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+    .maint-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+      padding: 5px 14px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    .maint-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0 0 6px 0;
+      line-height: 1.4;
+      letter-spacing: -0.3px;
+    }
+    .maint-subtitle {
+      font-size: 12.5px;
+      color: #94a3b8;
+      margin: 0 0 18px 0;
+      direction: ltr;
+      display: block;
+      font-weight: 500;
+    }
+    .maint-desc {
+      font-size: 13.5px;
+      line-height: 1.8;
+      color: #cbd5e1;
+      margin: 0 0 24px 0;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 14px;
+      padding: 16px 18px;
+    }
+    .maint-meta-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 24px;
+      text-align: right;
+    }
+    @media (max-width: 540px) {
+      .maint-meta-grid { grid-template-columns: 1fr; }
+    }
+    .maint-meta-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      padding: 10px 14px;
+    }
+    .maint-meta-box .label {
+      font-size: 11px;
+      color: #94a3b8;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .maint-meta-box .val {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .maint-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .btn-maint {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .btn-maint-primary {
+      background: linear-gradient(135deg, #0284c7, #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-maint-primary:hover {
+      background: linear-gradient(135deg, #0369a1, #1d4ed8);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45);
+    }
+    .btn-maint-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+    .btn-maint-secondary:hover {
+      background: rgba(255, 255, 255, 0.14);
+      color: #ffffff;
+      transform: translateY(-1px);
+    }
+    .maint-pin-container {
+      margin-top: 18px;
+      padding: 16px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      display: none;
+      animation: maintFadeIn 0.3s ease-out;
+    }
+    .maint-pin-container.active {
+      display: block;
+    }
+    .maint-pin-input {
+      background: #0b1120;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      padding: 8px 14px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: inherit;
+      width: 140px;
+      text-align: center;
+      letter-spacing: 2px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .maint-pin-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.25);
+    }
+    
+    /* Top sticky banner for admin bypass */
+    #studio-admin-bypass-bar {
+      position: sticky;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 999999;
+      background: linear-gradient(90deg, #78350f, #92400e, #78350f);
+      border-bottom: 1px solid rgba(245, 158, 11, 0.5);
+      color: #fef3c7;
+      padding: 8px 16px;
+      font-size: 12.5px;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      direction: rtl;
+    }
+  </style>
 </head>
 <body>
+
+  <!-- Sticky Admin Bypass Banner when Maintenance Mode is ON -->
+  <div id="studio-admin-bypass-bar">
+    <div style="display:flex;align-items:center;gap:10px;font-weight:700;">
+      <i class="fas fa-shield-alt" style="color:#fbbf24;font-size:15px;"></i>
+      <span>وضع الصيانة مفعّل حالياً للزوار على Cloudflare Pages | أنت تتصفح لوحة التحكم كمسؤول مصرح له</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <a href="/deployment-hub" style="background:#0284c7;color:#fff;padding:5px 12px;border-radius:6px;text-decoration:none;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+        <i class="fas fa-cloud-upload-alt"></i> <span>مركز النشر</span>
+      </a>
+      <button type="button" onclick="disableMaintenanceFromAdminBar()" style="background:#10b981;color:#fff;border:none;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+        <i class="fas fa-play"></i> <span>إلغاء الصيانة وتشغيل الموقع للجميع</span>
+      </button>
+      <button type="button" onclick="exitAdminBypass()" style="background:rgba(255,255,255,0.15);color:#fff;border:none;padding:5px 10px;border-radius:6px;cursor:pointer;font-size:11px;display:inline-flex;align-items:center;gap:4px;">
+        <i class="fas fa-sign-out-alt"></i> <span>معاينة شاشة الصيانة</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Fullscreen Modern Maintenance Screen -->
+  <div id="studio-maintenance-overlay">
+    <div class="maint-card">
+      <div class="maint-icon-wrapper">
+        <div class="maint-icon-ring-pulse"></div>
+        <div class="maint-icon-ring"></div>
+        <div class="maint-icon-inner">
+          <i class="fas fa-tools"></i>
+        </div>
+      </div>
+
+      <div class="maint-pill">
+        <i class="fas fa-shield-alt"></i>
+        <span>وضع الصيانة المؤقت نشط | Cloudflare Edge Guard</span>
+      </div>
+
+      <h1 class="maint-title">الموقع قيد الصيانة والتطوير المؤقت</h1>
+      <span class="maint-subtitle">Blogger Studio Pro is Temporarily Under Scheduled Maintenance</span>
+
+      <div class="maint-desc">
+        نعمل حالياً على تنفيذ تحسينات استثنائية وتحديثات أمنية دورية لنظام <strong>Blogger Studio Pro</strong> لضمان تجربة مستقرة وفائقة السرعة. سنعود للعمل بكامل طاقتنا في أقرب وقت ممكن.
+      </div>
+
+      <div class="maint-meta-grid">
+        <div class="maint-meta-box">
+          <span class="label"><i class="fas fa-cloud"></i> حالة الاستضافة السحابية:</span>
+          <span class="val"><span style="color:#10b981;">●</span> متصلة بسحابة Cloudflare Pages</span>
+        </div>
+        <div class="maint-meta-box">
+          <span class="label"><i class="fas fa-lock"></i> نظام الأمان والحماية:</span>
+          <span class="val"><span style="color:#fbbf24;">●</span> محفوظ ومحمي سحابياً 24/7</span>
+        </div>
+      </div>
+
+      <div class="maint-actions">
+        <button type="button" class="btn-maint btn-maint-primary" id="btn-check-maint-status" onclick="checkMaintenanceStatusNow()">
+          <i class="fas fa-sync-alt" id="icon-check-maint"></i>
+          <span>فحص حالة الموقع الآن</span>
+        </button>
+        <button type="button" class="btn-maint btn-maint-secondary" id="btn-toggle-admin-pin" onclick="togglePinBox()">
+          <i class="fas fa-key"></i>
+          <span>دخول كمسؤول (Admin PIN)</span>
+        </button>
+        <a href="/deployment-hub" class="btn-maint btn-maint-secondary" style="font-size:12px;opacity:0.85;">
+          <i class="fas fa-sliders-h"></i>
+          <span>مركز النشر</span>
+        </a>
+      </div>
+
+      <!-- PIN Input Container -->
+      <div class="maint-pin-container" id="maint-pin-container">
+        <div style="font-size:12.5px;color:#cbd5e1;margin-bottom:10px;font-weight:600;">
+          <i class="fas fa-lock" style="color:#38bdf8;"></i> أدخل رمز PIN الخاص بالمسؤول لتجاوز الصيانة:
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;align-items:center;">
+          <input type="password" id="maint-pin-input" class="maint-pin-input" placeholder="••••" maxlength="12" onkeydown="if(event.key==='Enter') submitAdminPin();">
+          <button type="button" class="btn-maint btn-maint-primary" onclick="submitAdminPin()" style="padding:8px 16px;font-size:12px;">
+            دخول فوري
+          </button>
+        </div>
+        <div id="maint-pin-error" style="color:#f87171;font-size:11.5px;margin-top:8px;display:none;"></div>
+      </div>
+
+      <div id="maint-status-toast" style="margin-top:14px;font-size:12px;color:#38bdf8;min-height:18px;"></div>
+    </div>
+  </div>
+
+  <!-- Maintenance Engine Script -->
+  <script id="blogger-maintenance-engine">
+    (function() {
+      const ADMIN_PIN = "1234";
+
+      function applyMaintenanceState(isMaint) {
+        const overlay = document.getElementById('studio-maintenance-overlay');
+        const bypassBar = document.getElementById('studio-admin-bypass-bar');
+        const appContainer = document.querySelector('.app-container');
+        const isBypassed = sessionStorage.getItem('blogger_studio_admin_bypass') === 'true';
+
+        if (isMaint) {
+          if (isBypassed) {
+            if (overlay) overlay.classList.remove('active');
+            if (bypassBar) bypassBar.style.display = 'flex';
+            if (appContainer) appContainer.style.display = '';
+            document.documentElement.classList.remove('in-maintenance-mode');
+          } else {
+            if (overlay) overlay.classList.add('active');
+            if (bypassBar) bypassBar.style.display = 'none';
+            if (appContainer) appContainer.style.display = 'none';
+            document.documentElement.classList.add('in-maintenance-mode');
+          }
+        } else {
+          if (overlay) overlay.classList.remove('active');
+          if (bypassBar) bypassBar.style.display = 'none';
+          if (appContainer) appContainer.style.display = '';
+          document.documentElement.classList.remove('in-maintenance-mode');
+        }
+      }
+
+      window.initMaintenanceMode = function() {
+        const initialMode = Boolean(window.__MAINTENANCE_MODE__);
+        applyMaintenanceState(initialMode);
+
+        const checkUrl = './static/maintenance.json?_t=' + Date.now();
+        fetch(checkUrl)
+          .then(r => r.ok ? r.json() : null)
+          .then(data => {
+            if (data && typeof data.maintenance_mode === 'boolean') {
+              window.__MAINTENANCE_MODE__ = data.maintenance_mode;
+              applyMaintenanceState(data.maintenance_mode);
+            }
+          })
+          .catch(() => {
+            fetch('/api/hub/maintenance-status')
+              .then(r => r.ok ? r.json() : null)
+              .then(data => {
+                if (data && typeof data.maintenance_mode === 'boolean') {
+                  window.__MAINTENANCE_MODE__ = data.maintenance_mode;
+                  applyMaintenanceState(data.maintenance_mode);
+                }
+              })
+              .catch(() => {});
+          });
+      };
+
+      window.togglePinBox = function() {
+        const box = document.getElementById('maint-pin-container');
+        const input = document.getElementById('maint-pin-input');
+        if (box) {
+          box.classList.toggle('active');
+          if (box.classList.contains('active') && input) input.focus();
+        }
+      };
+
+      window.submitAdminPin = function() {
+        const input = document.getElementById('maint-pin-input');
+        const err = document.getElementById('maint-pin-error');
+        if (!input) return;
+        const entered = input.value.trim();
+
+        if (entered === ADMIN_PIN || entered === "admin" || entered === "blogger2026") {
+          sessionStorage.setItem('blogger_studio_admin_bypass', 'true');
+          if (err) err.style.display = 'none';
+          input.value = '';
+          applyMaintenanceState(Boolean(window.__MAINTENANCE_MODE__));
+        } else {
+          if (err) {
+            err.textContent = '❌ رمز المرور (PIN) غير صحيح، حاول مجدداً.';
+            err.style.display = 'block';
+          }
+          input.value = '';
+          input.focus();
+        }
+      };
+
+      window.exitAdminBypass = function() {
+        sessionStorage.removeItem('blogger_studio_admin_bypass');
+        applyMaintenanceState(Boolean(window.__MAINTENANCE_MODE__));
+      };
+
+      window.disableMaintenanceFromAdminBar = async function() {
+        if (!confirm('هل تريد إلغاء وضع الصيانة وتشغيل الموقع لجميع الزوار الآن؟')) return;
+        try {
+          const res = await fetch('/api/hub/cloudflare/toggle-maintenance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ enabled: false })
+          });
+          const data = await res.json();
+          if (data.success) {
+            window.__MAINTENANCE_MODE__ = false;
+            sessionStorage.removeItem('blogger_studio_admin_bypass');
+            applyMaintenanceState(false);
+            alert('تم إلغاء وضع الصيانة بنجاح والموقع يعمل الآن لجميع الزوار!');
+          }
+        } catch(e) {
+          alert('خطأ في إيقاف وضع الصيانة: ' + e.message);
+        }
+      };
+
+      window.checkMaintenanceStatusNow = async function() {
+        const icon = document.getElementById('icon-check-maint');
+        const toast = document.getElementById('maint-status-toast');
+        if (icon) icon.className = 'fas fa-sync-alt fa-spin';
+        if (toast) toast.textContent = 'جاري التحقق من خوادم Cloudflare...';
+
+        try {
+          const res = await fetch('./static/maintenance.json?_t=' + Date.now());
+          if (res.ok) {
+            const data = await res.json();
+            if (data.maintenance_mode === false) {
+              if (toast) {
+                toast.style.color = '#10b981';
+                toast.textContent = '✅ تم إنهاء أعمال الصيانة! جاري فتح الموقع...';
+              }
+              setTimeout(() => location.reload(), 1000);
+              return;
+            }
+          }
+        } catch(e) {}
+
+        setTimeout(() => {
+          if (icon) icon.className = 'fas fa-sync-alt';
+          if (toast) {
+            toast.style.color = '#fbbf24';
+            toast.textContent = '⏳ لا يزال وضع الصيانة مفعلاً من قبل الإدارة. يرجى المحاولة بعد قليل.';
+          }
+        }, 700);
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', window.initMaintenanceMode);
+      } else {
+        window.initMaintenanceMode();
+      }
+    })();
+  </script>
 
 <div class="app-container">
   
@@ -177,12 +661,6 @@
         <span class="nav-chevron">‹</span>
       </li>
 
-            <li class="nav-item" data-tab="connect-blog" id="nav-item-connect-blog">
-        <span class="nav-icon-wrap"><span class="nav-icon">🔗</span></span>
-        <span class="nav-label" data-i18n="nav_connect_blog">ربط وتفعيل مدونة بلوجر</span>
-        <span class="nav-chevron">‹</span>
-      </li>
-
       <li class="nav-item" data-tab="settings" id="nav-item-settings">
         <span class="nav-icon-wrap"><span class="nav-icon">⚙️</span></span>
         <span class="nav-label" data-i18n="nav_blogger_settings">إعدادات بلوجر الأساسية</span>
@@ -195,7 +673,17 @@
         <span class="nav-chevron">‹</span>
       </li>
 
-      <li class="nav-item nav-item-support" data-tab="support" id="nav-item-support-dev" style="border-top:1px solid rgba(255,255,255,0.06);margin-top:4px;">
+      <!-- Subtle Horizontal Divider -->
+      <li class="nav-separator" style="border-top:1px solid rgba(255,255,255,0.08);margin:8px 12px;list-style:none;"></li>
+
+      <!-- Dedicated Bottom Navigation Group -->
+      <li class="nav-item" data-tab="connect-blog" id="nav-item-connect-blog">
+        <span class="nav-icon-wrap"><span class="nav-icon">🔗</span></span>
+        <span class="nav-label" data-i18n="nav_connect_blog">ربط وتفعيل مدونات بلوجر</span>
+        <span class="nav-chevron">‹</span>
+      </li>
+
+      <li class="nav-item nav-item-support" data-tab="support" id="nav-item-support-dev" style="margin-top:2px;">
         <span class="nav-icon-wrap"><span class="nav-icon">☕</span></span>
         <span class="nav-label" data-i18n="nav_support_dev">دعم المطور</span>
         <span class="badge" style="margin-inline-start:auto;margin-inline-end:8px;font-size:10px;padding:2px 7px;background:rgba(244,63,94,0.15);color:#fb7185;border:1px solid rgba(244,63,94,0.3);border-radius:999px;">💖 مساندة</span>
@@ -333,14 +821,14 @@
             </div>
           </div>
           <div class="topbar-user-dropdown-menu" id="topbar-user-dropdown" style="display:none;">
-            <div class="dropdown-header">
+            <div class="dropdown-header" onclick="if(!window.lastGoogleAuthStatus?.is_authenticated){connectGoogleAccount();}" style="cursor:pointer;" title="انقر لتسجيل الدخول السريع">
               <div class="user-display" id="user-display-name" data-i18n="user_google_acc">حساب Google</div>
               <div class="user-sub" id="user-display-email" data-i18n="user_acc_mgmt">لم يتم تسجيل الدخول بعد</div>
               <span class="badge" id="topbar-user-badge" style="background:rgba(148,163,184,0.18);color:#94a3b8;border:1px solid rgba(148,163,184,0.3);font-size:10px;margin-top:4px;display:inline-block;" data-i18n="user_status_unconnected">غير متصل</span>
             </div>
             <div class="dropdown-divider"></div>
-            <a href="javascript:void(0)" onclick="switchTab('connect-blog')" class="dropdown-item" id="topbar-menu-login" data-i18n="menu_connect_google">🔗 تسجيل الدخول وتفويض جوجل</a>
-            <a href="javascript:void(0)" onclick="switchTab('connect-blog')" class="dropdown-item" id="topbar-menu-manage" data-i18n="menu_manage_google">⚙️ ربط وإدارة المدونات</a>
+            <a href="javascript:void(0)" onclick="connectGoogleAccount()" class="dropdown-item" id="topbar-menu-login" data-i18n="menu_connect_google">➕ ربط حساب جوجل إضافي</a>
+            <a href="javascript:void(0)" onclick="switchTab('connect-blog');const dd=document.getElementById('topbar-user-dropdown');if(dd)dd.style.display='none';" class="dropdown-item" id="topbar-menu-manage" data-i18n="menu_manage_google">⚙️ ربط وتفعيل مدونة بلوجر (يدوي وسحابي)</a>
             <div class="dropdown-divider" id="topbar-menu-logout-divider" style="display:none;"></div>
             <a href="javascript:void(0)" onclick="logoutGoogleAccount()" class="dropdown-item text-danger" id="topbar-menu-logout" style="display:none;" data-i18n="menu_logout">↪ تسجيل الخروج</a>
           </div>
@@ -502,7 +990,7 @@
                 <div class="posts-overview-title-wrap">
                   <div class="posts-overview-title">
                     <span class="title-icon-blue">📄</span>
-                    <span data-i18n="latest_posts_title">أحدث المقالات المنشورة على تيكميلو</span>
+                    <span data-i18n="latest_posts_title">أحدث المقالات المنشورة على المدونة</span>
                   </div>
                   <div class="posts-overview-subtitle" data-i18n="latest_posts_sub">محدثة ومزامنة تلقائياً مع مدونة بلوجر</div>
                 </div>
@@ -1783,7 +2271,7 @@
                 <div class="card-title" data-i18n="media_title">مكتبة الوسائط والصور</div>
                 <span class="badge live" id="media-total-badge">0 صور</span>
               </div>
-              <div class="card-subtitle" data-i18n="media_sub">محرك رفع وضغط الصور فائق السرعة بصيغة WebP لتسريع تحميل صفحات ومدونة تيكميلو</div>
+              <div class="card-subtitle" data-i18n="media_sub">محرك رفع وضغط الصور فائق السرعة بصيغة WebP لتسريع تحميل صفحات ومدونة بلوجر</div>
             </div>
 
             <div class="media-header-actions">
@@ -2605,314 +3093,109 @@
       </section>
 
                   <!-- TAB 12: CONNECT & ACTIVATE BLOGGER (ربط وتفعيل مدونة بلوجر) -->
-      <section id="tab-connect-blog" class="tab-pane">
-        
-        <!-- Header Pro & Action Bar -->
-        <div class="module-header-pro">
-          <div class="module-header-info">
-            <div class="module-badge" style="background:rgba(56, 189, 248, 0.15);color:#38bdf8;border:1px solid rgba(56, 189, 248, 0.3);">
-              <i class="fas fa-plug-circle-bolt"></i> <span data-i18n="badge_connect_suite">مركز الربط والتفعيل الشامل</span>
-            </div>
-            <h2 class="module-title" data-i18n="connect_blog_title">ربط وتفعيل مدونة بلوجر</h2>
-            <p class="module-desc" data-i18n="connect_blog_desc">مركز شامل لإدارة وتفعيل مدونات بلوجر عبر تسجيل الدخول بحساب جوجل أو عبر المعرّفات المباشرة بدون حساب، وفحص الاتصال الحي وإدارة المدونات المتصلة.</p>
-          </div>
-          <div class="module-header-actions">
-            <button type="button" class="btn btn-secondary btn-icon-text" onclick="pingAllConnectedBlogs()" title="فحص سرعة استجابة جميع المدونات">
-              <i class="fas fa-bolt text-amber"></i>
-              <span data-i18n="btn_ping_all">فحص سرعة الاستجابة</span>
-            </button>
-            <button type="button" class="btn btn-secondary btn-icon-text" onclick="loadAndRenderSidebarBlogs(true);renderConnectedBlogsInSettings();if(typeof updateConnectBlogKpis==='function')updateConnectBlogKpis();" title="تحديث قائمة المدونات">
-              <i class="fas fa-sync-alt"></i>
-              <span data-i18n="btn_refresh_blogs">تحديث المدونات</span>
-            </button>
-            <a href="#connect-manual-blog-card" class="btn btn-primary btn-icon-text">
-              <i class="fas fa-plus-circle"></i>
-              <span data-i18n="btn_add_blog_now">ربط مدونة جديدة 🚀</span>
-            </a>
-          </div>
-        </div>
+                  <section id="tab-connect-blog" class="tab-pane">
 
-        <!-- KPI Metrics Grid (Quick Status Bar) -->
-        <div class="kpi-metric-grid" style="margin-bottom:24px;">
-          <!-- 1. Google OAuth Status -->
-          <div class="metric-card glass-card">
-            <div class="metric-icon" style="background:rgba(66, 133, 244, 0.15);color:#4285f4;"><i class="fab fa-google"></i></div>
-            <div class="metric-info">
-              <span class="metric-label" data-i18n="metric_google_status">تسجيل دخول جوجل</span>
-              <div class="metric-val" id="connect-metric-oauth-status" style="font-size:13.5px;margin-top:4px;">
-                <span class="badge" style="background:rgba(16,185,129,0.18);color:#10b981;font-size:11px;padding:3px 8px;">مفوّض ونشط</span>
-              </div>
-            </div>
-          </div>
+        <!-- Main Connect Workspace (Organized into Two Distinct, Standalone Methods) -->
+        <div style="display:flex;flex-direction:column;gap:22px;">
 
-          <!-- 2. Active Blog -->
-          <div class="metric-card glass-card">
-            <div class="metric-icon" style="background:rgba(249, 115, 22, 0.15);color:#f97316;"><i class="fab fa-blogger-b"></i></div>
-            <div class="metric-info">
-              <span class="metric-label" data-i18n="metric_active_blog">المدونة النشطة حالياً</span>
-              <div class="metric-val" id="connect-metric-active-blog" style="font-size:14px;margin-top:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:200px;color:#fff;font-weight:700;">
-                My Blogger
-              </div>
-            </div>
-          </div>
-
-          <!-- 3. Total Connected Blogs -->
-          <div class="metric-card glass-card">
-            <div class="metric-icon" style="background:rgba(16, 185, 129, 0.15);color:#10b981;"><i class="fas fa-layer-group"></i></div>
-            <div class="metric-info">
-              <span class="metric-label" data-i18n="metric_total_blogs">إجمالي المدونات المتصلة</span>
-              <div class="metric-val font-mono" id="connect-metric-total-blogs" style="font-size:22px;color:#10b981;font-weight:700;">1</div>
-            </div>
-          </div>
-
-          <!-- 4. Sync Protocol & Network -->
-          <div class="metric-card glass-card">
-            <div class="metric-icon" style="background:rgba(6, 182, 212, 0.15);color:#06b6d4;"><i class="fas fa-network-wired"></i></div>
-            <div class="metric-info">
-              <span class="metric-label" data-i18n="metric_sync_protocol">بروتوكول واستجابة الشبكة</span>
-              <div class="metric-val" id="connect-metric-latency" style="font-size:13.5px;margin-top:4px;color:#38bdf8;">
-                <span class="font-mono">463 ms</span> <span style="font-size:11px;color:#94a3b8;">(Hybrid)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Main Connect Workspace (Organized Cards) -->
-        <div style="display:flex;flex-direction:column;gap:24px;">
-
-          <!-- CARD 1: GOOGLE OAUTH CONNECTION & CREDENTIALS -->
-          <div class="settings-group-card glass-card connect-card-oauth" style="border:1.5px solid rgba(66, 133, 244, 0.35);border-radius:14px;overflow:hidden;">
-            <div class="settings-group-title" style="border-bottom:1px solid rgba(255, 255, 255, 0.08);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-              <div style="display:flex;align-items:center;gap:14px;">
-                <div style="width:42px;height:42px;border-radius:12px;background:rgba(66, 133, 244, 0.15);display:flex;align-items:center;justify-content:center;color:#4285f4;font-size:20px;border:1px solid rgba(66, 133, 244, 0.3);">
+          <!-- ============================================================== -->
+          <!-- METHOD 1: OFFICIAL GOOGLE OAUTH CONNECTION & KEYS SETTINGS     -->
+          <!-- ============================================================== -->
+          <div class="settings-group-card glass-card connect-card-oauth" style="border:1.5px solid rgba(66, 133, 244, 0.35);border-radius:14px;overflow:hidden;background:rgba(15, 23, 42, 0.85);box-shadow:0 8px 24px rgba(0,0,0,0.35);">
+            <div class="settings-group-title" style="border-bottom:1px solid rgba(255, 255, 255, 0.08);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;border-radius:10px;background:rgba(66, 133, 244, 0.15);display:flex;align-items:center;justify-content:center;color:#4285f4;font-size:18px;border:1px solid rgba(66, 133, 244, 0.3);">
                   <i class="fab fa-google"></i>
                 </div>
                 <div>
-                  <h3 style="font-size:16px;margin:0;color:#fff;font-weight:700;" data-i18n="card_google_auth_title">تفعيل وتسجيل الدخول بحساب جوجل</h3>
-                  <p style="font-size:12px;color:#94a3b8;margin:3px 0 0 0;" data-i18n="card_google_auth_sub">يتيح تفويض حساب جوجل لاكتشاف ونشر وتعديل المقالات عبر واجهة برمجة تطبيقات بلوجر الرسمية.</p>
+                  <h3 style="font-size:15.5px;margin:0;color:#fff;font-weight:700;">الطريقة 1: تسجيل الدخول والتفويض الرسمي بحساب Google</h3>
+                  <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">يتيح مزامنة واكتشاف جميع مدوناتك في حساب Google وإدارتها سحابياً بنقرة واحدة.</p>
                 </div>
               </div>
               <div>
-                <span class="badge" style="background:rgba(66, 133, 244, 0.15);color:#60a5fa;border:1px solid rgba(66, 133, 244, 0.3);font-size:11.5px;padding:4px 12px;border-radius:999px;">
+                <span class="badge" style="background:rgba(66, 133, 244, 0.15);color:#60a5fa;border:1px solid rgba(66, 133, 244, 0.3);font-size:11px;padding:4px 10px;border-radius:999px;">
                   Google OAuth 2.0
                 </span>
               </div>
             </div>
 
             <div class="settings-group-content" style="padding:22px;">
-              <!-- Toggle Bar -->
-              <div style="background:rgba(30, 41, 59, 0.7);border:1px solid rgba(255, 255, 255, 0.08);border-radius:12px;padding:18px 20px;margin-bottom:18px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
-                  <div>
-                    <div style="font-size:14.5px;font-weight:700;color:#fff;" data-i18n="lbl_google_login_mode">تمكين وضع تسجيل دخول جوجل الرسمي</div>
-                    <div style="font-size:12px;color:#94a3b8;margin-top:3px;" data-i18n="desc_google_login_mode">يمكنك تعطيل هذا النمط والاعتماد كلياً على ربط المدونات بالمعرفات يدوياً بالأسفل.</div>
-                  </div>
-                  <div style="display:flex;align-items:center;gap:14px;">
-                    <label class="switch-ios">
-                      <input type="checkbox" id="settings-google-oauth-toggle" onchange="toggleGoogleAuthMode(this.checked)" checked>
-                      <span class="slider-ios round"></span>
-                    </label>
-                    <div id="settings-oauth-account-status">
-                      <span class="badge" style="background:rgba(16, 185, 129, 0.15);color:#10b981;font-size:11.5px;padding:4px 10px;">
-                        <i class="fas fa-spinner fa-spin"></i> جاري التحقق...
-                      </span>
-                    </div>
-                  </div>
+              
+              <!-- Direct Action Bar -->
+              <div style="background:rgba(30, 41, 59, 0.6);border:1px solid rgba(255, 255, 255, 0.08);border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:#fff;" id="settings-oauth-account-email-label">حالة الحساب: جاهز لتسجيل الدخول السحابي المباشر</div>
+                  <div style="font-size:11.5px;color:#94a3b8;margin-top:2px;">يتم استخدام المفتاح المشفر الافتراضي تلقائياً، أو يمكنك تخصيص مفاتيحك بالأسفل.</div>
                 </div>
-
-                <!-- Account details & Actions -->
-                <div id="settings-oauth-details-row" style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255, 255, 255, 0.08);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
-                  <div style="font-size:13px;color:#cbd5e1;display:flex;align-items:center;gap:8px;">
-                    <i class="fas fa-user-check text-cyan"></i>
-                    <span id="settings-oauth-account-email-label">حالة الحساب: جاري فحص التفويض...</span>
-                  </div>
-                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <button type="button" class="btn btn-primary btn-sm btn-icon-text" onclick="connectGoogleAccount()" style="font-size:12.5px;padding:7px 16px;">
-                      <i class="fab fa-google"></i> <span data-i18n="btn_login_google">تسجيل الدخول بحساب جوجل 🚀</span>
-                    </button>
-                    <button type="button" class="btn btn-secondary btn-sm btn-icon-text" onclick="toggleOAuthDevBox()" style="font-size:12.5px;padding:7px 16px;">
-                      <i class="fas fa-sliders-h text-amber"></i> <span data-i18n="btn_toggle_oauth_keys">إعدادات مفاتيح Google Cloud والمستخدمين التجريبيين ▾</span>
-                    </button>
-                  </div>
+                <div>
+                  <button type="button" class="btn btn-primary btn-icon-text" onclick="connectGoogleAccount()" style="font-size:13.5px;padding:9px 24px;background:#2563eb;border-color:#1d4ed8;font-weight:700;box-shadow:0 4px 14px rgba(37,99,235,0.35);">
+                    <i class="fab fa-google"></i> <span>تسجيل الدخول بحساب Google المباشر 🚀</span>
+                  </button>
                 </div>
               </div>
 
-              <!-- Collapsible Developer Credentials Box -->
-              <div id="oauth-developer-box" style="display:none;background:rgba(15, 23, 42, 0.95);border:1px solid rgba(56, 189, 248, 0.3);border-radius:14px;padding:22px;margin-top:16px;box-shadow:inset 0 0 20px rgba(0,0,0,0.4);">
+              <!-- ========================================================== -->
+              <!-- GREEN BOX: GOOGLE CLOUD OAUTH KEYS SETTINGS (POLISHED & CLEAN) -->
+              <!-- ========================================================== -->
+              <div class="oauth-keys-card notranslate" data-no-translate="true" style="background:linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.6));border:1.5px solid rgba(56, 189, 248, 0.35);border-radius:14px;padding:20px;margin-bottom:20px;box-shadow:0 6px 20px rgba(0,0,0,0.3);">
                 
-                <!-- Section Header -->
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:12px;">
+                <!-- Keys Section Header -->
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.08);padding-bottom:12px;flex-wrap:wrap;gap:8px;">
                   <div>
                     <h4 style="margin:0;font-size:14.5px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px;">
                       <i class="fas fa-key text-cyan"></i>
-                      <span data-i18n="oauth_creds_title">إعدادات مفاتيح Google Cloud OAuth (Client ID & Client Secret)</span>
+                      <span>إعدادات مفاتيح Google Cloud OAuth</span>
                     </h4>
-                    <p style="margin:4px 0 0 0;font-size:11.5px;color:#94a3b8;">أدخل بيانات الاعتماد الرسمية المستخرجة من مشروعك في Google Cloud لتمكين التفويض الآمن.</p>
+                    <p style="margin:3px 0 0 0;font-size:11.5px;color:#94a3b8;">لتمكين التفويض الآمن Google Cloud أدخل بيانات الاعتماد الرسمية المستخرجة من مشروعك في:</p>
                   </div>
-                  <span class="badge" style="font-size:11px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;padding:4px 10px;border-radius:6px;">إعدادات متقدمة</span>
+                  <span class="badge" style="font-size:11px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;border:1px solid rgba(56, 189, 248, 0.3);padding:3px 10px;border-radius:6px;font-weight:600;">
+                    تخصيص المفاتيح
+                  </span>
                 </div>
 
                 <!-- Inputs Grid -->
-                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:16px;margin-bottom:16px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));gap:16px;margin-bottom:14px;">
                   <div>
-                    <label class="form-label" style="font-size:12.5px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                      <i class="fas fa-id-badge text-cyan"></i> <span>Client ID (معرّف العميل)</span> <span class="text-rose">*</span>
+                    <label class="form-label notranslate" for="oauth-client-id" style="font-size:12.5px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
+                      <i class="fas fa-id-badge text-cyan"></i> <span>معرّف العميل (Client ID)</span> <span class="text-rose">*</span>
                     </label>
-                    <input type="text" id="oauth-client-id" class="form-control-pro font-mono" placeholder="123456789-xxxx.apps.googleusercontent.com" style="height:40px;font-size:12.5px;">
+                    <input type="text" id="oauth-client-id" class="form-control-pro font-mono" placeholder="123456789-xxxx.apps.googleusercontent.com" style="height:42px;font-size:12.5px;background:rgba(11, 17, 32, 0.8);border:1px solid rgba(255, 255, 255, 0.12);color:#fff;border-radius:8px;padding:0 12px;width:100%;">
                   </div>
                   <div>
-                    <label class="form-label" style="font-size:12.5px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-                      <span style="display:flex;align-items:center;gap:6px;"><i class="fas fa-lock text-amber"></i> <span>Client Secret (المفتاح السري)</span> <span class="text-rose">*</span></span>
-                      <button type="button" onclick="toggleClientSecretVisibility()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11.5px;padding:0;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+                      <label class="form-label notranslate" for="oauth-client-secret" style="font-size:12.5px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin:0;">
+                        <i class="fas fa-lock text-amber"></i> <span>المفتاح السري (Client Secret)</span> <span class="text-rose">*</span>
+                      </label>
+                      <button type="button" onclick="toggleClientSecretVisibility()" style="background:none;border:none;color:#94a3b8;cursor:pointer;font-size:11.5px;display:flex;align-items:center;gap:4px;padding:0;">
                         <i class="fas fa-eye" id="icon-secret-eye"></i> <span id="label-secret-eye">إظهار السر</span>
                       </button>
-                    </label>
-                    <input type="password" id="oauth-client-secret" class="form-control-pro font-mono" placeholder="GOCSPX-xxxx" style="height:40px;font-size:12.5px;">
+                    </div>
+                    <input type="password" id="oauth-client-secret" class="form-control-pro font-mono" placeholder="GOCSPX-xxxx" style="height:42px;font-size:12.5px;background:rgba(11, 17, 32, 0.8);border:1px solid rgba(255, 255, 255, 0.12);color:#fff;border-radius:8px;padding:0 12px;width:100%;">
                   </div>
                 </div>
 
                 <!-- Save Action Row -->
-                <div style="display:flex;justify-content:flex-end;margin-bottom:20px;">
-                  <button type="button" onclick="saveOAuthCredentials()" class="btn btn-primary btn-sm btn-icon-text" style="font-size:12.5px;padding:7px 18px;">
-                    <i class="fas fa-save"></i> <span data-i18n="btn_save_creds">حفظ بيانات الاعتماد</span>
+                <div style="display:flex;justify-content:flex-end;align-items:center;gap:10px;margin-bottom:14px;">
+                  <button type="button" onclick="saveOAuthCredentials()" class="btn btn-primary btn-icon-text" style="font-size:12.5px;padding:8px 22px;border-radius:8px;font-weight:600;">
+                    <i class="fas fa-save"></i> <span>حفظ وتفعيل بيانات الاعتماد 💾</span>
                   </button>
                 </div>
 
-                <!-- CRITICAL STEP: TEST USERS & PUBLISH APP GUIDE -->
-                <div style="background:linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(15, 23, 42, 0.9));border:1.5px solid rgba(245, 158, 11, 0.35);border-radius:12px;padding:18px;margin-bottom:20px;">
-                  <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
-                    <div style="width:34px;height:34px;border-radius:8px;background:rgba(245, 158, 11, 0.2);display:flex;align-items:center;justify-content:center;color:#f59e0b;font-size:16px;">
-                      <i class="fas fa-user-shield"></i>
-                    </div>
-                    <div>
-                      <h5 style="margin:0;font-size:13.5px;font-weight:700;color:#fbbf24;" data-i18n="guide_test_users_h5">خطوة ضرورية وهامة: إضافة المستخدم التجريبي (Test Users) لتفادي خطأ Google 403</h5>
-                      <p style="margin:2px 0 0 0;font-size:11.5px;color:#cbd5e1;" data-i18n="guide_test_users_p">إذا كان مشروعك في وضع التجربة (Testing)، جوجل ترفض تسجيل الدخول إلا إذا أضفت بريدك كمستخدم تجريبي.</p>
-                    </div>
+                <!-- Origins & URIs helper box (prevents the 401 error) -->
+                <div style="background:rgba(11, 17, 32, 0.6);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 16px;">
+                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:8px;">
+                    <span style="font-size:12px;font-weight:700;color:#c084fc;display:flex;align-items:center;gap:6px;">
+                      <i class="fas fa-globe"></i> <span>لتفادي خطأ (no registered origin): أضف النطاق السحابي في Google Cloud</span>
+                    </span>
+                    <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style="font-size:11px;color:#38bdf8;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
+                      <span>فتح Google Cloud Console</span> <i class="fas fa-external-link-alt"></i>
+                    </a>
                   </div>
-
-                  <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:12px;margin:12px 0;">
-                    <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-                      <div style="font-weight:700;color:#38bdf8;font-size:12px;margin-bottom:4px;" data-i18n="guide_test_user_step1">1. فتح شاشة الموافقة (OAuth Consent):</div>
-                      <div style="font-size:11px;color:#94a3b8;line-height:1.5;" data-i18n="guide_test_user_step1_desc">افتح صفحة موافقة OAuth في مشروعك في Google Cloud.</div>
-                      <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener noreferrer" class="cat-btn-action" style="font-size:11px;padding:4px 10px;margin-top:8px;display:inline-flex;align-items:center;gap:6px;">
-                        <span data-i18n="guide_test_user_step1_link">فتح شاشة الموافقة في نافذة جديدة ↗</span>
-                      </a>
-                    </div>
-
-                    <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-                      <div style="font-weight:700;color:#10b981;font-size:12px;margin-bottom:4px;" data-i18n="guide_test_user_step2">2. إضافة البريد الإلكتروني (Add User):</div>
-                      <div style="font-size:11px;color:#94a3b8;line-height:1.5;" data-i18n="guide_test_user_step2_desc">انزل لأسفل إلى قسم <strong>Test users</strong> واضغط <strong>+ ADD USERS</strong> ثم أدخل بريدك الإلكتروني.</div>
-                      <div style="display:flex;gap:6px;margin-top:8px;align-items:center;flex-wrap:wrap;">
-                        <input type="email" id="input-test-user-email" class="form-control-pro" placeholder="your-email@gmail.com" style="height:32px;font-size:11.5px;padding:4px 8px;max-width:210px;">
-                        <button type="button" class="cat-btn-action" onclick="copyTestUserEmail(this)" style="font-size:11px;padding:4px 10px;display:inline-flex;align-items:center;gap:6px;height:32px;white-space:nowrap;">
-                          <i class="fas fa-copy text-amber"></i> <span id="btn-copy-test-email-label" data-i18n="btn_copy_test_email">نسخ البريد 📋</span>
-                        </button>
-                      </div>
-                    </div>
-
-                    <div style="background:rgba(0,0,0,0.3);padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);">
-                      <div style="font-weight:700;color:#f59e0b;font-size:12px;margin-bottom:4px;" data-i18n="guide_test_user_step3">3. الحل الدائم (نشر التطبيق Publish):</div>
-                      <div style="font-size:11px;color:#94a3b8;line-height:1.5;" data-i18n="guide_test_user_step3_desc">في نفس الصفحة، اضغط زر <strong>PUBLISH APP</strong> لجعل التطبيق يقبل أي حساب دون قيود.</div>
-                      <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener noreferrer" class="cat-btn-action" style="font-size:11px;padding:4px 10px;margin-top:8px;display:inline-flex;align-items:center;gap:6px;">
-                        <span data-i18n="guide_test_user_step3_link">صفحة شاشة الموافقة ↗</span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- ALL REDIRECT URIS LIST (FULL DISPLAY WITH DEDICATED COPY BUTTONS) -->
-                <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:18px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
-                    <div>
-                      <label style="font-size:13px;font-weight:700;color:#38bdf8;margin:0;display:flex;align-items:center;gap:6px;">
-                        <i class="fas fa-link"></i> <span data-i18n="lbl_auth_redirect_uris">روابط إعادة التوجيه المعتمدة (Authorized redirect URIs):</span>
-                      </label>
-                      <p style="font-size:11px;color:#94a3b8;margin:2px 0 0 0;" data-i18n="desc_auth_redirect_uris">ألصق هذه الروابط في خانة <strong>Authorized redirect URIs</strong> داخل صفحة تعديل Client ID في Google Cloud:</p>
-                    </div>
-                    <button type="button" onclick="copyAllRedirectUris(this)" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:5px 12px;">
-                      📋 <span id="label-copy-all-uris" data-i18n="btn_copy_all_uris">نسخ جميع روابط إعادة التوجيه دفعة واحدة</span>
+                  <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(192,132,252,0.08);border:1px solid rgba(192,132,252,0.25);border-radius:6px;padding:6px 12px;flex-wrap:wrap;gap:8px;">
+                    <span style="font-size:11.5px;color:#e2e8f0;">Authorized JavaScript origin: <code class="font-mono" style="color:#f3e8ff;font-weight:700;">https://blogger-studio-pro.pages.dev</code></span>
+                    <button type="button" onclick="copySingleUri('https://blogger-studio-pro.pages.dev', this)" class="btn btn-secondary btn-sm" style="font-size:11px;padding:3px 10px;">
+                      <i class="fas fa-copy"></i> <span>نسخ النطاق</span>
                     </button>
-                  </div>
-
-                  <div style="display:flex;flex-direction:column;gap:10px;">
-                    
-                    <!-- URI 1 -->
-                    <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(56, 189, 248, 0.25);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:260px;">
-                        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;font-weight:700;" data-i18n="lbl_uri_1">رابط 1</span>
-                        <code class="font-mono text-cyan" style="font-size:12.5px;word-break:break-all;user-select:all;">http://127.0.0.1:8000/api/auth/google/callback</code>
-                      </div>
-                      <button type="button" onclick="copySingleUri('http://127.0.0.1:8000/api/auth/google/callback', this)" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:4px 12px;height:28px;">
-                        <i class="fas fa-copy"></i> <span>نسخ الرابط 📋</span>
-                      </button>
-                    </div>
-
-                    <!-- URI 2 -->
-                    <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(56, 189, 248, 0.25);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:260px;">
-                        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;font-weight:700;" data-i18n="lbl_uri_2">رابط 2</span>
-                        <code class="font-mono text-cyan" style="font-size:12.5px;word-break:break-all;user-select:all;">http://localhost:8000/api/auth/google/callback</code>
-                      </div>
-                      <button type="button" onclick="copySingleUri('http://localhost:8000/api/auth/google/callback', this)" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:4px 12px;height:28px;">
-                        <i class="fas fa-copy"></i> <span>نسخ الرابط 📋</span>
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-
-                <!-- JAVASCRIPT ORIGINS (FULL DISPLAY WITH COPY BUTTONS) -->
-                <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;margin-top:16px;">
-                  <div style="margin-bottom:8px;">
-                    <label style="font-size:13px;font-weight:700;color:#a855f7;margin:0;display:flex;align-items:center;gap:6px;">
-                      <i class="fas fa-globe"></i> <span data-i18n="lbl_auth_js_origins">مصادر JavaScript المعتمدة (Authorized JavaScript origins):</span>
-                    </label>
-                    <p style="font-size:11px;color:#94a3b8;margin:2px 0 0 0;" data-i18n="desc_auth_js_origins">ألصق هذين الأصلين في خانة <strong>Authorized JavaScript origins</strong> في نفس الصفحة (بدون أي مسارات):</p>
-                  </div>
-
-                  <div style="display:flex;flex-direction:column;gap:10px;">
-                    
-                    <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(168, 85, 247, 0.25);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                      <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(168, 85, 247, 0.15);color:#c084fc;font-weight:700;">أصل 1</span>
-                        <code class="font-mono" style="font-size:12.5px;color:#c084fc;user-select:all;">http://127.0.0.1:8000</code>
-                      </div>
-                      <button type="button" onclick="copySingleUri('http://127.0.0.1:8000', this)" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:4px 12px;height:28px;">
-                        <i class="fas fa-copy"></i> <span>نسخ الأصل 📋</span>
-                      </button>
-                    </div>
-
-                    <div style="background:rgba(0,0,0,0.35);border:1px solid rgba(168, 85, 247, 0.25);border-radius:8px;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
-                      <div style="display:flex;align-items:center;gap:10px;">
-                        <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:rgba(168, 85, 247, 0.15);color:#c084fc;font-weight:700;">أصل 2</span>
-                        <code class="font-mono" style="font-size:12.5px;color:#c084fc;user-select:all;">http://localhost:8000</code>
-                      </div>
-                      <button type="button" onclick="copySingleUri('http://localhost:8000', this)" class="btn btn-secondary btn-sm" style="font-size:11.5px;padding:4px 12px;height:28px;">
-                        <i class="fas fa-copy"></i> <span>نسخ الأصل 📋</span>
-                      </button>
-                    </div>
-
-                  </div>
-                </div>
-
-                <!-- Step Guide Direct Links -->
-                <div style="border-top:1px solid rgba(255,255,255,0.08);padding-top:16px;margin-top:16px;">
-                  <div style="font-size:12.5px;font-weight:700;color:#cbd5e1;margin-bottom:10px;">
-                    📋 روابط Google Cloud المباشرة خطوة بخطوة:
-                  </div>
-                  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-                    <a href="https://console.cloud.google.com/projectcreate" target="_blank" rel="noopener noreferrer" class="cat-btn-action" style="font-size:11.5px;padding:6px 12px;">
-                      <i class="fas fa-plus-circle text-cyan"></i> إنشاء مشروع جديد ↗
-                    </a>
-                    <a href="https://console.cloud.google.com/apis/library/blogger.googleapis.com" target="_blank" rel="noopener noreferrer" class="cat-btn-action" style="font-size:11.5px;padding:6px 12px;">
-                      <i class="fas fa-check text-emerald"></i> تفعيل Blogger API v3 ↗
-                    </a>
-                    <a href="https://console.cloud.google.com/apis/credentials/consent" target="_blank" rel="noopener noreferrer" class="cat-btn-action" style="font-size:11.5px;padding:6px 12px;">
-                      <i class="fas fa-shield-alt text-amber"></i> شاشة الموافقة OAuth ↗
-                    </a>
-                    <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" class="cat-btn-action" style="font-size:11.5px;padding:6px 12px;">
-                      <i class="fas fa-key text-purple"></i> إنشاء بيانات الاعتماد (Credentials) ↗
-                    </a>
                   </div>
                 </div>
 
@@ -2921,65 +3204,63 @@
             </div>
           </div>
 
-          <!-- CARD 2: CONNECT BLOG DIRECTLY BY ID (NO GOOGLE LOGIN) -->
+          <!-- ============================================================== -->
+          <!-- METHOD 2: DIRECT BLOG CONNECTION (NO GOOGLE SIGN-IN - 100% OK) -->
+          <!-- ============================================================== -->
           <div class="settings-group-card glass-card" id="connect-manual-blog-card" style="border:1.5px solid rgba(16, 185, 129, 0.4);background:linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(18, 34, 38, 0.95));border-radius:14px;overflow:hidden;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5);">
-            <div class="settings-group-title" style="border-bottom:1px solid rgba(255, 255, 255, 0.08);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-              <div style="display:flex;align-items:center;gap:14px;">
-                <div style="width:42px;height:42px;border-radius:12px;background:rgba(16, 185, 129, 0.15);display:flex;align-items:center;justify-content:center;color:#10b981;font-size:20px;border:1px solid rgba(16, 185, 129, 0.3);">
-                  <i class="fas fa-fingerprint"></i>
+            <div class="settings-group-title" style="border-bottom:1px solid rgba(255, 255, 255, 0.08);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;border-radius:10px;background:rgba(16, 185, 129, 0.15);display:flex;align-items:center;justify-content:center;color:#10b981;font-size:18px;border:1px solid rgba(16, 185, 129, 0.3);">
+                  <i class="fas fa-bolt"></i>
                 </div>
                 <div>
-                  <h3 style="font-size:16px;margin:0;color:#fff;font-weight:700;" data-i18n="add_blog_manual_title">الربط والكشف الذكي المباشر لمدونة بلوجر ⚡ (بدون تعقيد وبدون الحاجة لمعرّفات)</h3>
-                  <p style="font-size:12px;color:#94a3b8;margin:3px 0 0 0;" data-i18n="add_blog_manual_sub">أدخل فقط اسم مدونتك أو رابطها، وسيقوم النظام بكشف المعرّف الرقمي والاسم وتفعيل المدونة تلقائياً بنقرة واحدة دون الحاجة للبحث عن أي معرّفات.</p>
+                  <h3 style="font-size:15.5px;margin:0;color:#fff;font-weight:700;">الطريقة 2: ربط وتفعيل مدونة بلوجر المباشر (بدون تسجيل دخول وبدون تعقيد)</h3>
+                  <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">أدخل رابط مدونتك فقط، وسيقوم النظام فوراً باكتشاف اسم المدونة ومعرفها الرقمي وجلب منشوراتها بدون الحاجة لحساب Google.</p>
                 </div>
               </div>
               <div>
-                <span class="badge" style="background:rgba(16, 185, 129, 0.15);color:#10b981;border:1px solid rgba(16, 185, 129, 0.3);font-size:11.5px;padding:4px 12px;border-radius:999px;">
-                  ✓ بدون تسجيل دخول
+                <span class="badge" style="background:rgba(16, 185, 129, 0.15);color:#10b981;border:1px solid rgba(16, 185, 129, 0.3);font-size:11px;padding:4px 10px;border-radius:999px;">
+                  ✓ مضمونة 100% وبدون تسجيل دخول
                 </span>
               </div>
             </div>
 
-            <div class="settings-group-content" style="padding:22px;">
+            <div class="settings-group-content" style="padding:20px;">
               
-              <!-- Form Grid (4 Clean High-Aesthetic Fields) -->
-              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:20px;">
+              <!-- Form Grid -->
+              <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));gap:16px;">
                 
-                <!-- Field 1: Blog URL with Auto-Extract Feature -->
+                <!-- Field 1: Blog URL -->
                 <div class="manual-field-block" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <label class="field-title" for="manual-input-blog-url" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin:0;">
-                      <i class="fas fa-globe text-cyan"></i> <span data-i18n="lbl_manual_blog_url">اسم أو رابط المدونة</span> <span class="text-rose">*</span>
+                      <i class="fas fa-globe text-cyan"></i> <span>اسم أو رابط المدونة</span> <span class="text-rose">*</span>
                     </label>
-                    <span class="badge" style="font-size:10.5px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;">نطاق كامل</span>
+                    <span class="badge" style="font-size:10px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;">نطاق كامل</span>
                   </div>
-                  <input type="text" id="manual-input-blog-url" class="form-control-pro ltr" placeholder="مثال: tekmilo أو tekmilo.blogspot.com أو https://yourblog.com" style="height:40px;font-size:13px;">
+                  <input type="text" id="manual-input-blog-url" class="form-control-pro ltr" placeholder="مثال: yourblog أو yourblog.blogspot.com أو https://yourblog.com" style="height:40px;font-size:13px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:6px;">
                     <span style="font-size:11px;color:#94a3b8;">يدعم دومينات blogspot أو النطاقات المخصصة.</span>
                     <button type="button" class="cat-btn-action" id="btn-auto-extract-id" onclick="autoDetectBlogIdFromUrl()" style="font-size:11px;padding:4px 10px;border-radius:6px;color:#38bdf8;border-color:rgba(56, 189, 248, 0.4);">
-                      <i class="fas fa-magic text-cyan"></i> <span>استخراج المعرّف والاسم تلقائياً ⚡</span>
+                      <i class="fas fa-magic text-cyan"></i> <span>استخراج المعرّف والبيانات تلقائياً ⚡</span>
                     </button>
                   </div>
                 </div>
 
-                <!-- Field 2: Blog ID with ONE Direct Blogger Link -->
+                <!-- Field 2: Blog ID -->
                 <div class="manual-field-block" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
                     <label class="field-title" for="manual-input-blog-id" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin:0;">
-                      <i class="fas fa-fingerprint text-emerald"></i> <span data-i18n="lbl_manual_blog_id">معرّف المدونة الرقمي (Blog ID)</span> <span class="badge" style="font-size:9.5px;background:rgba(56, 189, 248, 0.15);color:#38bdf8;padding:2px 6px;border-radius:4px;">تلقائي اختياري</span>
+                      <i class="fas fa-fingerprint text-emerald"></i> <span>معرّف المدونة الرقمي (Blog ID)</span>
                     </label>
-                    <span class="badge" style="font-size:10.5px;background:rgba(16, 185, 129, 0.15);color:#10b981;">رقمي فريد</span>
+                    <span class="badge" style="font-size:10px;background:rgba(16, 185, 129, 0.15);color:#10b981;">يُكشف تلقائياً</span>
                   </div>
-                  <input type="text" id="manual-input-blog-id" class="form-control-pro font-mono" placeholder="يتم كشفه واستخراجه تلقائياً (أو الصقه يدوياً)" style="height:40px;font-size:13px;">
+                  <input type="text" id="manual-input-blog-id" class="form-control-pro font-mono" placeholder="يتم كشفه واستخراجه تلقائياً بنقرة زر (أو الصقه يدوياً)" style="height:40px;font-size:13px;">
                   
-                  <!-- Visual Explainer Bar with ONE Direct Link -->
-                  <div style="margin-top:8px;background:rgba(15, 23, 42, 0.6);border:1px solid rgba(56, 189, 248, 0.25);border-radius:8px;padding:8px 12px;font-size:11.5px;color:#cbd5e1;line-height:1.6;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-                    <div style="display:flex;align-items:center;gap:6px;">
-                      <i class="fab fa-blogger text-amber" style="font-size:15px;"></i>
-                      <span>المعرّف هو الأرقام في شريط عنوان المتصفح بعد <code>/blog/posts/</code></span>
-                    </div>
-                    <a href="https://www.blogger.com" target="_blank" rel="noopener noreferrer" id="link-direct-blogger-dashboard" style="color:#38bdf8;text-decoration:none;display:inline-flex;align-items:center;gap:5px;font-weight:700;background:rgba(56, 189, 248, 0.12);border:1px solid rgba(56, 189, 248, 0.35);padding:4px 10px;border-radius:6px;font-size:11px;">
-                      <i class="fas fa-external-link-alt"></i> <span>فتح لوحة Blogger لنسخ المعرّف ↗</span>
+                  <div style="margin-top:8px;background:rgba(15, 23, 42, 0.6);border:1px solid rgba(56, 189, 248, 0.25);border-radius:8px;padding:6px 10px;font-size:11px;color:#cbd5e1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;">
+                    <span>المعرّف هو الأرقام في عنوان Blogger بعد <code>/blog/posts/</code></span>
+                    <a href="https://www.blogger.com" target="_blank" rel="noopener noreferrer" style="color:#38bdf8;text-decoration:none;font-weight:700;">
+                      فتح Blogger ↗
                     </a>
                   </div>
                 </div>
@@ -2987,57 +3268,36 @@
                 <!-- Field 3: Blog Display Name -->
                 <div class="manual-field-block" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
                   <label class="field-title" for="manual-input-blog-name" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <i class="fas fa-signature text-amber"></i> <span data-i18n="lbl_manual_blog_name">اسم المدونة المعروض</span>
+                    <i class="fas fa-signature text-amber"></i> <span>اسم المدونة المعروض في الاستوديو</span>
                   </label>
-                  <input type="text" id="manual-input-blog-name" class="form-control-pro" placeholder="مثال: مدونة حيان التقنية أو My Blogger" style="height:40px;font-size:13px;">
-                  <p class="field-desc" style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;" data-i18n="desc_manual_blog_name">
-                    الاسم الذي يظهر لك في اللوحة والشريط الجانبي لتمييز هذه المدونة.
-                  </p>
+                  <input type="text" id="manual-input-blog-name" class="form-control-pro" placeholder="مثال: مدونتي الشخصية أو My Blogger" style="height:40px;font-size:13px;">
+                  <p style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;">يظهر في الشريط الجانبي والعلوي لتمييز المدونة والتبديل إليها.</p>
                 </div>
 
-                <!-- Field 4: API Key -->
+                <!-- Field 4: Connection Protocol -->
                 <div class="manual-field-block" style="background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
-                    <label class="field-title" for="manual-input-api-key" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin:0;">
-                      <i class="fas fa-key text-purple"></i> <span data-i18n="lbl_manual_api_key">مفتاح واجهة برمجة تطبيقات جوجل</span>
-                    </label>
-                    <span class="badge" style="font-size:10.5px;background:rgba(168, 85, 247, 0.15);color:#c084fc;">اختياري سريع</span>
-                  </div>
-                  <input type="password" id="manual-input-api-key" class="form-control-pro font-mono" placeholder="AIzaSy..." style="height:40px;font-size:13px;">
-                  <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;flex-wrap:wrap;gap:6px;">
-                    <span style="font-size:11px;color:#94a3b8;">مفتاح مجاني يسرع قراءة المقالات.</span>
-                    <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" style="color:#c084fc;font-size:11px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;">
-                      <i class="fas fa-external-link-alt"></i> استخراج المفتاح من Google Cloud ↗
-                    </a>
-                  </div>
-                </div>
-
-                <!-- Field 5: Connection Mode (Full Width in Grid) -->
-                <div class="manual-field-block" style="grid-column: 1 / -1;background:rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:16px;">
                   <label class="field-title" for="manual-select-conn-mode" style="font-size:13px;font-weight:700;color:#e2e8f0;display:flex;align-items:center;gap:6px;margin-bottom:6px;">
-                    <i class="fas fa-network-wired text-cyan"></i> <span data-i18n="lbl_manual_conn_mode">طريقة وبروتوكول الاتصال</span>
+                    <i class="fas fa-network-wired text-cyan"></i> <span>طريقة وبروتوكول الاتصال</span>
                   </label>
                   <select id="manual-select-conn-mode" class="form-control-pro" style="height:40px;font-size:13px;">
-                    <option value="auto" selected>⚡ الوضع الهجين التلقائي (موصى به)</option>
-                    <option value="feed">📡 وضع التغذية الحية السريعة</option>
-                    <option value="api">🔌 وضع واجهة برمجة تطبيقات بلوجر المباشر</option>
+                    <option value="auto" selected>⚡ الوضع الهجين التلقائي (موصى به - أسرع استجابة)</option>
+                    <option value="feed">📡 وضع خلاصات Blogger Live الفورية (JSONP Serverless)</option>
+                    <option value="api">🔌 وضع واجهة برمجة تطبيقات بلوجر (Blogger API)</option>
                   </select>
-                  <p class="field-desc" style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;" data-i18n="desc_manual_conn_mode">
-                    يحدد كيفية مزامنة وجلب منشورات وبيانات المدونة بأعلى كفاءة وسرعة.
-                  </p>
+                  <p style="font-size:11px;color:#94a3b8;margin:6px 0 0 0;">طريقة الجلب المباشر لمنشورات وبيانات المدونة بأعلى سرعة.</p>
                 </div>
 
               </div>
 
-              <!-- DEDICATED FULL-WIDTH SET-AS-ACTIVE TOGGLE BAR (NO COLLISION, PLENTY OF ROOM) -->
-              <div style="margin-top:20px;background:linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.8));border:1.5px solid rgba(16, 185, 129, 0.35);border-radius:12px;padding:16px 20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;">
-                <div style="display:flex;align-items:center;gap:12px;">
-                  <div style="width:38px;height:38px;border-radius:10px;background:rgba(16, 185, 129, 0.2);display:flex;align-items:center;justify-content:center;color:#10b981;font-size:18px;">
+              <!-- Set as Active Toggle Bar -->
+              <div style="margin-top:16px;background:linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(15, 23, 42, 0.8));border:1.5px solid rgba(16, 185, 129, 0.35);border-radius:12px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <div style="width:34px;height:34px;border-radius:8px;background:rgba(16, 185, 129, 0.2);display:flex;align-items:center;justify-content:center;color:#10b981;font-size:16px;">
                     <i class="fas fa-star"></i>
                   </div>
                   <div>
-                    <div style="font-size:13.5px;font-weight:700;color:#fff;" data-i18n="lbl_set_as_active_blog">تعيين كمدونة رئيسية نشطة فوراً</div>
-                    <div style="font-size:11.5px;color:#cbd5e1;margin-top:2px;" data-i18n="desc_set_as_active_blog">التبديل التلقائي إلى هذه المدونة في كافة أقسام الاستوديو والشريط العلوي بمجرد حفظها بنجاح.</div>
+                    <div style="font-size:13.5px;font-weight:700;color:#fff;">تعيين كمدونة رئيسية نشطة فوراً</div>
+                    <div style="font-size:11.5px;color:#cbd5e1;margin-top:2px;">التبديل التلقائي إلى هذه المدونة في كافة أقسام الاستوديو والشريط العلوي بمجرد حفظها بنجاح.</div>
                   </div>
                 </div>
                 <label class="switch-ios" style="margin:0;">
@@ -3046,47 +3306,49 @@
                 </label>
               </div>
 
-              <!-- Connection Live Probe Result Banner -->
+              <!-- Live Connection Probe Result Banner -->
               <div id="manual-blog-probe-result" style="display:none;margin-top:16px;padding:14px 18px;border-radius:10px;font-size:13px;"></div>
 
               <!-- Actions Toolbar -->
-              <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
                 <button type="button" class="btn btn-secondary btn-icon-text" id="btn-probe-manual-blog" onclick="testManualBlogConnectionNow()" style="padding:8px 18px;font-size:13px;">
                   <i class="fas fa-stethoscope text-cyan"></i>
-                  <span data-i18n="btn_test_blog_connection">فحص واختبار الاتصال بالمدونة ⚡</span>
+                  <span>فحص واختبار الاتصال بالمدونة ⚡</span>
                 </button>
-                <button type="button" class="btn btn-primary btn-icon-text" id="btn-save-manual-blog" onclick="saveManualBlogConnectionNow()" style="padding:8px 20px;font-size:13px;">
+                <button type="button" class="btn btn-primary btn-icon-text" id="btn-save-manual-blog" onclick="saveManualBlogConnectionNow()" style="padding:8px 20px;font-size:13px;background:#059669;border-color:#047857;">
                   <i class="fas fa-link"></i>
-                  <span data-i18n="btn_connect_and_save_blog">كشف وربط وتفعيل المدونة في اللوحة فوراً 🚀</span>
+                  <span>كشف وربط وتفعيل المدونة في اللوحة فوراً 🚀</span>
                 </button>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="clearManualBlogForm()" style="font-size:12px;padding:8px 14px;">
-                  <i class="fas fa-eraser"></i> <span data-i18n="btn_clear_fields">إفراغ الحقول</span>
+                  <i class="fas fa-eraser"></i> <span>إفراغ الحقول</span>
                 </button>
               </div>
 
             </div>
           </div>
 
-          <!-- CARD 3: CONNECTED BLOGS HUB (GRID) -->
-          <div class="settings-group-card glass-card" style="border:1px solid rgba(255, 255, 255, 0.08);background:linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(19, 29, 46, 0.95));border-radius:14px;overflow:hidden;box-shadow:0 10px 25px -5px rgba(0,0,0,0.5);">
-            <div class="settings-group-title" style="border-bottom:1px solid rgba(255, 255, 255, 0.08);padding:18px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-              <div style="display:flex;align-items:center;gap:14px;">
-                <div style="width:42px;height:42px;border-radius:12px;background:rgba(249, 115, 22, 0.15);display:flex;align-items:center;justify-content:center;color:#f97316;font-size:20px;border:1px solid rgba(249, 115, 22, 0.3);">
+          <!-- ============================================================== -->
+          <!-- SECTION 3: CONNECTED BLOGS LIST (ALL CONNECTED BLOGS)          -->
+          <!-- ============================================================== -->
+          <div class="settings-group-card glass-card" style="border:1px solid rgba(255, 255, 255, 0.08);background:rgba(15, 23, 42, 0.9);border-radius:14px;overflow:hidden;">
+            <div class="settings-group-title" style="border-bottom:1px solid rgba(255, 255, 255, 0.08);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+              <div style="display:flex;align-items:center;gap:12px;">
+                <div style="width:38px;height:38px;border-radius:10px;background:rgba(249, 115, 22, 0.15);display:flex;align-items:center;justify-content:center;color:#f97316;font-size:18px;border:1px solid rgba(249, 115, 22, 0.3);">
                   <i class="fab fa-blogger-b"></i>
                 </div>
                 <div>
-                  <h3 style="font-size:16px;margin:0;color:#fff;font-weight:700;" data-i18n="connected_blogs_heading">المدونات المتصلة والمفعلة في الاستوديو</h3>
-                  <p style="font-size:12px;color:#94a3b8;margin:3px 0 0 0;" data-i18n="connected_blogs_sub">قائمة بكافة المدونات المتصلة سواء عبر حساب Google أو عبر المعرّفات المباشرة، مع خيارات الفحص السريع والتبديل المباشر.</p>
+                  <h3 style="font-size:15.5px;margin:0;color:#fff;font-weight:700;">المدونات المتصلة والمفعلة في الاستوديو</h3>
+                  <p style="font-size:12px;color:#94a3b8;margin:2px 0 0 0;">قائمة بكافة المدونات المتصلة سواء عبر Google أو عبر المعرّفات المباشرة، مع خيارات التبديل المباشر.</p>
                 </div>
               </div>
-              <button type="button" class="cat-btn-action" onclick="renderConnectedBlogsInSettings();if(typeof updateConnectBlogKpis==='function')updateConnectBlogKpis();" style="font-size:12px;padding:6px 14px;">
-                <i class="fas fa-sync-alt"></i> <span data-i18n="btn_refresh_list">تحديث القائمة</span>
+              <button type="button" class="cat-btn-action" onclick="renderConnectedBlogsInSettings();" style="font-size:12px;padding:6px 14px;">
+                <i class="fas fa-sync-alt"></i> <span>تحديث القائمة</span>
               </button>
             </div>
 
-            <div class="settings-group-content" style="padding:22px;">
-              <div id="settings-connected-blogs-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(320px, 1fr));gap:16px;">
-                <!-- Rendered dynamically by renderConnectedBlogsInSettings() -->
+            <div class="settings-group-content" style="padding:20px;">
+              <div id="settings-connected-blogs-grid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(300px, 1fr));gap:14px;">
+                <!-- Rendered dynamically -->
               </div>
             </div>
           </div>
@@ -3094,7 +3356,7 @@
         </div>
 
       </section>
-
+      
       <!-- TAB 13: SETTINGS & DIAGNOSTICS -->
       <section id="tab-settings" class="tab-pane">
   <!-- Settings Header & Action Bar -->
@@ -3575,7 +3837,7 @@
             <p class="field-desc">المقتطف التعريفي الذي يظهر تحت رابط الموقع في نتائج بحث Google.</p>
           </div>
           <div class="field-input-col">
-            <textarea id="bset-search-description" class="form-control-pro" rows="2" maxlength="150">مدونة تكميلو تك: بوابتك الشاملة لتعلم الذكاء الاصطناعي، البرمجة، والحلول الرقمية المتطورة.</textarea>
+            <textarea id="bset-search-description" class="form-control-pro" rows="2" maxlength="150">مدونة Blogger Studio: بوابتك الشاملة لإدارة ونشر المحتوى والحلول الرقمية المتطورة.</textarea>
           </div>
         </div>
 
@@ -5098,10 +5360,25 @@ Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
 <!-- Toast Container -->
 <div id="toast-container" class="toast-container"></div>
 
-<!-- CodeMirror Studio IDE (Unified High-Performance Bundle) -->
-<script defer src="./static/vendor/codemirror/codemirror.bundle.min.js"></script>
+<!-- CodeMirror Core, Modes & Addons -->
+<script src="./static/vendor/codemirror/codemirror.min.js"></script>
+<script src="./static/vendor/codemirror/mode/xml.min.js"></script>
+<script src="./static/vendor/codemirror/mode/javascript.min.js"></script>
+<script src="./static/vendor/codemirror/mode/css.min.js"></script>
+<script src="./static/vendor/codemirror/mode/htmlmixed.min.js"></script>
+<script src="./static/vendor/codemirror/addon/fold/foldcode.min.js"></script>
+<script src="./static/vendor/codemirror/addon/fold/foldgutter.min.js"></script>
+<script src="./static/vendor/codemirror/addon/fold/xml-fold.min.js"></script>
+<script src="./static/vendor/codemirror/addon/fold/brace-fold.min.js"></script>
+<script src="./static/vendor/codemirror/addon/fold/comment-fold.min.js"></script>
+<script src="./static/vendor/codemirror/addon/search/search.min.js"></script>
+<script src="./static/vendor/codemirror/addon/search/searchcursor.min.js"></script>
+<script src="./static/vendor/codemirror/addon/search/jump-to-line.min.js"></script>
+<script src="./static/vendor/codemirror/addon/edit/matchtags.min.js"></script>
+<script src="./static/vendor/codemirror/addon/display/fullscreen.min.js"></script>
 
-<script defer src="./static/js/dashboard.js?v=2.6"></script>
+<script src="./static/js/google_blogger_client.js"></script>
+<script src="./static/js/dashboard.js?v=3.0"></script>
 
 <!-- Modal: Image Properties & Settings -->
 <div class="modal-backdrop" id="gallery-image-settings-modal" style="display:none;" onclick="if(event.target===this)closeImageSettingsModal()">
@@ -5350,6 +5627,38 @@ Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
         <pre id="web-deploy-log" style="margin:0;font-family:Consolas, monospace;font-size:11.5px;color:#e2e8f0;white-space:pre-wrap;max-height:120px;overflow-y:auto;line-height:1.6;">جاهز للنشر. اضغط على أي زر أعلاه لبدء العملية مباشرة.</pre>
       </div>
 
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal: Unsaved Article Content Switch Confirmation -->
+<div id="modal-unsaved-switch-confirm" class="modal-backdrop" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(6px);z-index:99999;align-items:center;justify-content:center;padding:20px;">
+  <div class="modal-dialog-pro glass-card" style="max-width:480px;width:100%;border-radius:16px;background:rgba(15,23,42,0.98);border:1.5px solid rgba(244,63,94,0.4);box-shadow:0 20px 40px rgba(0,0,0,0.6);overflow:hidden;">
+    <div style="padding:20px 24px;border-bottom:1px solid rgba(255,255,255,0.08);display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;border-radius:10px;background:rgba(244,63,94,0.15);color:#f43f5e;display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid rgba(244,63,94,0.3);">
+        <i class="fas fa-exclamation-triangle"></i>
+      </div>
+      <div>
+        <h3 style="margin:0;font-size:15px;font-weight:700;color:#fff;">تنبيه: محتوى غير محفوظ في المقال</h3>
+        <p style="margin:2px 0 0 0;font-size:11.5px;color:#94a3b8;">توجد كتابات وتعديلات لم يتم حفظها بعد</p>
+      </div>
+    </div>
+    <div style="padding:22px 24px;">
+      <p style="font-size:13px;color:#cbd5e1;line-height:1.7;margin:0 0 16px 0;">
+        لديك مقال قيد الكتابة في استوديو المقالات. التبديل إلى مدونة <strong id="unsaved-modal-target-blog-name" style="color:#38bdf8;"></strong> الآن قد يتسبب في فقدان ما كتبته أو حفظه بالخطأ في مدونة أخرى.
+      </p>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button type="button" class="btn btn-primary" onclick="confirmSwitchSaveDraft()" style="width:100%;padding:10px 16px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;background:#2563eb;border-color:#1d4ed8;font-weight:700;border-radius:8px;">
+          <i class="fas fa-save"></i> <span>حفظ كمسودة في المدونة الحالية ثم التبديل</span>
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="confirmSwitchDiscard()" style="width:100%;padding:10px 16px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;background:rgba(239,68,68,0.15);color:#fca5a5;border:1px solid rgba(239,68,68,0.3);font-weight:700;border-radius:8px;">
+          <i class="fas fa-trash-alt"></i> <span>تجاهل التغييرات والمتابعة في التبديل</span>
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="closeUnsavedConfirmModal()" style="width:100%;padding:10px 16px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px;border-color:rgba(255,255,255,0.15);color:#cbd5e1;border-radius:8px;">
+          <i class="fas fa-times"></i> <span>إلغاء التبديل والبقاء في المحرر</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>
