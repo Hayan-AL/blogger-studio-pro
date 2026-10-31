@@ -1949,6 +1949,7 @@ def api_hub_github_push():
 def api_hub_cf_deploy():
     return hub_deploy_cf()
 
+@app.post("/api/deploy/all")
 @app.post("/api/hub/deploy-all")
 def api_hub_deploy_all():
     return hub_deploy_all()

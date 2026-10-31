@@ -288,7 +288,15 @@ def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None)
             
     # 3. Fallback to Public Atom JSON Feed if no posts fetched via API
     if not posts:
-        feed_url = settings.get("blog", {}).get("feed_url", f"https://yourblog.blogspot.com/feeds/posts/default?alt=json&max-results=50")
+        target_blog = None
+        for b in settings.get("connected_blogs", []):
+            if str(b.get("id")) == str(blog_id):
+                target_blog = b
+                break
+        if target_blog and target_blog.get("url"):
+            feed_url = target_blog.get("feed_url") or f"{target_blog['url'].rstrip('/')}/feeds/posts/default?alt=json&max-results=500"
+        else:
+            feed_url = settings.get("blog", {}).get("feed_url", f"https://yourblog.blogspot.com/feeds/posts/default?alt=json&max-results=500")
         try:
             req = urllib.request.Request(feed_url, headers={"User-Agent": "Mozilla/5.0 BloggerStudioPro/2.0"})
             with urllib.request.urlopen(req, timeout=10) as response:
@@ -357,6 +365,18 @@ def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None)
                         posts = json.load(f)
                 except Exception:
                     pass
+
+    # If external fetch yielded no posts, fallback to existing SQLite rows
+    if not posts and rows:
+        conn.close()
+        for r in rows:
+            r["labels"] = json.loads(r.get("labels_json") or "[]")
+            r["display_date"] = (r.get("published_at") or "")[:16].replace('T', ' ')
+            r["image"] = r.get("image_url") or ""
+            r["language"] = r.get("lang") or "ar"
+            r["snippet"] = r.get("snippet") or ""
+            r["status"] = (r.get("status") or "LIVE").upper()
+        return rows
 
     # Filter out any trashed posts from external API items
     if trashed_ids:
