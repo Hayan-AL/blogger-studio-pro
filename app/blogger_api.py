@@ -589,6 +589,11 @@ def update_post_cache_and_db(clean_id: str, orig_id: str, title: str, content: s
         UPDATE posts SET title = ?, content_html = ?, labels_json = ?, lang = ?, status = ?, updated_at = ?
         WHERE id = ? OR id = ?
     """, (title, content, json.dumps(labels), lang, new_status, now_str, clean_id, orig_id))
+    if c.rowcount == 0:
+        c.execute("""
+            INSERT OR REPLACE INTO posts (id, blog_id, title, content_html, labels_json, lang, status, updated_at, published_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (clean_id, str(settings.get("blog", {}).get("id", "")), title, content, json.dumps(labels), lang, new_status, now_str, now_str))
     conn.commit()
     conn.close()
 

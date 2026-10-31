@@ -312,6 +312,42 @@
             return jsonResp(posts);
         }
 
+        // Single Post by ID Resolver (Cloudflare Pages Static Accelerator)
+        if (path.startsWith('/api/posts/') && !['trash', 'create', 'update', 'delete', 'restore', 'restore-bulk', 'empty-trash', 'delete-permanent', 'toggle-status'].includes(path.replace('/api/posts/', ''))) {
+            const requestedId = path.replace('/api/posts/', '').split('?')[0];
+            const requestedBlogId = queryParams.get('blog_id') || activeId;
+            const targetCanon = resolveCanonicalBlogId(requestedBlogId);
+            let targetPost = null;
+
+            // 1. Look in cached posts
+            const posts = getBlogPosts(requestedBlogId);
+            targetPost = posts.find(p => String(p.id) === String(requestedId));
+
+            // 2. Look in preseeded posts
+            if (!targetPost && typeof REAL_BLOG_PRESEEDED_POSTS !== 'undefined') {
+                targetPost = (REAL_BLOG_PRESEEDED_POSTS[targetCanon] || []).find(p => String(p.id) === String(requestedId));
+                if (!targetPost) {
+                    for (const bId of Object.keys(REAL_BLOG_PRESEEDED_POSTS)) {
+                        targetPost = (REAL_BLOG_PRESEEDED_POSTS[bId] || []).find(p => String(p.id) === String(requestedId));
+                        if (targetPost) break;
+                    }
+                }
+            }
+
+            // 3. Look in dedicated single post cache key
+            if (!targetPost) {
+                try {
+                    const single = localStorage.getItem('studio_post_content_' + requestedId);
+                    if (single) targetPost = JSON.parse(single);
+                } catch(e) {}
+            }
+
+            if (targetPost) {
+                return jsonResp(targetPost);
+            }
+            return jsonResp({ detail: 'Post not found' }, 404);
+        }
+
         if (path === '/api/posts/trash') {
             const requestedBlogId = queryParams.get('blog_id') || activeId;
             const trash = getTrashPosts(requestedBlogId);
@@ -5533,19 +5569,110 @@ async function publishArticleLive() {
 }
 window.publishArticleLive = publishArticleLive;
 
+
+// -------------------------------------------------------------
+// BLOGGER ARTICLE HTML DECODING & NON-DESTRUCTIVE NORMALIZATION
+// -------------------------------------------------------------
+function normalizeAndDecodeBloggerHtml(html) {
+    if (!html || typeof html !== 'string') return '';
+    let str = html.trim();
+    // If entity-encoded Blogger HTML (&lt;div, &lt;p, &lt;img, etc.)
+    if (/&lt;\s*(?:div|p|span|h[1-6]|img|a|table|ul|ol|li|b|strong|i|em|blockquote|iframe|figure)/i.test(str)) {
+        const txt = document.createElement('textarea');
+        txt.innerHTML = str;
+        str = txt.value;
+    }
+    return str;
+}
+window.normalizeAndDecodeBloggerHtml = normalizeAndDecodeBloggerHtml;
+
+function extractAndPopulateSidebarGallery(content) {
+    if (!content) {
+        currentGalleryImages = [];
+        window.currentGalleryImages = [];
+        if (typeof renderGalleryGrid === 'function') renderGalleryGrid();
+        return;
+    }
+    const temp = document.createElement('div');
+    temp.innerHTML = content;
+    const detected = [];
+    const seen = new Set();
+    
+    // Check if an existing gallery layout is specified
+    const existingGal = temp.querySelector('.studio-gallery-block, .blogger-gallery-container');
+    if (existingGal) {
+        const l = existingGal.getAttribute('data-gallery-layout') || existingGal.getAttribute('data-layout');
+        if (l && ['grid', 'vertical-slider', 'masonry', 'carousel', 'featured'].includes(l)) {
+            currentGalleryLayout = l;
+            window.currentGalleryLayout = l;
+            if (typeof updateGalleryLayoutPills === 'function') updateGalleryLayoutPills(l);
+        }
+    }
+
+    temp.querySelectorAll('img').forEach((img, idx) => {
+        let src = img.getAttribute('src');
+        if (!src || src.startsWith('data:image/svg')) return;
+        const parentAnchor = img.closest('a');
+        if (parentAnchor && parentAnchor.href && parentAnchor.href.match(/\.(png|jpe?g|webp|gif)($|\?)/i)) {
+            src = parentAnchor.href;
+        }
+        if (src.includes('googleusercontent.com') || src.includes('bp.blogspot.com')) {
+            src = src.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
+        }
+        if (!seen.has(src)) {
+            seen.add(src);
+            detected.push({
+                id: 'img_gal_' + Date.now() + '_' + (detected.length + 1),
+                url: src,
+                alt: img.getAttribute('alt') || ('\u0635\u0648\u0631\u0629 ' + (detected.length + 1)),
+                caption: img.closest('.gallery-card-item')?.querySelector('.gallery-card-caption')?.textContent || img.closest('figure')?.querySelector('figcaption')?.textContent || '',
+                link: ''
+            });
+        }
+    });
+
+    currentGalleryImages = detected;
+    window.currentGalleryImages = detected;
+    if (typeof renderGalleryGrid === 'function') renderGalleryGrid();
+}
+window.extractAndPopulateSidebarGallery = extractAndPopulateSidebarGallery;
+
 // EDIT AN EXISTING POST
-function editPostInStudio(postId) {
+async function editPostInStudio(postId) {
     currentEditingPostId = String(postId);
     window.currentEditingPostId = currentEditingPostId;
     updatePublishButtonLabel();
-    const post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(postId));
+
+    // 1. Find in local posts list
+    let post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(postId));
+
+    // 2. Fetch full post content from backend API if not complete
+    if (!post || !post.content_html || post.content_html.length <= 160) {
+        try {
+            const activeBlogId = window.currentActiveBlogId || localStorage.getItem('studio_active_blog_id') || '';
+            const res = await fetch(`/api/posts/${postId}?blog_id=${activeBlogId}`);
+            if (res.ok) {
+                const fullPost = await res.json();
+                if (fullPost && (fullPost.content_html || fullPost.content || fullPost.title)) {
+                    post = { ...(post || {}), ...fullPost };
+                    if (window.allPosts) {
+                        const idx = window.allPosts.findIndex(p => String(p.id) === String(postId));
+                        if (idx !== -1) window.allPosts[idx] = post;
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn('Notice: fetch full post details:', e);
+        }
+    }
+
     if (!post) {
-        showToast('لم يتم العثور على بيانات المقال المحدد', 'warning');
+        showToast('\u0644\u0645 \u064a\u062a\u0645 \u0627\u0644\u0639\u062b\u0648\u0631 \u0639\u0644\u0649 \u0628\u064a\u0627\u0646\u0627\u062a \u0627\u0644\u0645\u0642\u0627\u0644 \u0627\u0644\u0645\u062d\u062f\u062f', 'warning');
         return;
     }
 
     // Set Titles
-    const isAr = /[؀-ۿ]/.test(post.title || '');
+    const isAr = /[\u0600-\u06FF]/.test(post.title || '');
     const titleArInput = document.getElementById('art-title');
     const titleEnInput = document.getElementById('art-title-en');
     if (isAr) {
@@ -5617,12 +5744,12 @@ function editPostInStudio(postId) {
         removeFeaturedImage();
     }
 
-    // Set Editor Content with fallback to preseeded full HTML if trimmed
+    // Resolve Complete Original Content Losslessly
     let initialContent = post.content_html || post.content || post.snippet || '';
     if (!initialContent || initialContent.length <= 160) {
-        const canonicalId = (window.currentActiveBlogId === '5132150821033221945' ? '3715457895504629620' : (['2026102901', '202'].includes(window.currentActiveBlogId) ? '6735965676618679814' : (window.currentActiveBlogId || '3715457895504629620')));
-        if (typeof REAL_BLOG_PRESEEDED_POSTS !== 'undefined' && REAL_BLOG_PRESEEDED_POSTS[canonicalId]) {
-            const prePost = REAL_BLOG_PRESEEDED_POSTS[canonicalId].find(p => String(p.id) === String(postId));
+        const canonicalId = (window.currentActiveBlogId === '5132150821033221945' ? '3715457895504629620' : (['2026102901', '202'].includes(window.currentActiveBlogId) ? '6735965676618679814' : window.currentActiveBlogId));
+        if (typeof REAL_BLOG_PRESEEDED_POSTS !== 'undefined') {
+            const prePost = (REAL_BLOG_PRESEEDED_POSTS[canonicalId] || REAL_BLOG_PRESEEDED_POSTS['3715457895504629620'] || []).find(p => String(p.id) === String(postId));
             if (prePost && (prePost.content_html || prePost.content)) {
                 initialContent = prePost.content_html || prePost.content;
                 post.content = initialContent;
@@ -5630,21 +5757,67 @@ function editPostInStudio(postId) {
             }
         }
     }
+
+    // Normalize entity-encoded Blogger HTML
+    initialContent = normalizeAndDecodeBloggerHtml(initialContent);
+
+    // NON-DESTRUCTIVE LOAD: load complete original content directly without stripping inline images
     setEditorMode('advanced');
-    const unifiedContent = processAndUnifyGalleryContent(initialContent, true);
-    setEditorHtmlContent(unifiedContent);
+    setEditorHtmlContent(initialContent);
+
+    // Populate Sidebar Gallery non-destructively for management
+    extractAndPopulateSidebarGallery(initialContent);
+
+    // Restore Scheduling & Publishing Status
+    const pStatus = (post.status || (post.is_draft ? 'DRAFT' : (post.is_scheduled ? 'SCHEDULED' : 'LIVE'))).toUpperCase();
+    const isScheduled = (pStatus === 'SCHEDULED' || Boolean(post.is_scheduled));
+    const isDraft = (pStatus === 'DRAFT' || Boolean(post.is_draft));
+
+    const scheduleRadio = document.querySelector('input[name="publish_schedule_mode"][value="schedule"]');
+    const nowRadio = document.querySelector('input[name="publish_schedule_mode"][value="now"]');
+    const scheduleDateInput = document.getElementById('publish-schedule-date');
+    const scheduleBox = document.getElementById('schedule-datetime-box');
+
+    if (isScheduled && (post.published || post.display_date)) {
+        if (scheduleRadio) scheduleRadio.checked = true;
+        if (scheduleBox) scheduleBox.style.display = 'block';
+        if (scheduleDateInput) {
+            try {
+                const d = new Date(post.published || post.display_date);
+                if (!isNaN(d.getTime())) {
+                    scheduleDateInput.value = d.toISOString().substring(0, 16);
+                }
+            } catch(e) {}
+        }
+    } else {
+        if (nowRadio) nowRadio.checked = true;
+        if (scheduleBox) scheduleBox.style.display = 'none';
+    }
 
     // Update Status Pill
     const statusPill = document.getElementById('writer-status-pill');
     if (statusPill) {
-        const st = post.status || 'LIVE';
-        statusPill.textContent = `تعديل مقال (${st === 'DRAFT' ? 'مسودة' : (st === 'SCHEDULED' ? 'مجدول' : 'منشور')})`;
-        statusPill.style.color = st === 'DRAFT' ? 'var(--accent-amber)' : 'var(--accent-emerald)';
+        let stLabel = '\u0645\u0646\u0634\u0648\u0631 \U0001f7e2';
+        let stColor = 'var(--accent-emerald)';
+        if (isDraft) {
+            stLabel = '\u0645\u0633\u0648\u062f\u0629 \U0001f4dd';
+            stColor = 'var(--accent-amber)';
+        } else if (isScheduled) {
+            stLabel = '\u0645\u062c\u062f\u0648\u0644 \U0001f552';
+            stColor = 'var(--accent-blue)';
+        }
+        statusPill.textContent = `\u062a\u0639\u062f\u064a\u0644 \u0645\u0642\u0627\u0644 (${stLabel})`;
+        statusPill.style.color = stColor;
     }
+
+    // Reset formatting undo snapshot when loading new article
+    window.__preSmartFormatSnapshot = null;
+    const undoBtn = document.getElementById('btn-undo-smart-format');
+    if (undoBtn) undoBtn.style.display = 'none';
 
     window.currentPostSaved = true;
     switchTab('writer');
-    showToast(`تم فتح المقال للتعديل: "${(post.title || '').slice(0, 35)}..." ✍️`, 'info');
+    showToast(`\u062a\u0645 \u0641\u062a\u062d \u0627\u0644\u0645\u0642\u0627\u0644 \u0644\u0644\u062a\u0639\u062f\u064a\u0644: "${(post.title || '').slice(0, 35)}..." \u270d\ufe0f`, 'info');
 }
 window.editPostInStudio = editPostInStudio;
 
@@ -15062,25 +15235,25 @@ window.triggerComprehensivePublish = triggerComprehensivePublish;
 // -------------------------------------------------------------
 // INTELLIGENT COMPREHENSIVE ARTICLE FORMATTING ENGINE
 // -------------------------------------------------------------
-function applyProfessionalArticleFormatting() {
-    const editor = document.getElementById('art-editor');
-    if (!editor) return;
+// -------------------------------------------------------------
+// PROFESSIONAL FULL FORMAT ENGINE & MODAL PREVIEW / UNDO SYSTEM
+// -------------------------------------------------------------
+window.__preSmartFormatSnapshot = null;
+window.__pendingSmartFormattedHtml = null;
+
+function formatArticleContentIntelligently(rawHtml) {
+    if (!rawHtml || typeof rawHtml !== 'string') return { formattedHtml: '', stats: {} };
     
-    // Switch to visual mode if not already
-    if (currentEditorMode !== 'advanced') {
-        setEditorMode('advanced');
-    }
-
-    let raw = getEditorHtmlContent();
-    if (!raw || raw.trim() === '<p></p>' || raw.trim() === '<p><br></p>') {
-        showToast('يرجى كتابة محتوى في المقال أولاً ليتم تنسيقه ✍️', 'warning');
-        return;
-    }
-
     const temp = document.createElement('div');
-    temp.innerHTML = raw;
+    temp.innerHTML = rawHtml;
 
-    // 1. Standardize Headings (H1 -> H2, H2, H3)
+    let headingsCount = 0;
+    let imagesCount = 0;
+    let downloadCount = 0;
+    let tableCount = 0;
+    let blockquoteCount = 0;
+
+    // 1. Standardize Headings Hierarchy (H1 -> H2, Style H2, H3, H4)
     temp.querySelectorAll('h1').forEach(h1 => {
         const h2 = document.createElement('h2');
         h2.innerHTML = h1.innerHTML;
@@ -15088,133 +15261,63 @@ function applyProfessionalArticleFormatting() {
     });
 
     temp.querySelectorAll('h2').forEach(h2 => {
-        h2.style.cssText = 'font-size:20px;font-weight:800;color:#38bdf8;margin:28px 0 14px 0;padding-bottom:8px;border-bottom:2px solid rgba(56,189,248,0.3);line-height:1.5;';
+        headingsCount++;
+        h2.style.cssText = 'font-size:21px;font-weight:800;color:#38bdf8;margin:28px 0 14px 0;padding-bottom:8px;border-bottom:2px solid rgba(56,189,248,0.25);line-height:1.4;';
     });
 
     temp.querySelectorAll('h3').forEach(h3 => {
-        h3.style.cssText = 'font-size:17px;font-weight:700;color:#e2e8f0;margin:22px 0 10px 0;padding-inline-start:10px;border-inline-start:3px solid #38bdf8;line-height:1.5;';
+        headingsCount++;
+        h3.style.cssText = 'font-size:18px;font-weight:700;color:#e2e8f0;margin:22px 0 10px 0;padding-inline-start:10px;border-inline-start:3px solid #38bdf8;line-height:1.45;';
     });
 
-    // 2. Detect & Group All Loose Images into Gallery
-    const existingGalleries = temp.querySelectorAll('.studio-gallery-block, .blogger-gallery-container');
-    const detectedImages = [];
-    const seenUrls = new Set();
-
-    existingGalleries.forEach(gal => {
-        gal.querySelectorAll('img').forEach(img => {
-            const src = img.getAttribute('src');
-            if (src && !seenUrls.has(src)) {
-                seenUrls.add(src);
-                detectedImages.push({
-                    id: 'img_gal_' + Date.now() + '_' + (detectedImages.length + 1),
-                    url: src,
-                    alt: img.getAttribute('alt') || `صورة ${detectedImages.length + 1}`,
-                    caption: img.closest('.gallery-card-item')?.querySelector('.gallery-card-caption')?.textContent || '',
-                    link: ''
-                });
-            }
-        });
-        gal.remove();
+    temp.querySelectorAll('h4').forEach(h4 => {
+        headingsCount++;
+        h4.style.cssText = 'font-size:16px;font-weight:700;color:#94a3b8;margin:18px 0 8px 0;line-height:1.4;';
     });
 
-    const looseImgs = Array.from(temp.querySelectorAll('img'));
-    let insertionMarker = null;
-    if (looseImgs.length > 0) {
-        insertionMarker = document.createElement('div');
-        insertionMarker.className = 'studio-gallery-insertion-marker';
-        let container = looseImgs[0];
-        while (container.parentElement && container.parentElement !== temp && 
-               (container.parentElement.tagName === 'A' || 
-                container.parentElement.classList.contains('separator') ||
-                container.parentElement.tagName === 'FIGURE' ||
-                container.parentElement.classList.contains('swiper-slide') ||
-                container.parentElement.classList.contains('swiper-wrapper') ||
-                container.parentElement.classList.contains('swiper'))) {
-            container = container.parentElement;
-        }
-        container.before(insertionMarker);
-    }
-
-    looseImgs.forEach(img => {
-        let src = img.getAttribute('src');
-        if (!src) return;
-        const parentAnchor = img.closest('a');
-        if (parentAnchor && parentAnchor.href && parentAnchor.href.match(/\.(png|jpe?g|webp|gif)($|\?)/i)) {
-            src = parentAnchor.href;
-        }
+    // 2. Format All Inline Images in place (Responsive, Elegant Shadows & Captions)
+    temp.querySelectorAll('img').forEach((img, idx) => {
+        imagesCount++;
+        img.style.cssText = 'max-width:100%;height:auto;border-radius:10px;margin:16px auto;display:block;box-shadow:0 4px 20px rgba(0,0,0,0.25);';
+        
+        // Upgrade low-res Blogger thumbnails if possible
+        let src = img.getAttribute('src') || '';
         if (src.includes('googleusercontent.com') || src.includes('bp.blogspot.com')) {
             src = src.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
-        }
-        if (!seenUrls.has(src)) {
-            seenUrls.add(src);
-            detectedImages.push({
-                id: 'img_gal_' + Date.now() + '_' + (detectedImages.length + 1),
-                url: src,
-                alt: img.getAttribute('alt') || `صورة ${detectedImages.length + 1}`,
-                caption: img.closest('figure')?.querySelector('figcaption')?.textContent || '',
-                link: ''
-            });
+            img.src = src;
         }
 
-        if (parentAnchor && parentAnchor.parentElement && parentAnchor.textContent.trim().length === 0) {
-            parentAnchor.remove();
-        } else {
-            img.remove();
+        // Clean parent separator div styling if present
+        const parentSep = img.closest('.separator');
+        if (parentSep) {
+            parentSep.style.cssText = 'text-align:center;margin:20px 0;clear:both;';
         }
     });
 
-    if (detectedImages.length > 0) {
-        currentGalleryImages = detectedImages;
-        window.currentGalleryImages = detectedImages;
-        renderGalleryGrid();
-
-        const layout = currentGalleryLayout || 'grid';
-        const galleryHtml = buildGalleryBlockHtml(currentGalleryImages, layout, true);
-        const galWrap = document.createElement('div');
-        galWrap.innerHTML = galleryHtml;
-        const newGalEl = galWrap.firstElementChild;
-
-        // Remove empty swiper elements
-        temp.querySelectorAll('.swiper, .swiper-wrapper, .swiper-slide, .swiper-pagination').forEach(sw => {
-            if (sw.querySelectorAll('img').length === 0 && sw.textContent.trim().length === 0) {
-                sw.remove();
-            }
-        });
-
-        if (insertionMarker && temp.contains(insertionMarker)) {
-            insertionMarker.replaceWith(newGalEl);
-        } else {
-            const firstPara = temp.querySelector('p, div, h2, h3');
-            if (firstPara && firstPara.parentElement) {
-                firstPara.after(newGalEl);
-            } else {
-                temp.prepend(newGalEl);
-            }
-        }
-    }
-
-    // 3. Format Download Buttons & Callouts
+    // 3. Detect and Beautify Download Buttons
     temp.querySelectorAll('a').forEach(a => {
         const text = (a.textContent || '').trim().toLowerCase();
         const href = (a.getAttribute('href') || '').toLowerCase();
-        const isDownloadLink = text.includes('تحميل') || text.includes('download') || href.includes('drive.google.com') || href.includes('mediafire.com') || href.includes('mega.nz') || href.endsWith('.apk') || href.endsWith('.zip');
-        
-        if (isDownloadLink && !a.classList.contains('pro-download-btn')) {
+        const isDownloadLink = text.includes('تحميل') || text.includes('download') || href.includes('drive.google.com') || href.includes('mediafire.com') || href.includes('mega.nz') || href.includes('github.com') && href.includes('/releases');
+
+        if (isDownloadLink) {
+            downloadCount++;
             a.className = 'pro-download-btn';
-            a.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;background:linear-gradient(135deg, #10b981, #059669);color:#ffffff;font-size:15px;font-weight:800;border-radius:10px;text-decoration:none;box-shadow:0 4px 14px rgba(16,185,129,0.35);margin:16px 0;transition:transform 0.2s;border:1px solid rgba(255,255,255,0.2);';
+            a.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#ffffff!important;font-weight:700;font-size:15px;border-radius:10px;text-decoration:none!important;box-shadow:0 4px 14px rgba(2,132,199,0.35);margin:16px 0;transition:transform 0.2s,box-shadow 0.2s;';
             if (!a.querySelector('i') && !a.innerHTML.includes('📥')) {
                 a.innerHTML = `<span style="font-size:18px;">📥</span> <span>${a.textContent.trim()}</span>`;
             }
-        } else if (!isDownloadLink && !a.closest('.studio-gallery-block') && !a.style.color) {
+        } else if (!a.closest('.studio-gallery-block') && !a.style.color) {
             a.style.cssText = 'color:#38bdf8;text-decoration:underline;font-weight:600;';
         }
     });
 
-    // 4. Format Tables
+    // 4. Format Tables with Responsive Scroll and Clean Borders
     temp.querySelectorAll('table').forEach(table => {
-        table.style.cssText = 'width:100%;border-collapse:collapse;margin:20px 0;font-size:14px;border:1px solid rgba(255,255,255,0.12);background:rgba(15,23,42,0.6);border-radius:8px;overflow:hidden;';
+        tableCount++;
+        table.style.cssText = 'width:100%;border-collapse:collapse;margin:22px 0;font-size:14px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;';
         table.querySelectorAll('th').forEach(th => {
-            th.style.cssText = 'background:rgba(30,41,59,0.85);color:#38bdf8;padding:12px 14px;text-align:start;font-weight:700;border:1px solid rgba(255,255,255,0.1);';
+            th.style.cssText = 'background:rgba(30,41,59,0.9);color:#38bdf8;padding:12px 14px;text-align:start;font-weight:700;border:1px solid rgba(255,255,255,0.08);';
         });
         table.querySelectorAll('td').forEach(td => {
             td.style.cssText = 'padding:10px 14px;border:1px solid rgba(255,255,255,0.06);color:#cbd5e1;';
@@ -15223,10 +15326,11 @@ function applyProfessionalArticleFormatting() {
 
     // 5. Format Blockquotes
     temp.querySelectorAll('blockquote').forEach(bq => {
-        bq.style.cssText = 'margin:18px 0;padding:14px 18px;border-inline-start:4px solid #38bdf8;background:rgba(56,189,248,0.08);border-radius:0 8px 8px 0;color:#cbd5e1;font-style:italic;line-height:1.7;';
+        blockquoteCount++;
+        bq.style.cssText = 'margin:20px 0;padding:16px 20px;border-inline-start:4px solid #38bdf8;background:rgba(56,189,248,0.06);border-radius:0 8px 8px 0;color:#e2e8f0;font-style:italic;line-height:1.75;';
     });
 
-    // 6. Format Paragraphs & Remove Empty Duplicates
+    // 6. Clean Paragraph Spacing and Remove Empty Duplicates
     temp.querySelectorAll('p').forEach(p => {
         if (!p.textContent.trim() && p.querySelectorAll('img, iframe, table, [data-gallery-layout]').length === 0) {
             if (p.previousElementSibling && p.previousElementSibling.tagName === 'P' && !p.previousElementSibling.textContent.trim()) {
@@ -15237,13 +15341,122 @@ function applyProfessionalArticleFormatting() {
         }
     });
 
-    // 7. Apply to Editor & Sync
     const formattedHtml = temp.innerHTML;
-    setEditorHtmlContent(formattedHtml);
+    const textOnly = temp.textContent || '';
+    const wordCount = textOnly.trim() ? textOnly.trim().split(/\s+/).length : 0;
+    const readability = wordCount > 300 ? '\u0645\u0645\u062a\u0627\u0632\u0629 (A+)' : '\u062c\u064a\u062f\u0629 (B)';
+
+    return {
+        formattedHtml,
+        stats: {
+            headingsCount,
+            imagesCount,
+            downloadCount,
+            tableCount,
+            blockquoteCount,
+            wordCount,
+            readability
+        }
+    };
+}
+window.formatArticleContentIntelligently = formatArticleContentIntelligently;
+
+function openSmartFormatPreviewModal() {
+    const rawContent = getEditorHtmlContent();
+    if (!rawContent || rawContent.trim() === '<p></p>' || rawContent.trim() === '<p><br></p>') {
+        showToast('\u064a\u0631\u062c\u0649 \u0643\u062a\u0627\u0628\u0629 \u0645\u062d\u062a\u0648\u0649 \u0641\u064a \u0627\u0644\u0645\u0642\u0627\u0644 \u0623\u0648\u0644\u0627\u064b \u0644\u064a\u062a\u0645 \u062a\u0646\u0633\u064a\u0642\u0647 \U0001f23d', 'warning');
+        return;
+    }
+
+    // Save snapshot of current editor content for 100% reversible undo
+    window.__preSmartFormatSnapshot = rawContent;
+
+    // Generate formatted preview and statistics
+    const result = formatArticleContentIntelligently(rawContent);
+    window.__pendingSmartFormattedHtml = result.formattedHtml;
+
+    // Render stats badges
+    const statsBar = document.getElementById('smart-format-stats-bar');
+    if (statsBar) {
+        statsBar.innerHTML = `
+            <span style="background:rgba(56,189,248,0.15);color:#38bdf8;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f4cb ${result.stats.headingsCount} \u0639\u0646\u0627\u0648\u064a\u0646 \u0645\u0646\u0633\u0642\u0629</span>
+            <span style="background:rgba(16,185,129,0.15);color:#10b981;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f5bc\ufe0f ${result.stats.imagesCount} \u0635\u0648\u0631 \u0645\u062a\u062c\u0627\u0648\u0628\u0629</span>
+            <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f4e5 ${result.stats.downloadCount} \u0623\u0632\u0631\u0627\u0631 \u062a\u062d\u0645\u064a\u0644</span>
+            <span style="background:rgba(139,92,246,0.15);color:#a78bfa;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f4ca ${result.stats.tableCount} \u062c\u062f\u0627\u0648\u0644</span>
+            <span style="background:rgba(255,255,255,0.08);color:#e2e8f0;padding:4px 10px;border-radius:6px;">\U0001f4dd ${result.stats.wordCount} \u0643\u0644\u0645\u0629</span>
+            <span style="background:rgba(34,197,94,0.15);color:#4ade80;padding:4px 10px;border-radius:6px;">\u0627\u0644\u0642\u0631\u0627\u0626\u064a\u0629: ${result.stats.readability}</span>
+        `;
+    }
+
+    // Render formatted live preview inside modal
+    const previewContainer = document.getElementById('smart-format-preview-render');
+    if (previewContainer) {
+        previewContainer.innerHTML = result.formattedHtml;
+    }
+
+    // Open modal
+    const modal = document.getElementById('modal-smart-format-preview');
+    if (modal) modal.style.display = 'flex';
+}
+window.openSmartFormatPreviewModal = openSmartFormatPreviewModal;
+
+function closeSmartFormatPreviewModal() {
+    const modal = document.getElementById('modal-smart-format-preview');
+    if (modal) modal.style.display = 'none';
+}
+window.closeSmartFormatPreviewModal = closeSmartFormatPreviewModal;
+
+function confirmApplySmartFormatting() {
+    if (!window.__pendingSmartFormattedHtml) {
+        closeSmartFormatPreviewModal();
+        return;
+    }
+
+    // Apply formatted content to editor
+    if (currentEditorMode !== 'advanced') {
+        setEditorMode('advanced');
+    }
+    setEditorHtmlContent(window.__pendingSmartFormattedHtml);
     window.currentPostSaved = false;
     updateWordCount();
     scheduleAutoSave();
 
-    showToast('✨ تم تطبيق التنسيق الاحترافي الشامل وترتيب معرض الصور بنجاح!', 'success');
+    // Close preview modal
+    closeSmartFormatPreviewModal();
+
+    // Reveal Undo button
+    const undoBtn = document.getElementById('btn-undo-smart-format');
+    if (undoBtn) undoBtn.style.display = 'inline-flex';
+
+    showToast('\u2728 \u062a\u0645 \u062a\u0637\u0628\u064a\u0642 \u0627\u0644\u062a\u0646\u0633\u064a\u0642 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a \u0627\u0644\u0634\u0627\u0645\u0644 \u0628\u0646\u062c\u0627\u062d! (\u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u062a\u0631\u0627\u062c\u0639 \u0628\u0646\u0642\u0631\u0629 \u0648\u0627\u062d\u062f\u0629)', 'success');
+}
+window.confirmApplySmartFormatting = confirmApplySmartFormatting;
+
+function undoProfessionalArticleFormatting() {
+    if (!window.__preSmartFormatSnapshot) {
+        showToast('\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0633\u062e\u0629 \u0633\u0627\u0628\u0642\u0629 \u0644\u0644\u062a\u0631\u0627\u062c\u0639 \u0639\u0646\u0647\u0627', 'info');
+        return;
+    }
+
+    if (currentEditorMode !== 'advanced') {
+        setEditorMode('advanced');
+    }
+    setEditorHtmlContent(window.__preSmartFormatSnapshot);
+    window.currentPostSaved = false;
+    updateWordCount();
+    scheduleAutoSave();
+
+    // Hide Undo button
+    const undoBtn = document.getElementById('btn-undo-smart-format');
+    if (undoBtn) undoBtn.style.display = 'none';
+
+    window.__preSmartFormatSnapshot = null;
+    showToast('\u21a9\ufe0f \u062a\u0645 \u0627\u0644\u062a\u0631\u0627\u062c\u0639 \u0639\u0646 \u0627\u0644\u062a\u0646\u0633\u064a\u0642 \u0648\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0645\u062d\u062a\u0648\u0649 \u0627\u0644\u0623\u0635\u0644\u064a \u0628\u0627\u0644\u0643\u0627\u0645\u0644', 'info');
+}
+window.undoProfessionalArticleFormatting = undoProfessionalArticleFormatting;
+
+function applyProfessionalArticleFormatting() {
+    openSmartFormatPreviewModal();
 }
 window.applyProfessionalArticleFormatting = applyProfessionalArticleFormatting;
+

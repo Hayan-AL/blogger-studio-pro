@@ -367,6 +367,22 @@ def api_get_post_by_id(post_id: str, blog_id: Optional[str] = None):
                 "image_url": d.get("image_url") or ""
             }
     if not target:
+        try:
+            preseed_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "clean_preseeded_posts.json")
+            if os.path.exists(preseed_file):
+                with open(preseed_file, "r", encoding="utf-8") as pf:
+                    pre_data = json.load(pf)
+                for b_id, b_posts in pre_data.items():
+                    for p in b_posts:
+                        if str(p.get("id")) == str(post_id):
+                            target = p
+                            break
+                    if target:
+                        break
+        except Exception:
+            pass
+
+    if not target:
         raise HTTPException(status_code=404, detail="Post not found")
     return target
 
