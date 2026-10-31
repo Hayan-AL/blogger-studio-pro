@@ -2366,6 +2366,7 @@ function applyTranslations(lang) {
         brandLogoIcon.textContent = 'B';
     }
 
+    if (typeof updatePublishButtonLabel === "function") updatePublishButtonLabel();
     const dict = I18N[lang] || I18N['ar'];
     if (!dict) return;
 
@@ -2377,6 +2378,11 @@ function applyTranslations(lang) {
     // Apply to all elements with data-i18n (preserving child icons if present)
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
+        if (key === 'btn_publish_now') {
+            const isEditing = Boolean(window.currentEditingPostId || (typeof currentEditingPostId !== 'undefined' && currentEditingPostId));
+            el.textContent = isEditing ? (lang === 'en' ? 'Update Post Now' : 'تحديث المنشور الآن') : (lang === 'en' ? 'Publish Now' : 'نشر الآن');
+            return;
+        }
         const val = dict[key];
         if (!val) return;
         if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
@@ -2541,6 +2547,7 @@ async function loadPosts(forceRefresh = false) {
         const res = await fetch(`/api/posts?blog_id=${activeId}&refresh=${forceRefresh}`);
         allPosts = await res.json();
         if (!Array.isArray(allPosts)) allPosts = [];
+        window.allPosts = allPosts;
         
         // Populate Categories dropdown filter
         const catSelect = document.getElementById('posts-filter-cat');
@@ -4426,21 +4433,308 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
 }
 window.buildGalleryBlockHtml = buildGalleryBlockHtml;
 
+
+// -------------------------------------------------------------
+// ENHANCED ARTICLE GALLERY ENGINE & DEDUPLICATION (STUDIO PRO)
+// -------------------------------------------------------------
+
+function updatePublishButtonLabel() {
+    const btnSpan = document.getElementById('btn-publish-now-text') || document.querySelector('.btn-publish-now span');
+    if (!btnSpan) return;
+    const isEn = (window.currentLang === 'en' || document.documentElement.lang === 'en');
+    const isEditing = Boolean(window.currentEditingPostId || (typeof currentEditingPostId !== 'undefined' && currentEditingPostId));
+    if (isEditing) {
+        btnSpan.textContent = isEn ? 'Update Post Now' : 'تحديث المنشور الآن';
+    } else {
+        btnSpan.textContent = isEn ? 'Publish Now' : 'نشر الآن';
+    }
+}
+window.updatePublishButtonLabel = updatePublishButtonLabel;
+
 function cleanGalleryHtmlForExport(html) {
     if (!html) return '';
     try {
         const temp = document.createElement('div');
         temp.innerHTML = html;
+
+        // 1. Remove editor interactive toolbar
         temp.querySelectorAll('.studio-gallery-toolbar').forEach(el => el.remove());
-        temp.querySelectorAll('.studio-gallery-block, .blogger-gallery-container').forEach(el => {
+
+        // 2. Remove contenteditable attributes
+        temp.querySelectorAll('.studio-gallery-block, .blogger-gallery-container, [contenteditable]').forEach(el => {
             el.removeAttribute('contenteditable');
         });
+
+        // 3. Remove any loose duplicate images that already exist inside the gallery
+        const galleryImgs = Array.from(temp.querySelectorAll('.studio-gallery-block img, .blogger-gallery-container img'));
+        if (galleryImgs.length > 0) {
+            const gallerySrcs = new Set();
+            galleryImgs.forEach(img => {
+                const s = img.getAttribute('src')?.trim();
+                if (s) {
+                    gallerySrcs.add(s);
+                    // Also add normalized versions without size params
+                    gallerySrcs.add(s.replace(/\/(s(320|200|400|640|72-c|120|150|1600))\//, '/'));
+                }
+            });
+
+            const looseImgs = Array.from(temp.querySelectorAll('img')).filter(img => 
+                !img.closest('.studio-gallery-block, .blogger-gallery-container')
+            );
+
+            looseImgs.forEach(img => {
+                const s = img.getAttribute('src')?.trim() || '';
+                const norm = s.replace(/\/(s(320|200|400|640|72-c|120|150|1600))\//, '/');
+                if (gallerySrcs.has(s) || (norm && gallerySrcs.has(norm))) {
+                    let wrap = img.closest('.separator, figure, p, div');
+                    if (wrap && wrap !== temp && (wrap.children.length <= 1 || wrap.textContent.trim().length === 0)) {
+                        wrap.remove();
+                    } else if (img.parentElement) {
+                        img.remove();
+                    }
+                }
+            });
+        }
+
+        // 4. Inject responsive styles & lightbox script for live Blogger display
+        const hasGallery = temp.querySelector('.studio-gallery-block, .blogger-gallery-container');
+        if (hasGallery && !temp.querySelector('#blogger-studio-gallery-styles')) {
+            const styleTag = document.createElement('style');
+            styleTag.id = 'blogger-studio-gallery-styles';
+            styleTag.textContent = `
+                .blogger-gallery-container { margin: 28px 0; padding: 14px; background: rgba(15,23,42,0.55); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); direction: rtl; font-family: inherit; }
+                .blogger-gallery-grid-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+                .blogger-gallery-masonry-items { column-count: auto; column-width: 210px; column-gap: 14px; }
+                .blogger-gallery-carousel-items { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 14px 2px; }
+                .blogger-gallery-carousel-items .gallery-card-item { flex: 0 0 280px; scroll-snap-align: start; }
+                .gallery-card-item { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12); background: #0f172a; cursor: pointer; transition: transform 0.22s ease, box-shadow 0.22s ease; }
+                .gallery-card-item:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
+                .gallery-card-item img { width: 100%; height: 200px; object-fit: cover; display: block; border: 0; }
+                .gallery-card-caption { padding: 6px 10px; background: rgba(15,23,42,0.92); font-size: 11.5px; color: #cbd5e1; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); }
+                @media (max-width: 640px) {
+                    .blogger-gallery-grid-items { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; gap: 10px !important; }
+                    .gallery-card-item img { height: 140px !important; }
+                    .blogger-gallery-carousel-items .gallery-card-item { flex: 0 0 220px !important; }
+                }
+            `;
+            temp.prepend(styleTag);
+
+            // Lightbox script for visitors
+            const scriptTag = document.createElement('script');
+            scriptTag.textContent = `
+                (function(){
+                    if (window.__studioGalleryLbInit) return;
+                    window.__studioGalleryLbInit = true;
+                    window.openGalleryLightbox = function(url, caption) {
+                        var m = document.getElementById('studio-live-lightbox');
+                        if (!m) {
+                            m = document.createElement('div');
+                            m.id = 'studio-live-lightbox';
+                            m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);cursor:zoom-out;';
+                            m.onclick = function() { m.style.display = 'none'; };
+                            m.innerHTML = '<div style="position:relative;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;align-items:center;" onclick="event.stopPropagation()">' +
+                                '<button onclick="document.getElementById(\'studio-live-lightbox\').style.display=\'none\'" style="position:absolute;top:-36px;left:0;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;">&times;</button>' +
+                                '<img id="studio-live-lb-img" style="max-width:100%;max-height:82vh;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,0.8);object-fit:contain;" src="" />' +
+                                '<div id="studio-live-lb-caption" style="margin-top:10px;color:#e2e8f0;font-size:14px;text-align:center;"></div>' +
+                                '</div>';
+                            document.body.appendChild(m);
+                        }
+                        var im = document.getElementById('studio-live-lb-img');
+                        var cp = document.getElementById('studio-live-lb-caption');
+                        if (im) im.src = url;
+                        if (cp) cp.textContent = caption || '';
+                        m.style.display = 'flex';
+                    };
+                })();
+            `;
+            temp.appendChild(scriptTag);
+        }
+
         return temp.innerHTML;
     } catch(e) {
+        console.error('cleanGalleryHtmlForExport error:', e);
         return html;
     }
 }
 window.cleanGalleryHtmlForExport = cleanGalleryHtmlForExport;
+
+function processAndUnifyGalleryContent(rawContent, autoBuildGallery = true) {
+    if (!rawContent || typeof rawContent !== 'string') {
+        currentGalleryImages = [];
+        renderGalleryGrid();
+        return rawContent || '';
+    }
+
+    try {
+        const temp = document.createElement('div');
+        temp.innerHTML = rawContent;
+
+        // 1. Detect existing gallery blocks and layout
+        const existingGalleries = temp.querySelectorAll('.studio-gallery-block, .blogger-gallery-container, .blogger-gallery-grid, .blogger-gallery-featured');
+        let extractedLayout = 'grid';
+        if (existingGalleries.length > 0) {
+            const firstGal = existingGalleries[0];
+            const l = firstGal.getAttribute('data-gallery-layout') || firstGal.getAttribute('data-layout');
+            if (l && ['grid', 'masonry', 'carousel', 'featured'].includes(l)) {
+                extractedLayout = l;
+            }
+        }
+
+        // 2. Extract all unique images
+        const extractedImages = [];
+        const seenUrls = new Set();
+
+        const addImage = (src, alt, caption) => {
+            if (!src || typeof src !== 'string') return;
+            const cleanSrc = src.trim();
+            if (!cleanSrc || cleanSrc.startsWith('data:image/svg')) return;
+            if (seenUrls.has(cleanSrc)) return;
+
+            // Upgrade Blogger thumbnail size to high-resolution /s1600/
+            let fullResSrc = cleanSrc;
+            if (fullResSrc.includes('googleusercontent.com') || fullResSrc.includes('bp.blogspot.com')) {
+                fullResSrc = fullResSrc.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
+            }
+
+            seenUrls.add(cleanSrc);
+            seenUrls.add(fullResSrc);
+
+            extractedImages.push({
+                id: 'img_gal_' + Date.now() + '_' + (extractedImages.length + 1),
+                url: fullResSrc,
+                alt: (alt || '').trim() || `صورة ${extractedImages.length + 1}`,
+                caption: (caption || '').trim(),
+                link: ''
+            });
+        };
+
+        // Read images from existing gallery blocks
+        existingGalleries.forEach(gal => {
+            gal.querySelectorAll('img').forEach(img => {
+                const src = img.getAttribute('src');
+                const alt = img.getAttribute('alt');
+                const caption = img.closest('.gallery-card-item')?.querySelector('.gallery-card-caption')?.textContent || '';
+                addImage(src, alt, caption);
+            });
+        });
+
+        // Read loose images from body content
+        const allImgs = Array.from(temp.querySelectorAll('img'));
+        allImgs.forEach(img => {
+            if (img.closest('.studio-gallery-block, .blogger-gallery-container')) return;
+
+            // Check if wrapped in an anchor linking to full image
+            const parentAnchor = img.closest('a');
+            let candidateSrc = img.getAttribute('src');
+            if (parentAnchor && parentAnchor.href) {
+                const href = parentAnchor.getAttribute('href') || '';
+                if (href.match(/\.(png|jpe?g|webp|gif)($|\?)/i) || href.includes('googleusercontent.com') || href.includes('bp.blogspot.com')) {
+                    candidateSrc = href;
+                }
+            }
+
+            const alt = img.getAttribute('alt') || '';
+            let caption = '';
+            const fig = img.closest('figure');
+            if (fig) {
+                const figCap = fig.querySelector('figcaption');
+                if (figCap) caption = figCap.textContent;
+            }
+
+            addImage(candidateSrc, alt, caption);
+        });
+
+        // 3. If no images found at all, return raw content
+        if (extractedImages.length === 0) {
+            currentGalleryImages = [];
+            renderGalleryGrid();
+            return rawContent;
+        }
+
+        // Update state
+        currentGalleryImages = extractedImages;
+        window.currentGalleryImages = currentGalleryImages;
+        currentGalleryLayout = extractedLayout;
+        renderGalleryGrid();
+
+        // 4. Remove ALL loose images & existing gallery blocks from temp to prevent stacked duplication!
+        existingGalleries.forEach(gal => gal.remove());
+
+        const looseImgs = Array.from(temp.querySelectorAll('img'));
+        looseImgs.forEach(img => {
+            let toRemove = img;
+            let current = img.parentElement;
+
+            while (current && current !== temp) {
+                const isSeparator = current.classList && (current.classList.contains('separator') || current.classList.contains('tr_bq'));
+                const isCentered = current.style && (current.style.textAlign === 'center' || current.getAttribute('style')?.includes('text-align: center') || current.getAttribute('style')?.includes('text-align:center'));
+                const isFigure = current.tagName === 'FIGURE';
+                const isP = current.tagName === 'P';
+                const isAnchor = current.tagName === 'A';
+                const isDiv = current.tagName === 'DIV';
+
+                const text = current.textContent.trim();
+                if (isSeparator || isFigure || (isAnchor && current.href) || ((isP || isDiv || isCentered) && text.length === 0)) {
+                    toRemove = current;
+                    current = current.parentElement;
+                } else {
+                    break;
+                }
+            }
+
+            if (toRemove && toRemove.parentElement) {
+                toRemove.remove();
+            } else if (img.parentElement) {
+                img.remove();
+            }
+        });
+
+        // Clean up redundant empty tags
+        Array.from(temp.querySelectorAll('p, div')).forEach(el => {
+            if (el.children.length === 0 && !el.textContent.trim()) {
+                el.remove();
+            }
+        });
+
+        // 5. Build and insert the unified gallery block
+        if (autoBuildGallery && currentGalleryImages.length > 0) {
+            const galleryHtml = buildGalleryBlockHtml(currentGalleryImages, currentGalleryLayout, true);
+            const galWrap = document.createElement('div');
+            galWrap.innerHTML = galleryHtml;
+            const newGalleryEl = galWrap.firstElementChild;
+
+            // Find best insertion spot: after first paragraph or heading
+            const blocks = Array.from(temp.children).filter(el => 
+                ['P', 'DIV', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'SECTION'].includes(el.tagName) && 
+                el.textContent.trim().length > 10
+            );
+
+            if (blocks.length > 0) {
+                blocks[0].after(newGalleryEl);
+            } else {
+                temp.prepend(newGalleryEl);
+            }
+
+            // Ensure clean paragraph before and after gallery
+            if (!newGalleryEl.previousElementSibling || newGalleryEl.previousElementSibling.tagName !== 'P') {
+                const pBefore = document.createElement('p');
+                pBefore.innerHTML = '<br>';
+                newGalleryEl.before(pBefore);
+            }
+            if (!newGalleryEl.nextElementSibling || newGalleryEl.nextElementSibling.tagName !== 'P') {
+                const pAfter = document.createElement('p');
+                pAfter.innerHTML = '<br>';
+                newGalleryEl.after(pAfter);
+            }
+        }
+
+        return temp.innerHTML;
+    } catch(err) {
+        console.error('processAndUnifyGalleryContent error:', err);
+        return rawContent;
+    }
+}
+window.processAndUnifyGalleryContent = processAndUnifyGalleryContent;
 
 function syncGalleryToEditorContent(forceReinsert = false) {
     if (!currentGalleryImages || !currentGalleryImages.length) {
@@ -4448,6 +4742,21 @@ function syncGalleryToEditorContent(forceReinsert = false) {
     }
     const editor = document.getElementById('art-editor');
     if (!editor) return;
+
+    // Remove any loose images that match images in currentGalleryImages to avoid duplication
+    const gallerySrcs = new Set(currentGalleryImages.map(img => img.url));
+    editor.querySelectorAll('img').forEach(img => {
+        if (img.closest('.studio-gallery-block, .blogger-gallery-container')) return;
+        const s = img.getAttribute('src');
+        if (gallerySrcs.has(s) || (s && gallerySrcs.has(s.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/')))) {
+            const parentWrap = img.closest('.separator, figure, a, p, div');
+            if (parentWrap && parentWrap !== editor && (parentWrap.children.length <= 1 || parentWrap.textContent.trim().length === 0)) {
+                parentWrap.remove();
+            } else {
+                img.remove();
+            }
+        }
+    });
 
     const galleryHtml = buildGalleryBlockHtml(currentGalleryImages, currentGalleryLayout, true);
 
@@ -4468,7 +4777,7 @@ function syncGalleryToEditorContent(forceReinsert = false) {
         const newEl = temp.firstElementChild;
 
         const paragraphs = Array.from(editor.children).filter(el => 
-            el.tagName === 'P' || el.tagName === 'DIV' || el.tagName.startsWith('H')
+            (el.tagName === 'P' || el.tagName === 'DIV' || el.tagName.startsWith('H')) && el.textContent.trim().length > 0
         );
 
         if (paragraphs.length >= 2) {
@@ -4567,54 +4876,7 @@ function removeGalleryBlockFromEditor(btn) {
 window.removeGalleryBlockFromEditor = removeGalleryBlockFromEditor;
 
 function extractGalleryFromContent(content) {
-    currentGalleryImages = [];
-    if (!content) {
-        renderGalleryGrid();
-        return;
-    }
-
-    const temp = document.createElement('div');
-    temp.innerHTML = content;
-
-    const gal = temp.querySelector('.studio-gallery-block, .blogger-gallery-container, .blogger-gallery-grid, .blogger-gallery-featured');
-    if (gal) {
-        const layout = gal.getAttribute('data-gallery-layout') || gal.getAttribute('data-layout');
-        if (layout && ['grid', 'masonry', 'carousel', 'featured'].includes(layout)) {
-            currentGalleryLayout = layout;
-            document.querySelectorAll('.gallery-layout-pill').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(`btn-layout-${layout}`)?.classList.add('active');
-        }
-
-        const imgs = gal.querySelectorAll('img');
-        imgs.forEach((img, idx) => {
-            const src = img.getAttribute('src');
-            if (src && !src.startsWith('data:image/svg')) {
-                currentGalleryImages.push({
-                    id: 'img_ext_' + idx + '_' + Date.now(),
-                    url: src,
-                    alt: img.getAttribute('alt') || `صورة ${idx + 1}`,
-                    caption: img.closest('.gallery-card-item')?.querySelector('.gallery-card-caption')?.textContent || ''
-                });
-            }
-        });
-    } else {
-        const imgs = temp.querySelectorAll('img');
-        if (imgs.length >= 2) {
-            imgs.forEach((img, idx) => {
-                const src = img.getAttribute('src');
-                if (src && !src.startsWith('data:image/svg')) {
-                    currentGalleryImages.push({
-                        id: 'img_ext_' + idx + '_' + Date.now(),
-                        url: src,
-                        alt: img.getAttribute('alt') || `صورة ${idx + 1}`,
-                        caption: ''
-                    });
-                }
-            });
-        }
-    }
-
-    renderGalleryGrid();
+    return processAndUnifyGalleryContent(content, false);
 }
 window.extractGalleryFromContent = extractGalleryFromContent;
 
@@ -4724,6 +4986,7 @@ window.removeGalleryImage = removeGalleryImage;
 function clearArticleGallery() {
     if (!currentGalleryImages.length) return;
     currentGalleryImages = [];
+    window.currentGalleryImages = [];
     renderGalleryGrid();
     removeGalleryBlockFromEditor();
     window.currentPostSaved = false;
@@ -4984,6 +5247,7 @@ async function saveArticleDraft(isSilent = false) {
 
         if (savedSuccess) {
             if (returnedPostId) currentEditingPostId = returnedPostId;
+            updatePublishButtonLabel();
             window.currentPostSaved = true;
             
             const statusPill = document.getElementById('writer-status-pill');
@@ -5181,7 +5445,9 @@ window.publishArticleLive = publishArticleLive;
 // EDIT AN EXISTING POST
 function editPostInStudio(postId) {
     currentEditingPostId = String(postId);
-    const post = (allPosts || []).find(p => String(p.id) === String(postId));
+    window.currentEditingPostId = currentEditingPostId;
+    updatePublishButtonLabel();
+    const post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(postId));
     if (!post) {
         showToast('لم يتم العثور على بيانات المقال المحدد', 'warning');
         return;
@@ -5262,8 +5528,8 @@ function editPostInStudio(postId) {
 
     // Set Editor Content
     const initialContent = post.content || post.snippet || '';
-    setEditorHtmlContent(initialContent);
-    extractGalleryFromContent(initialContent);
+    const unifiedContent = processAndUnifyGalleryContent(initialContent, true);
+    setEditorHtmlContent(unifiedContent);
     setEditorMode('advanced');
 
     // Update Status Pill
@@ -5302,6 +5568,8 @@ function resetEditorForm() {
     clearArticleGallery();
     setEditorHtmlContent('<p></p>');
     currentEditingPostId = null;
+    window.currentEditingPostId = null;
+    updatePublishButtonLabel();
     window.currentPostSaved = true;
     const pill = document.getElementById('writer-status-pill');
     if (pill) {
@@ -5311,6 +5579,19 @@ function resetEditorForm() {
     setEditorMode('advanced');
 }
 window.resetEditorForm = resetEditorForm;
+
+function createNewArticle(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    if (typeof resetEditorForm === 'function') {
+        resetEditorForm();
+    }
+    currentEditingPostId = null;
+    updatePublishButtonLabel();
+    switchTab('writer');
+    showToast('تم فتح محرر كتابة مقال جديد ✨', 'info');
+}
+window.createNewArticle = createNewArticle;
+
 
 // -------------------------------------------------------------
 // 9. AUTO-SAVE & CONTENT RECOVERY
@@ -9026,6 +9307,7 @@ async function refreshAllDataForActiveBlog(targetBlog, seq, isInitialLoad = fals
         if (seq !== blogSwitchSequence) return;
 
         allPosts = fetchedPosts || [];
+        window.allPosts = allPosts;
         localStorage.setItem('studio_cached_posts', JSON.stringify(allPosts));
         localStorage.setItem('studio_cached_posts_' + blogId, JSON.stringify(allPosts));
 
