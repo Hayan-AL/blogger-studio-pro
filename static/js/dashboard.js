@@ -1,6 +1,27 @@
 // --------------------------------------------------------------------------
 // Cloudflare Pages / Static Edge / Hybrid Remote API Resolver & Accelerator
 // --------------------------------------------------------------------------
+
+// --- STUDIO DATA VERSION MIGRATION ---
+// Bump this version any time you change localStorage data format/structure.
+// Old cached posts/trash will be cleared automatically on version mismatch.
+(function() {
+    const STUDIO_DATA_VERSION = '2026.10.31.v3';
+    const storedVersion = localStorage.getItem('studio_data_version');
+    if (storedVersion !== STUDIO_DATA_VERSION) {
+        console.log('[Studio] Data version mismatch. Clearing old cache:', storedVersion, '->', STUDIO_DATA_VERSION);
+        const keysToPreserve = ['studio_active_blog_id', 'studio_active_blog', 'studio_cached_blogs',
+                                'studio_api_url', 'blogger_api_url', 'studio_auth_token', 'studio_lang',
+                                'studio_settings', 'studio_hub_config', 'studio_theme'];
+        const preserved = {};
+        keysToPreserve.forEach(k => { const v = localStorage.getItem(k); if (v !== null) preserved[k] = v; });
+        localStorage.clear();
+        Object.entries(preserved).forEach(([k, v]) => localStorage.setItem(k, v));
+        localStorage.setItem('studio_data_version', STUDIO_DATA_VERSION);
+        console.log('[Studio] Cache cleared. Fresh data will be seeded on next load.');
+    }
+})();
+
 (function() {
     const isLocal = (
         window.location.hostname === 'localhost' || 
