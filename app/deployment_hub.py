@@ -1,3 +1,4 @@
+import re
 """
 Blogger Studio Pro - Professional Cloud Deployment Hub Engine
 Handles verified GitHub OAuth/PAT connectivity, Cloudflare Pages integration,
@@ -420,7 +421,7 @@ def build_dist_bundle() -> bool:
     with open(os.path.join(static_dir, "maintenance.json"), "w", encoding="utf-8") as f:
         json.dump(maint_payload, f, ensure_ascii=False, indent=2)
         
-    # Copy root index.html from templates with baked maintenance state
+    # Copy root index.html from templates with baked maintenance state and dynamic cache-buster
     main_html = os.path.join(templates_dir, "index.html")
     if os.path.exists(main_html):
         with open(main_html, "r", encoding="utf-8") as f:
@@ -428,7 +429,15 @@ def build_dist_bundle() -> bool:
         maint_val_str = "true" if is_maint else "false"
         index_content = index_content.replace("window.__MAINTENANCE_MODE__ = false;", f"window.__MAINTENANCE_MODE__ = {maint_val_str};")
         index_content = index_content.replace("window.__MAINTENANCE_MODE__ = true;", f"window.__MAINTENANCE_MODE__ = {maint_val_str};")
+        
+        # Inject dynamic cache buster timestamp so Cloudflare and browsers ALWAYS load fresh assets
+        build_timestamp = str(int(time.time()))
+        index_content = re.sub(r"dashboard\.js(\?v=[^\s\"\'>]+)?", f"dashboard.js?v={build_timestamp}", index_content)
+        index_content = re.sub(r"style\.css(\?v=[^\s\"\'>]+)?", f"style.css?v={build_timestamp}", index_content)
+
         with open(os.path.join(dist_dir, "index.html"), "w", encoding="utf-8") as f:
+            f.write(index_content)
+        with open(os.path.join(BASE_DIR, "index.html"), "w", encoding="utf-8") as f:
             f.write(index_content)
         
     # Copy deployment hub standalone html
@@ -462,8 +471,13 @@ def build_dist_bundle() -> bool:
             "  Access-Control-Allow-Origin: *\n"
             "/index.html\n"
             "  Cache-Control: no-cache, no-store, must-revalidate\n"
+            "/static/js/*\n"
+            "  Cache-Control: no-cache, no-store, must-revalidate\n"
+            "  Access-Control-Allow-Origin: *\n"
+            "/static/css/*\n"
+            "  Cache-Control: no-cache, no-store, must-revalidate\n"
             "/static/*\n"
-            "  Cache-Control: public, max-age=31536000, immutable\n"
+            "  Cache-Control: public, max-age=0, must-revalidate\n"
         )
         
     return True
