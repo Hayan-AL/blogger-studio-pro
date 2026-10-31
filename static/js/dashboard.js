@@ -2503,6 +2503,8 @@ let autoSaveDebounceTimer = null;
 // 1. ARTICLE EDITOR MODES & CONTENT SYNCHRONIZATION
 // -------------------------------------------------------------
 function setEditorMode(mode) {
+    // Capture content from current active mode before switching
+    const content = getEditorHtmlContent();
     currentEditorMode = mode;
     
     // Update active pill UI
@@ -2517,9 +2519,6 @@ function setEditorMode(mode) {
     const htmlToolbar = document.getElementById('html-mode-toolbar');
 
     if (!wysiwyg || !htmlView || !mdView || !previewView) return;
-
-    // Capture current HTML content
-    const content = getEditorHtmlContent();
 
     // Hide all views first
     wysiwyg.style.display = 'none';
@@ -2599,7 +2598,13 @@ window.copyEditorHtml = copyEditorHtml;
 
 function htmlToMarkdown(html) {
     if (!html) return '';
-    let md = html
+    const galleries = [];
+    let processed = html.replace(/<div class="[^"]*studio-gallery-block[^"]*"[\s\S]*?<\/div>\s*<\/div>/gi, (match) => {
+        const placeholder = `%%STUDIO_GALLERY_${galleries.length}%%`;
+        galleries.push(match);
+        return `\n\n${placeholder}\n\n`;
+    });
+    let md = processed
         .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '## $1\n\n')
         .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '### $1\n\n')
         .replace(/<h4[^>]*>(.*?)<\/h4>/gi, '#### $1\n\n')
@@ -2611,7 +2616,10 @@ function htmlToMarkdown(html) {
         .replace(/<a[^>]*href=["'](.*?)["'][^>]*>(.*?)<\/a>/gi, '[$2]($1)')
         .replace(/<p[^>]*>(.*?)<\/p>/gi, '$1\n\n')
         .replace(/<br\s*\/?>/gi, '\n')
-        .replace(/<[^>]+>/g, '');
+        .replace(/<(?!\/?div|\/?img|\/?span)[^>]+>/g, '');
+    galleries.forEach((gal, idx) => {
+        md = md.replace(`%%STUDIO_GALLERY_${idx}%%`, gal);
+    });
     return md.trim();
 }
 window.htmlToMarkdown = htmlToMarkdown;
@@ -2659,19 +2667,25 @@ function renderLivePreview(container, content) {
                 </div>
             ` : ''}
             <div class="article-preview-body" style="font-size:15px;line-height:1.85;color:var(--text-primary);">
-                ${content && content.trim() !== '<p></p>' ? content : '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">لا يوجد محتوى مكتوب في المقال حتى الآن.</p>'}
+                ${content && content.trim() !== '<p></p>' ? cleanGalleryHtmlForExport(content) : '<p style="color:var(--text-muted);text-align:center;padding:40px 0;">لا يوجد محتوى مكتوب في المقال حتى الآن.</p>'}
             </div>
         </div>
     `;
 }
 
-function getEditorHtmlContent() {
+function getEditorHtmlContent(cleanForExport = false) {
     const wysiwyg = document.getElementById('art-editor');
     const htmlView = document.getElementById('art-editor-html');
+    let raw = '';
     if (currentEditorMode === 'html' && htmlView) {
-        return htmlView.value;
+        raw = htmlView.value;
+    } else {
+        raw = wysiwyg ? wysiwyg.innerHTML : '';
     }
-    return wysiwyg ? wysiwyg.innerHTML : '';
+    if (cleanForExport && typeof cleanGalleryHtmlForExport === 'function') {
+        return cleanGalleryHtmlForExport(raw);
+    }
+    return raw;
 }
 window.getEditorHtmlContent = getEditorHtmlContent;
 
@@ -3664,25 +3678,345 @@ function handleDropFeaturedImage(e) {
 }
 window.handleDropFeaturedImage = handleDropFeaturedImage;
 
-// Gallery
+// ==========================================================================
+// ARTICLE IMAGE GALLERY PRO ENGINE
+// ==========================================================================
+
+function openGalleryLightbox(imgUrl, caption) {
+    if (!imgUrl) return;
+    const modal = document.getElementById('media-lightbox-modal');
+    const img = document.getElementById('lightbox-img');
+    const title = document.getElementById('lightbox-filename');
+    const meta = document.getElementById('lightbox-meta');
+    const downloadBtn = document.getElementById('lightbox-btn-download');
+
+    if (!modal) return;
+    if (img) img.src = imgUrl;
+    if (title) title.textContent = caption || 'معاينة صورة المعرض';
+    if (meta) meta.innerHTML = '<span style="color:#38bdf8;font-weight:700;">🏞️ معرض صور المقال</span>';
+    if (downloadBtn) {
+        downloadBtn.href = imgUrl;
+        downloadBtn.download = (caption || 'gallery_image') + '.jpg';
+    }
+    modal.style.display = 'flex';
+}
+window.openGalleryLightbox = openGalleryLightbox;
+
+function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
+    if (!images || !images.length) return '';
+    const safeLayout = ['grid', 'masonry', 'carousel', 'featured'].includes(layout) ? layout : 'grid';
+    const layoutNames = {
+        'grid': 'شبكة متجاوبة',
+        'masonry': 'فسيفسائي (Masonry)',
+        'carousel': 'سلايدر متحرك (Carousel)',
+        'featured': 'رئيسي ومصغرات (Featured)'
+    };
+    const layoutLabel = layoutNames[safeLayout] || 'شبكة';
+    const totalCount = images.length;
+
+    // Toolbar (active inside the visual editor with contenteditable="false")
+    const toolbarHtml = forEditor ? `
+        <div class="studio-gallery-toolbar" contenteditable="false" style="display:flex;align-items:center;justify-content:space-between;padding:8px 14px;margin-bottom:12px;background:rgba(30,41,59,0.92);border-radius:10px;border:1px solid rgba(56,189,248,0.3);font-size:12px;user-select:none;box-shadow:0 3px 12px rgba(0,0,0,0.3);">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-weight:800;color:#38bdf8;display:flex;align-items:center;gap:5px;">
+                    <span>🏞️</span> <span>معرض صور المقال</span> 
+                    <span style="background:rgba(56,189,248,0.2);color:#7dd3fc;padding:1px 7px;border-radius:10px;font-size:11px;">${totalCount} صور</span>
+                </span>
+                <span style="font-size:11px;color:#94a3b8;background:rgba(255,255,255,0.06);padding:2px 8px;border-radius:5px;">${layoutLabel}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;">
+                <button type="button" onclick="moveGalleryBlockInEditor(this, -1)" title="تحريك المعرض لأعلى" style="background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:3px;">
+                    <span>⬆️</span> <span>لأعلى</span>
+                </button>
+                <button type="button" onclick="moveGalleryBlockInEditor(this, 1)" title="تحريك المعرض لأسفل" style="background:#0f172a;color:#e2e8f0;border:1px solid #334155;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:3px;">
+                    <span>⬇️</span> <span>لأسفل</span>
+                </button>
+                <button type="button" onclick="removeGalleryBlockFromEditor(this)" title="إزالة المعرض من المقال" style="background:rgba(239,68,68,0.2);color:#fca5a5;border:1px solid rgba(239,68,68,0.35);border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:3px;">
+                    <span>🗑️</span> <span>إزالة</span>
+                </button>
+            </div>
+        </div>
+    ` : '';
+
+    let itemsHtml = '';
+
+    if (safeLayout === 'grid') {
+        itemsHtml = `
+            <div class="blogger-gallery-grid-items" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+                ${images.map((img, idx) => `
+                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="position:relative;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;transition:transform 0.2s ease;">
+                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:190px;object-fit:cover;display:block;">
+                        ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else if (safeLayout === 'masonry') {
+        itemsHtml = `
+            <div class="blogger-gallery-masonry-items" style="column-count:auto;column-width:210px;column-gap:14px;">
+                ${images.map((img, idx) => `
+                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="break-inside:avoid;margin-bottom:14px;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;">
+                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:auto;display:block;">
+                        ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else if (safeLayout === 'carousel') {
+        itemsHtml = `
+            <div class="blogger-gallery-carousel-items" style="display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px 2px;-webkit-overflow-scrolling:touch;">
+                ${images.map((img, idx) => `
+                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="flex:0 0 280px;scroll-snap-align:start;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;">
+                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:210px;object-fit:cover;display:block;">
+                        ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    } else if (safeLayout === 'featured') {
+        itemsHtml = `
+            <div class="blogger-gallery-featured-items">
+                <div class="gallery-featured-hero" style="border-radius:12px;overflow:hidden;margin-bottom:12px;box-shadow:0 6px 20px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.12);background:#000;cursor:pointer;" onclick="if(window.openGalleryLightbox){const img=this.querySelector('img');openGalleryLightbox(img.src,img.alt);}">
+                    <img class="featured-hero-main-img" src="${images[0].url}" alt="${escapeSmartHtml(images[0].alt || 'Featured')}" style="width:100%;max-height:400px;object-fit:cover;display:block;">
+                </div>
+                ${images.length > 1 ? `
+                    <div class="gallery-featured-thumbs-row" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;">
+                        ${images.map((img, i) => `
+                            <div class="gallery-thumb-click" onclick="const hero=this.closest('.blogger-gallery-featured-items')?.querySelector('.featured-hero-main-img');if(hero)hero.src='${img.url}';this.parentElement.querySelectorAll('.gallery-thumb-click').forEach(t=>t.style.borderColor='rgba(255,255,255,0.15)');this.style.borderColor='#0968ef';" style="flex:0 0 100px;height:70px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid ${i === 0 ? '#0968ef' : 'rgba(255,255,255,0.15)'};transition:border-color 0.2s;">
+                                <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Thumb')}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+            </div>
+        `;
+    }
+
+    const editAttr = forEditor ? 'contenteditable="false"' : '';
+    return `
+        <div class="blogger-gallery-container studio-gallery-block" data-gallery-layout="${safeLayout}" ${editAttr} style="margin:28px 0;padding:14px;background:rgba(15,23,42,0.45);border:1px solid rgba(56,189,248,0.25);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+            ${toolbarHtml}
+            ${itemsHtml}
+        </div>
+    `;
+}
+window.buildGalleryBlockHtml = buildGalleryBlockHtml;
+
+function cleanGalleryHtmlForExport(html) {
+    if (!html) return '';
+    try {
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        temp.querySelectorAll('.studio-gallery-toolbar').forEach(el => el.remove());
+        temp.querySelectorAll('.studio-gallery-block, .blogger-gallery-container').forEach(el => {
+            el.removeAttribute('contenteditable');
+        });
+        return temp.innerHTML;
+    } catch(e) {
+        return html;
+    }
+}
+window.cleanGalleryHtmlForExport = cleanGalleryHtmlForExport;
+
+function syncGalleryToEditorContent(forceReinsert = false) {
+    if (!currentGalleryImages || !currentGalleryImages.length) {
+        return;
+    }
+    const editor = document.getElementById('art-editor');
+    if (!editor) return;
+
+    const galleryHtml = buildGalleryBlockHtml(currentGalleryImages, currentGalleryLayout, true);
+
+    let existingGallery = editor.querySelector('.studio-gallery-block, .blogger-gallery-container');
+
+    if (existingGallery && !forceReinsert) {
+        const temp = document.createElement('div');
+        temp.innerHTML = galleryHtml;
+        const newEl = temp.firstElementChild;
+        existingGallery.replaceWith(newEl);
+    } else {
+        if (existingGallery && forceReinsert) {
+            existingGallery.remove();
+        }
+
+        const temp = document.createElement('div');
+        temp.innerHTML = galleryHtml;
+        const newEl = temp.firstElementChild;
+
+        const paragraphs = Array.from(editor.children).filter(el => 
+            el.tagName === 'P' || el.tagName === 'DIV' || el.tagName.startsWith('H')
+        );
+
+        if (paragraphs.length >= 2) {
+            paragraphs[0].after(newEl);
+        } else {
+            editor.appendChild(newEl);
+        }
+    }
+
+    // Guarantee clean paragraphs before and after gallery
+    const gal = editor.querySelector('.studio-gallery-block');
+    if (gal) {
+        if (!gal.previousElementSibling || gal.previousElementSibling.tagName !== 'P') {
+            const pBefore = document.createElement('p');
+            pBefore.innerHTML = '<br>';
+            gal.before(pBefore);
+        }
+        if (!gal.nextElementSibling || gal.nextElementSibling.tagName !== 'P') {
+            const pAfter = document.createElement('p');
+            pAfter.innerHTML = '<br>';
+            gal.after(pAfter);
+        }
+    }
+
+    const htmlView = document.getElementById('art-editor-html');
+    if (htmlView && currentEditorMode === 'html') {
+        htmlView.value = getEditorHtmlContent();
+    }
+    const previewView = document.getElementById('art-editor-preview');
+    if (previewView && currentEditorMode === 'preview') {
+        renderLivePreview(previewView, getEditorHtmlContent());
+    }
+
+    window.currentPostSaved = false;
+    updateWordCount();
+    scheduleAutoSave();
+}
+window.syncGalleryToEditorContent = syncGalleryToEditorContent;
+
+function moveGalleryBlockInEditor(btn, direction) {
+    const galleryEl = btn.closest('.studio-gallery-block');
+    if (!galleryEl || !galleryEl.parentElement) return;
+
+    if (direction < 0) { // UP
+        let prev = galleryEl.previousElementSibling;
+        while (prev && (prev.tagName === 'BR' || (prev.tagName === 'P' && !prev.textContent.trim() && prev.previousElementSibling))) {
+            prev = prev.previousElementSibling;
+        }
+        if (prev && prev !== galleryEl) {
+            galleryEl.parentElement.insertBefore(galleryEl, prev);
+            showToast('⬆️ تم تحريك معرض الصور للأعلى', 'info');
+        } else {
+            showToast('معرض الصور في أعلى المقال بالفعل', 'warning');
+        }
+    } else { // DOWN
+        let next = galleryEl.nextElementSibling;
+        while (next && (next.tagName === 'BR' || (next.tagName === 'P' && !next.textContent.trim() && next.nextElementSibling))) {
+            next = next.nextElementSibling;
+        }
+        if (next && next !== galleryEl) {
+            galleryEl.parentElement.insertBefore(galleryEl, next.nextElementSibling);
+            showToast('⬇️ تم تحريك معرض الصور للأسفل', 'info');
+        } else {
+            showToast('معرض الصور في أسفل المقال بالفعل', 'warning');
+        }
+    }
+
+    if (!galleryEl.previousElementSibling || galleryEl.previousElementSibling.tagName !== 'P') {
+        const p = document.createElement('p');
+        p.innerHTML = '<br>';
+        galleryEl.before(p);
+    }
+    if (!galleryEl.nextElementSibling || galleryEl.nextElementSibling.tagName !== 'P') {
+        const p = document.createElement('p');
+        p.innerHTML = '<br>';
+        galleryEl.after(p);
+    }
+
+    window.currentPostSaved = false;
+    updateWordCount();
+    scheduleAutoSave();
+}
+window.moveGalleryBlockInEditor = moveGalleryBlockInEditor;
+
+function removeGalleryBlockFromEditor(btn) {
+    const editor = document.getElementById('art-editor');
+    const galleryEl = btn ? btn.closest('.studio-gallery-block') : editor?.querySelector('.studio-gallery-block');
+    if (galleryEl) {
+        galleryEl.remove();
+        showToast('🗑️ تم إزالة معرض الصور من المقال', 'info');
+        window.currentPostSaved = false;
+        updateWordCount();
+        scheduleAutoSave();
+    }
+}
+window.removeGalleryBlockFromEditor = removeGalleryBlockFromEditor;
+
+function extractGalleryFromContent(content) {
+    currentGalleryImages = [];
+    if (!content) {
+        renderGalleryGrid();
+        return;
+    }
+
+    const temp = document.createElement('div');
+    temp.innerHTML = content;
+
+    const gal = temp.querySelector('.studio-gallery-block, .blogger-gallery-container, .blogger-gallery-grid, .blogger-gallery-featured');
+    if (gal) {
+        const layout = gal.getAttribute('data-gallery-layout') || gal.getAttribute('data-layout');
+        if (layout && ['grid', 'masonry', 'carousel', 'featured'].includes(layout)) {
+            currentGalleryLayout = layout;
+            document.querySelectorAll('.gallery-layout-pill').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-layout-${layout}`)?.classList.add('active');
+        }
+
+        const imgs = gal.querySelectorAll('img');
+        imgs.forEach((img, idx) => {
+            const src = img.getAttribute('src');
+            if (src && !src.startsWith('data:image/svg')) {
+                currentGalleryImages.push({
+                    id: 'img_ext_' + idx + '_' + Date.now(),
+                    url: src,
+                    alt: img.getAttribute('alt') || `صورة ${idx + 1}`,
+                    caption: img.closest('.gallery-card-item')?.querySelector('.gallery-card-caption')?.textContent || ''
+                });
+            }
+        });
+    } else {
+        const imgs = temp.querySelectorAll('img');
+        if (imgs.length >= 2) {
+            imgs.forEach((img, idx) => {
+                const src = img.getAttribute('src');
+                if (src && !src.startsWith('data:image/svg')) {
+                    currentGalleryImages.push({
+                        id: 'img_ext_' + idx + '_' + Date.now(),
+                        url: src,
+                        alt: img.getAttribute('alt') || `صورة ${idx + 1}`,
+                        caption: ''
+                    });
+                }
+            });
+        }
+    }
+
+    renderGalleryGrid();
+}
+window.extractGalleryFromContent = extractGalleryFromContent;
+
 function handleGalleryImagesSelected(files) {
     if (!files || !files.length) return;
+    let loadedCount = 0;
+    const total = files.length;
     Array.from(files).forEach((file, idx) => {
         const reader = new FileReader();
         reader.onload = (e) => {
             currentGalleryImages.push({
                 id: 'img_' + Date.now() + '_' + idx,
                 url: e.target.result,
-                alt: file.name,
+                alt: file.name.replace(/\.[^/.]+$/, ''),
                 caption: '',
                 link: ''
             });
-            renderGalleryGrid();
+            loadedCount++;
+            if (loadedCount === total) {
+                renderGalleryGrid();
+                syncGalleryToEditorContent();
+                showToast(`✨ تمت إضافة ${total} صور وعرضها في المقال مباشرة!`, 'success');
+            }
         };
         reader.readAsDataURL(file);
     });
-    window.currentPostSaved = false;
-    showToast(`تمت إضافة ${files.length} صور إلى المعرض`, 'success');
 }
 window.handleGalleryImagesSelected = handleGalleryImagesSelected;
 
@@ -3703,7 +4037,18 @@ function setGalleryLayout(layout) {
     document.querySelectorAll('.gallery-layout-pill').forEach(btn => btn.classList.remove('active'));
     const btn = document.getElementById(`btn-layout-${layout}`);
     if (btn) btn.classList.add('active');
-    showToast(`تم اختيار نمط المعرض: ${layout}`, 'info');
+
+    if (currentGalleryImages && currentGalleryImages.length > 0) {
+        syncGalleryToEditorContent();
+    }
+
+    const layoutNames = {
+        'grid': 'شبكة متجاوبة',
+        'masonry': 'فسيفسائي (Masonry)',
+        'carousel': 'سلايدر متحرك (Carousel)',
+        'featured': 'رئيسي ومصغرات (Featured)'
+    };
+    showToast(`تم اختيار نمط المعرض: ${layoutNames[layout] || layout}`, 'info');
 }
 window.setGalleryLayout = setGalleryLayout;
 
@@ -3726,7 +4071,11 @@ function renderGalleryGrid() {
         `;
         tile.onclick = (e) => {
             if (e.target.tagName !== 'BUTTON') {
-                insertArticleElement('image-custom', img.url);
+                const newCaption = prompt('أدخل وصفاً توضيحياً (Caption) لهذه الصورة:', img.caption || '');
+                if (newCaption !== null) {
+                    img.caption = newCaption.trim();
+                    syncGalleryToEditorContent();
+                }
             }
         };
         grid.appendChild(tile);
@@ -3738,6 +4087,11 @@ function removeGalleryImage(id, e) {
     if (e) e.stopPropagation();
     currentGalleryImages = currentGalleryImages.filter(img => img.id !== id);
     renderGalleryGrid();
+    if (currentGalleryImages.length > 0) {
+        syncGalleryToEditorContent();
+    } else {
+        removeGalleryBlockFromEditor();
+    }
     window.currentPostSaved = false;
     showToast('تمت إزالة الصورة من المعرض', 'info');
 }
@@ -3747,8 +4101,9 @@ function clearArticleGallery() {
     if (!currentGalleryImages.length) return;
     currentGalleryImages = [];
     renderGalleryGrid();
+    removeGalleryBlockFromEditor();
     window.currentPostSaved = false;
-    showToast('تم إفراغ صور المعرض لهذا المقال', 'info');
+    showToast('تم إفراغ صور المعرض وإزالتها من المقال', 'info');
 }
 window.clearArticleGallery = clearArticleGallery;
 
@@ -3757,38 +4112,12 @@ function insertGalleryIntoArticle() {
         showToast('أضف بعض الصور إلى المعرض أولاً لإدراجها', 'warning');
         return;
     }
-    let html = '';
-    if (currentGalleryLayout === 'grid') {
-        html = `
-            <div class="blogger-gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin:24px 0;">
-                ${currentGalleryImages.map(img => `
-                    <div style="border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.2);border:1px solid rgba(255,255,255,0.1);">
-                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:180px;object-fit:cover;display:block;">
-                        ${img.caption ? `<div style="padding:6px 10px;background:rgba(15,23,42,0.9);font-size:11.5px;color:#cbd5e1;text-align:center;">${escapeSmartHtml(img.caption)}</div>` : ''}
-                    </div>
-                `).join('')}
-            </div>
-            <p><br></p>
-        `;
-    } else {
-        html = `
-            <div class="blogger-gallery-featured" style="margin:24px 0;">
-                <div style="border-radius:12px;overflow:hidden;margin-bottom:10px;border:1px solid rgba(255,255,255,0.12);">
-                    <img src="${currentGalleryImages[0].url}" alt="${escapeSmartHtml(currentGalleryImages[0].alt || 'Featured')}" style="width:100%;max-height:400px;object-fit:cover;display:block;">
-                </div>
-                ${currentGalleryImages.length > 1 ? `
-                    <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;">
-                        ${currentGalleryImages.slice(1).map(img => `
-                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Thumb')}" style="width:100px;height:70px;border-radius:6px;object-fit:cover;border:1px solid rgba(255,255,255,0.1);">
-                        `).join('')}
-                    </div>
-                ` : ''}
-            </div>
-            <p><br></p>
-        `;
+    syncGalleryToEditorContent(true);
+    const gal = document.querySelector('#art-editor .studio-gallery-block');
+    if (gal) {
+        gal.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    execCmd('insertHTML', html);
-    showToast('✨ تم إدراج معرض الصور في المقال بنجاح!', 'success');
+    showToast('✨ تم إدراج معرض الصور وتحديثه في المقال بنجاح!', 'success');
 }
 window.insertGalleryIntoArticle = insertGalleryIntoArticle;
 
@@ -3939,7 +4268,7 @@ async function saveArticleDraft(isSilent = false) {
         return false;
     }
 
-    const content = getEditorHtmlContent();
+    const content = getEditorHtmlContent(true);
     const lang = document.getElementById('art-lang-select')?.value || 'ar';
     const labels = getArticleTagsList();
     const primaryCat = document.getElementById('art-primary-category')?.value;
@@ -4059,7 +4388,7 @@ async function publishArticleLive() {
     const title = (titleAr || titleEn || '').trim();
     if (!title) return showToast('يرجى كتابة عنوان المقال أولاً لنشره', 'error');
 
-    const content = getEditorHtmlContent();
+    const content = getEditorHtmlContent(true);
     if (!content || content.trim() === '<p></p>' || content.trim() === '<p><br></p>') {
         return showToast('يرجى كتابة محتوى المقال أولاً قبل النشر', 'warning');
     }
@@ -4308,7 +4637,9 @@ function editPostInStudio(postId) {
     }
 
     // Set Editor Content
-    setEditorHtmlContent(post.content || post.snippet || '');
+    const initialContent = post.content || post.snippet || '';
+    setEditorHtmlContent(initialContent);
+    extractGalleryFromContent(initialContent);
     setEditorMode('advanced');
 
     // Update Status Pill
@@ -9456,7 +9787,8 @@ function createNewArticle(event) {
     const coverEl = document.getElementById('art-cover'); if (coverEl) coverEl.value = '';
     const descEl = document.getElementById('art-desc'); if (descEl) descEl.value = '';
     const pairEl = document.getElementById('art-paired-post'); if (pairEl) pairEl.value = '';
-    if (typeof setEditorHtmlContent === 'function') setEditorHtmlContent('');
+    if (typeof clearArticleGallery === 'function') clearArticleGallery();
+    if (typeof setEditorHtmlContent === 'function') setEditorHtmlContent('<p></p>');
 
     const pill = document.getElementById('writer-status-pill');
     if (pill) {

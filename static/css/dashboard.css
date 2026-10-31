@@ -13862,3 +13862,52 @@ html[dir="ltr"] .topbar {
 [data-theme="light"] .action-btn.outline-secondary * {
   color: #1e293b !important;
 }
+
+
+/* ==========================================================================
+   ARTICLE IMAGE GALLERY PRO STYLING
+   ========================================================================== */
+.studio-gallery-block {
+  position: relative;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+  user-select: auto;
+}
+
+.studio-gallery-block:hover {
+  border-color: rgba(56, 189, 248, 0.45) !important;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.35) !important;
+}
+
+.gallery-card-item {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s ease, border-color 0.22s ease !important;
+}
+
+.gallery-card-item:hover {
+  transform: translateY(-3px) scale(1.015);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45) !important;
+  border-color: rgba(56, 189, 248, 0.4) !important;
+}
+
+.gallery-card-item:hover img {
+  filter: brightness(1.05);
+}
+
+.blogger-gallery-carousel-items::-webkit-scrollbar {
+  height: 6px;
+}
+.blogger-gallery-carousel-items::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 4px;
+}
+.blogger-gallery-carousel-items::-webkit-scrollbar-thumb {
+  background: rgba(56, 189, 248, 0.35);
+  border-radius: 4px;
+}
+.blogger-gallery-carousel-items::-webkit-scrollbar-thumb:hover {
+  background: rgba(56, 189, 248, 0.6);
+}
+
+.gallery-thumb-click:hover {
+  border-color: #38bdf8 !important;
+  transform: translateY(-2px);
+}
