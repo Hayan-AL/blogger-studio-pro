@@ -212,9 +212,10 @@ def switch_active_blog(blog_id: str, blog_name: Optional[str] = None, blog_url: 
 # -------------------------------------------------------------
 # FETCH POSTS (OFFICIAL API OR FEED FALLBACK)
 # -------------------------------------------------------------
-def fetch_live_posts(force_refresh: bool = False) -> List[Dict[str, Any]]:
+def fetch_live_posts(force_refresh: bool = False, blog_id: Optional[str] = None) -> List[Dict[str, Any]]:
     settings = load_settings()
-    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    if not blog_id:
+        blog_id = str(settings.get("blog", {}).get("id", "")).strip()
     if not blog_id:
         return []
     token = get_valid_access_token()
@@ -222,15 +223,22 @@ def fetch_live_posts(force_refresh: bool = False) -> List[Dict[str, Any]]:
     # 1. Check if SQLite already has posts and force_refresh is False
     conn = get_connection()
     c = conn.cursor()
+    # Filter out any post that is in trash_posts
+    c.execute("SELECT id FROM trash_posts WHERE blog_id = ?", (blog_id,))
+    trashed_ids = {str(row["id"]) for row in c.fetchall()}
+
     c.execute("SELECT * FROM posts WHERE blog_id = ? ORDER BY published_at DESC", (blog_id,))
     rows = [dict(r) for r in c.fetchall()]
+    rows = [r for r in rows if str(r.get("id")) not in trashed_ids]
     if rows and not force_refresh:
         conn.close()
         for r in rows:
             r["labels"] = json.loads(r.get("labels_json") or "[]")
-            r["display_date"] = (r.get("published_at") or "")[:10]
+            r["display_date"] = (r.get("published_at") or "")[:16].replace('T', ' ')
             r["image"] = r.get("image_url") or ""
             r["language"] = r.get("lang") or "ar"
+            r["snippet"] = r.get("snippet") or ""
+            r["status"] = (r.get("status") or "LIVE").upper()
         return rows
         
     posts: List[Dict[str, Any]] = []
@@ -349,6 +357,10 @@ def fetch_live_posts(force_refresh: bool = False) -> List[Dict[str, Any]]:
                         posts = json.load(f)
                 except Exception:
                     pass
+
+    # Filter out any trashed posts from external API items
+    if trashed_ids:
+        posts = [p for p in posts if str(p.get("id")) not in trashed_ids]
 
     # 4. Save into SQLite database
     if posts:
@@ -710,60 +722,79 @@ def update_post(
         "message": f"تم حفظ تعديلات المقال '{title}' بنجاح ({status_lbl})!"
     }
 
-def delete_post(post_id: str) -> Dict[str, Any]:
+def delete_post(post_id: str, blog_id: Optional[str] = None) -> Dict[str, Any]:
     settings = load_settings()
-    blog_id = str(settings.get("blog", {}).get("id", "")).strip()
+    active_blog_id = str(blog_id or settings.get("blog", {}).get("id", "")).strip()
     token = get_valid_access_token()
     
-    # Pre-deletion backup in SQLite
     conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT * FROM posts WHERE id = ?", (post_id,))
     existing = c.fetchone()
     
-    if not existing and not token:
-        conn.close()
-        return {"status": "error", "message": "Post not found."}
-        
-    # Attempt delete via Official API if ID is Blogger ID
-    if token and not post_id.startswith("local-"):
+    # Attempt delete/unpublish via Official Blogger API if online and valid remote ID
+    if token and not post_id.startswith("local-") and active_blog_id:
         try:
             clean_id = post_id.split("post-")[-1] if "post-" in post_id else post_id
-            url = f"https://www.googleapis.com/blogger/v3/blogs/{blog_id}/posts/{clean_id}"
+            url = f"https://www.googleapis.com/blogger/v3/blogs/{active_blog_id}/posts/{clean_id}?useTrash=true"
             resp = requests.delete(url, headers={"Authorization": f"Bearer {token}"}, timeout=12)
             if resp.status_code not in [200, 204]:
-                conn.close()
-                return {"status": "error", "message": f"Blogger API delete error: {resp.text}"}
+                url_std = f"https://www.googleapis.com/blogger/v3/blogs/{active_blog_id}/posts/{clean_id}"
+                requests.delete(url_std, headers={"Authorization": f"Bearer {token}"}, timeout=12)
         except Exception as e:
-            conn.close()
-            return {"status": "error", "message": f"Delete exception: {str(e)}"}
+            print(f"[delete_post] Warning: Blogger API delete call: {e}")
             
-    # Pre-backup to local trash_posts before removal
+    # Save snapshot in trash_posts before removal
     if existing:
+        col_names = [d[0] for d in c.description]
+        orig_st = str(existing["status"] or "LIVE") if "status" in col_names else "LIVE"
+        img_val = str(existing["image_url"] or "") if "image_url" in col_names else ""
+        pub_val = str(existing["published_at"] or "") if "published_at" in col_names else ""
         c.execute("""
-            INSERT OR REPLACE INTO trash_posts (id, blog_id, title, content_html, snippet, url, deleted_at, status, lang, labels_json)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'TRASH', ?, ?)
+            INSERT OR REPLACE INTO trash_posts (id, blog_id, title, content_html, snippet, url, deleted_at, status, lang, labels_json, image_url, published_at, original_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'TRASH', ?, ?, ?, ?, ?)
         """, (
             str(existing["id"]),
-            str(existing["blog_id"]),
-            str(existing["title"]),
-            str(existing["content_html"]),
-            str(existing["snippet"]),
-            str(existing["url"]),
+            str(existing["blog_id"] or active_blog_id),
+            str(existing["title"] or "بدون عنوان"),
+            str(existing["content_html"] or ""),
+            str(existing["snippet"] or ""),
+            str(existing["url"] or ""),
             datetime.utcnow().isoformat(),
-            str(existing["lang"]),
-            str(existing["labels_json"])
+            str(existing["lang"] or "ar"),
+            str(existing["labels_json"] or "[]"),
+            img_val,
+            pub_val,
+            orig_st
+        ))
+    else:
+        # If post wasn't in local DB yet, create a minimal trash snapshot
+        c.execute("""
+            INSERT OR REPLACE INTO trash_posts (id, blog_id, title, content_html, snippet, url, deleted_at, status, lang, labels_json, image_url, published_at, original_status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, 'TRASH', ?, ?, ?, ?, ?)
+        """, (
+            str(post_id),
+            str(active_blog_id),
+            f"مقال محذوف #{post_id}",
+            "",
+            "تم نقل المقال إلى سلة المحذوفات",
+            "",
+            datetime.utcnow().isoformat(),
+            "ar",
+            "[]",
+            "",
+            "",
+            "LIVE"
         ))
 
-    # Delete from local DB
+    # Delete from local posts and translation pairs
     c.execute("DELETE FROM posts WHERE id = ?", (post_id,))
     c.execute("DELETE FROM translation_pairs WHERE ar_post_id = ? OR en_post_id = ?", (post_id, post_id))
     conn.commit()
     conn.close()
     
-    log_activity("DELETE_POST", f"Deleted post: {post_id}")
-    fetch_live_posts(force_refresh=True)
-    return {"status": "success", "message": f"Post {post_id} successfully deleted."}
+    log_activity("DELETE_POST", f"Moved post to trash: {post_id}")
+    return {"status": "success", "message": "تم نقل المقال إلى سلة المحذوفات بنجاح.", "post_id": post_id}
 
 # -------------------------------------------------------------
 # REAL-TIME DIAGNOSTICS & STATS

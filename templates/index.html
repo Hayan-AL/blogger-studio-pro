@@ -25,9 +25,12 @@
     window.__MAINTENANCE_MODE__ = false;
   </script>
   <style id="blogger-maintenance-styles">
-    /* Prevent FOUC when maintenance mode is active */
-    html.in-maintenance-mode body > .app-container {
+    /* Prevent FOUC and ensure total site halt when maintenance mode is active */
+    html.in-maintenance-mode:not(.admin-bypassed) body > *:not(#studio-maintenance-overlay) {
       display: none !important;
+    }
+    html.in-maintenance-mode:not(.admin-bypassed) body {
+      overflow: hidden !important;
     }
     #studio-maintenance-overlay {
       position: fixed;
@@ -356,10 +359,44 @@
     </div>
   </div>
 
-  <!-- Maintenance Engine Script -->
+    <!-- Maintenance Engine Script -->
   <script id="blogger-maintenance-engine">
     (function() {
       const ADMIN_PIN = "1234";
+
+      function updateSettingsMaintUI(isMaint) {
+        const badge = document.getElementById('studio-settings-maint-badge');
+        const btn = document.getElementById('btn-studio-settings-maint');
+        if (badge) {
+          if (isMaint) {
+            badge.style.background = 'rgba(245, 158, 11, 0.2)';
+            badge.style.color = '#fbbf24';
+            badge.style.borderColor = 'rgba(245, 158, 11, 0.4)';
+            badge.innerHTML = '<i class="fas fa-tools"></i> <span>وضع الصيانة نشط (الموقع متوقف مؤقتاً) 🚧</span>';
+          } else {
+            badge.style.background = 'rgba(16, 185, 129, 0.15)';
+            badge.style.color = '#10b981';
+            badge.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+            badge.innerHTML = '<i class="fas fa-check-circle"></i> <span>معطل (الموقع متاح ويعمل للجميع) 🟢</span>';
+          }
+        }
+        if (btn) {
+          if (isMaint) {
+            btn.className = 'btn btn-success';
+            btn.style.background = '#10b981';
+            btn.style.borderColor = '#059669';
+            btn.innerHTML = '<i class="fas fa-play"></i> <span>إلغاء الصيانة وتشغيل الموقع للجميع 🟢</span>';
+            btn.onclick = () => window.toggleStudioMaintenanceMode(false);
+          } else {
+            btn.className = 'btn btn-warning';
+            btn.style.background = '#d97706';
+            btn.style.borderColor = '#b45309';
+            btn.innerHTML = '<i class="fas fa-tools"></i> <span>تفعيل وضع الصيانة وإيقاف الموقع 🚧</span>';
+            btn.onclick = () => window.toggleStudioMaintenanceMode(true);
+          }
+        }
+      }
+      window.updateSettingsMaintUI = updateSettingsMaintUI;
 
       function applyMaintenanceState(isMaint) {
         const overlay = document.getElementById('studio-maintenance-overlay');
@@ -369,26 +406,48 @@
 
         if (isMaint) {
           if (isBypassed) {
-            if (overlay) overlay.classList.remove('active');
+            if (overlay) {
+              overlay.classList.remove('active');
+              overlay.style.display = 'none';
+            }
             if (bypassBar) bypassBar.style.display = 'flex';
             if (appContainer) appContainer.style.display = '';
-            document.documentElement.classList.remove('in-maintenance-mode');
+            document.documentElement.classList.add('in-maintenance-mode');
+            document.documentElement.classList.add('admin-bypassed');
           } else {
-            if (overlay) overlay.classList.add('active');
+            if (overlay) {
+              overlay.classList.add('active');
+              overlay.style.display = 'flex';
+            }
             if (bypassBar) bypassBar.style.display = 'none';
             if (appContainer) appContainer.style.display = 'none';
             document.documentElement.classList.add('in-maintenance-mode');
+            document.documentElement.classList.remove('admin-bypassed');
           }
         } else {
-          if (overlay) overlay.classList.remove('active');
+          if (overlay) {
+            overlay.classList.remove('active');
+            overlay.style.display = 'none';
+          }
           if (bypassBar) bypassBar.style.display = 'none';
           if (appContainer) appContainer.style.display = '';
           document.documentElement.classList.remove('in-maintenance-mode');
+          document.documentElement.classList.remove('admin-bypassed');
         }
+
+        updateSettingsMaintUI(isMaint);
       }
+      window.applyMaintenanceState = applyMaintenanceState;
 
       window.initMaintenanceMode = function() {
-        const initialMode = Boolean(window.__MAINTENANCE_MODE__);
+        const localVal = localStorage.getItem('studio_maintenance_mode');
+        let initialMode = false;
+        if (localVal !== null) {
+          initialMode = (localVal === 'true');
+        } else {
+          initialMode = Boolean(window.__MAINTENANCE_MODE__);
+        }
+        window.__MAINTENANCE_MODE__ = initialMode;
         applyMaintenanceState(initialMode);
 
         const checkUrl = './static/maintenance.json?_t=' + Date.now();
@@ -397,6 +456,7 @@
           .then(data => {
             if (data && typeof data.maintenance_mode === 'boolean') {
               window.__MAINTENANCE_MODE__ = data.maintenance_mode;
+              localStorage.setItem('studio_maintenance_mode', data.maintenance_mode ? 'true' : 'false');
               applyMaintenanceState(data.maintenance_mode);
             }
           })
@@ -406,6 +466,7 @@
               .then(data => {
                 if (data && typeof data.maintenance_mode === 'boolean') {
                   window.__MAINTENANCE_MODE__ = data.maintenance_mode;
+                  localStorage.setItem('studio_maintenance_mode', data.maintenance_mode ? 'true' : 'false');
                   applyMaintenanceState(data.maintenance_mode);
                 }
               })
@@ -448,24 +509,41 @@
         applyMaintenanceState(Boolean(window.__MAINTENANCE_MODE__));
       };
 
-      window.disableMaintenanceFromAdminBar = async function() {
-        if (!confirm('هل تريد إلغاء وضع الصيانة وتشغيل الموقع لجميع الزوار الآن؟')) return;
+      window.toggleStudioMaintenanceMode = async function(targetState) {
+        const isEnable = (targetState !== undefined) ? targetState : !Boolean(window.__MAINTENANCE_MODE__);
+        const msg = isEnable
+          ? 'هل تريد تفعيل وضع الصيانة وإيقاف الموقع فوراً للزوار؟\n\nعند التفعيل، سيتم حجب لوحة التحكم والموقع بالكامل وعرض شاشة الصيانة. يمكنك الدخول كمسؤول برمز PIN (1234).'
+          : 'هل تريد إلغاء وضع الصيانة وتشغيل الموقع لجميع الزوار الآن؟';
+        if (!confirm(msg)) return;
+
         try {
           const res = await fetch('/api/hub/cloudflare/toggle-maintenance', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ enabled: false })
+            body: JSON.stringify({ enabled: isEnable })
           });
           const data = await res.json();
-          if (data.success) {
-            window.__MAINTENANCE_MODE__ = false;
-            sessionStorage.removeItem('blogger_studio_admin_bypass');
-            applyMaintenanceState(false);
-            alert('تم إلغاء وضع الصيانة بنجاح والموقع يعمل الآن لجميع الزوار!');
+          if (data && (data.success || data.maintenance_mode !== undefined)) {
+            const actualMode = (data.maintenance_mode !== undefined) ? data.maintenance_mode : isEnable;
+            window.__MAINTENANCE_MODE__ = actualMode;
+            localStorage.setItem('studio_maintenance_mode', actualMode ? 'true' : 'false');
+            if (actualMode) {
+              sessionStorage.removeItem('blogger_studio_admin_bypass');
+            }
+            applyMaintenanceState(actualMode);
+            if (typeof showToast === 'function') {
+              showToast(actualMode ? '🚧 تم تفعيل وضع الصيانة وتوقف الموقع بنجاح.' : '🟢 تم إلغاء وضع الصيانة والموقع يعمل للجميع.');
+            } else {
+              alert(actualMode ? '🚧 تم تفعيل وضع الصيانة وإيقاف الموقع بنجاح.' : '🟢 تم إلغاء وضع الصيانة والموقع متاح لجميع الزوار.');
+            }
           }
         } catch(e) {
-          alert('خطأ في إيقاف وضع الصيانة: ' + e.message);
+          alert('حدث خطأ أثناء ضبط وضع الصيانة: ' + e.message);
         }
+      };
+
+      window.disableMaintenanceFromAdminBar = async function() {
+        window.toggleStudioMaintenanceMode(false);
       };
 
       window.checkMaintenanceStatusNow = async function() {
@@ -479,11 +557,13 @@
           if (res.ok) {
             const data = await res.json();
             if (data.maintenance_mode === false) {
+              localStorage.setItem('studio_maintenance_mode', 'false');
+              window.__MAINTENANCE_MODE__ = false;
               if (toast) {
                 toast.style.color = '#10b981';
                 toast.textContent = '✅ تم إنهاء أعمال الصيانة! جاري فتح الموقع...';
               }
-              setTimeout(() => location.reload(), 1000);
+              setTimeout(() => location.reload(), 800);
               return;
             }
           }
@@ -1119,17 +1199,20 @@
               <option value="all" data-i18n="opt_all_cats">كل الأقسام</option>
             </select>
 
-            <select id="posts-filter-status" class="form-control" style="width:120px;" onchange="filterPosts()">
+            <select id="posts-filter-status" class="form-control" style="width:140px;" onchange="handlePostsFilterStatusChange(this.value)">
               <option value="all" data-i18n="opt_all_status">كل الحالات</option>
               <option value="LIVE" data-i18n="opt_live">منشور</option>
               <option value="DRAFT" data-i18n="opt_draft">مسودة</option>
               <option value="SCHEDULED" data-i18n="opt_scheduled">مجدول</option>
+              <option value="TRASH" data-i18n="opt_trash">سلة المحذوفات</option>
             </select>
           </div>
 
           <div class="toolbar-group">
             <button onclick="exportSelectedPosts()" class="action-btn" id="btn-export-selected" style="display:none;" data-i18n="btn_export_selected">📥 تصدير المحددة</button>
-            <button onclick="document.querySelector('[data-tab=writer]').click()" class="action-btn primary" data-i18n="btn_new_post">+ مقال جديد</button>
+            <button type="button" onclick="restoreSelectedTrashPosts()" class="action-btn success" id="btn-trash-restore-selected" style="display:none;background:#10b981;color:#fff;border-color:#059669;font-weight:700;"><i class="fas fa-undo"></i> استعادة المحدد (<span id="trash-selected-count">0</span>)</button>
+            <button type="button" onclick="emptyTrashConfirm()" class="action-btn danger" id="btn-trash-empty" style="display:none;background:rgba(239,68,68,0.15);color:#f87171;border:1px solid rgba(239,68,68,0.35);font-weight:700;"><i class="fas fa-trash-alt"></i> إفراغ سلة المحذوفات</button>
+            <button type="button" onclick="createNewArticle(event)" class="action-btn primary" id="btn-posts-new-post" data-i18n="btn_new_post">+ مقال جديد</button>
           </div>
         </div>
 
@@ -1139,11 +1222,11 @@
               <thead>
                 <tr>
                   <th style="width:40px;text-align:center;"><input type="checkbox" id="select-all-posts" onchange="toggleSelectAllPosts(this)"></th>
-                  <th data-i18n="th_post">المقال</th>
+                  <th data-i18n="th_post" id="th-post-title">المقال</th>
                   <th data-i18n="th_lang">اللغة</th>
                   <th data-i18n="th_cat">التصنيف</th>
-                  <th data-i18n="th_paired_trans">الترجمة المقترنة</th>
-                  <th data-i18n="th_pub_date">تاريخ النشر</th>
+                  <th data-i18n="th_paired_trans" id="th-post-status">الحالة</th>
+                  <th data-i18n="th_pub_date" id="th-post-date">تاريخ النشر</th>
                   <th data-i18n="th_actions">الإجراءات</th>
                 </tr>
               </thead>
@@ -4276,6 +4359,34 @@ Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
                     <span class="switch-slider"></span>
                   </label>
                 </div>
+              </div>
+            </div>
+
+            <!-- Card 6: وضع الصيانة المؤقت للموقع (Maintenance Guard) -->
+            <div class="studio-card-pro glass-panel" style="border: 1px solid rgba(245, 158, 11, 0.35); background: rgba(15, 23, 42, 0.7); margin-top: 16px;">
+              <div class="studio-card-title">
+                <div class="studio-title-wrap">
+                  <span class="studio-icon-circle" style="background: rgba(245, 158, 11, 0.2); color: #fbbf24;"><i class="fas fa-tools"></i></span>
+                  <div>
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                      <h3 style="margin:0;">وضع الصيانة المؤقت للموقع</h3>
+                      <span id="studio-settings-maint-badge" style="font-size:11.5px; padding:3px 10px; border-radius:20px; font-weight:700; border:1px solid rgba(16, 185, 129, 0.3); background:rgba(16, 185, 129, 0.15); color:#10b981; display:inline-flex; align-items:center; gap:5px;">
+                        <i class="fas fa-check-circle"></i> <span>معطل (الموقع متاح ويعمل للجميع) 🟢</span>
+                      </span>
+                    </div>
+                    <p class="studio-card-sub">إيقاف لوحة التحكم والموقع فوراً للزوار وعرض شاشة الصيانة السحابية الأنيقة، مع إمكانية الدخول كمسؤول برمز PIN (1234).</p>
+                  </div>
+                </div>
+              </div>
+
+              <div style="padding:16px 20px; background:rgba(0,0,0,0.25); border-radius:12px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                <div style="font-size:12.5px; color:#cbd5e1; max-width:480px; line-height:1.6;">
+                  <i class="fas fa-info-circle" style="color:#38bdf8;"></i>
+                  <span>عند تفعيل هذا الخيار، يتم حجب لوحة التحكم وتوقف الموقع فوراً للزوار مع الحفاظ على أمان بياناتك، ويعمل على السيرفر المحلي وخوادم Cloudflare Pages بدون أي أخطاء.</span>
+                </div>
+                <button type="button" id="btn-studio-settings-maint" class="btn btn-warning" onclick="toggleStudioMaintenanceMode(true)" style="padding:9px 18px; font-weight:700; font-size:12.5px; border-radius:8px; display:inline-flex; align-items:center; gap:8px;">
+                  <i class="fas fa-tools"></i> <span>تفعيل وضع الصيانة وإيقاف الموقع 🚧</span>
+                </button>
               </div>
             </div>
 

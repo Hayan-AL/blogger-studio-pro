@@ -3324,6 +3324,10 @@
         });
         const data = await res.json();
         if (data.success) {
+          localStorage.setItem('studio_maintenance_mode', data.maintenance_mode ? 'true' : 'false');
+          if (data.maintenance_mode) {
+            sessionStorage.removeItem('blogger_studio_admin_bypass');
+          }
           updateMaintenanceUI(data.maintenance_mode);
           log('⚙️ ' + data.message, 'success');
           showToast(data.message);

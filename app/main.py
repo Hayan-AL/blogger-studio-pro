@@ -262,12 +262,13 @@ def api_toggle_google_auth_settings(req: GoogleAuthToggleRequest):
 @app.get("/api/posts")
 def api_get_posts(
     refresh: bool = False,
+    blog_id: Optional[str] = None,
     lang: Optional[str] = None,
     status: Optional[str] = None,
     category: Optional[str] = None,
     search: Optional[str] = None
 ):
-    posts = fetch_live_posts(force_refresh=refresh)
+    posts = fetch_live_posts(force_refresh=refresh, blog_id=blog_id)
     
     # Filter
     if lang and lang != "all":
@@ -383,6 +384,7 @@ def api_create_post(req: PostCreateRequest):
 
 class PostDeleteRequest(BaseModel):
     post_id: str
+    blog_id: Optional[str] = None
 
 
 class PostUpdateRequest(BaseModel):
@@ -460,29 +462,55 @@ def api_toggle_post_status(req: PostStatusToggleRequest):
 
 @app.post("/api/posts/delete")
 def api_delete_post(req: PostDeleteRequest):
-    res = delete_post(req.post_id)
+    res = delete_post(req.post_id, req.blog_id)
     if res.get("status") == "error":
         raise HTTPException(status_code=400, detail=res["message"])
     return res
 
 
 @app.get("/api/posts/trash")
-def api_get_trash_posts():
+def api_get_trash_posts(blog_id: Optional[str] = None):
     from .db import get_connection
+    from .blogger_api import load_settings
+    settings = load_settings()
+    active_blog_id = str(blog_id or settings.get("blog", {}).get("id", "")).strip()
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM trash_posts ORDER BY deleted_at DESC")
+    if active_blog_id:
+        c.execute("SELECT * FROM trash_posts WHERE blog_id = ? ORDER BY deleted_at DESC", (active_blog_id,))
+    else:
+        c.execute("SELECT * FROM trash_posts ORDER BY deleted_at DESC")
     rows = [dict(r) for r in c.fetchall()]
     conn.close()
-    return {"posts": rows, "count": len(rows)}
+    for r in rows:
+        try:
+            r["labels"] = json.loads(r.get("labels_json") or "[]")
+        except Exception:
+            r["labels"] = []
+        r["display_date"] = (r.get("deleted_at") or r.get("published_at") or "")[:10]
+        r["language"] = r.get("lang") or "ar"
+        r["image"] = r.get("image_url") or ""
+        r["status"] = "TRASH"
+    return {"status": "success", "posts": rows, "count": len(rows)}
 
 class PostRestoreRequest(BaseModel):
     post_id: str
+    blog_id: Optional[str] = None
+
+class PostRestoreBulkRequest(BaseModel):
+    post_ids: List[str]
+    blog_id: Optional[str] = None
+
+class EmptyTrashRequest(BaseModel):
+    blog_id: Optional[str] = None
+
+class DeletePermanentRequest(BaseModel):
+    post_id: str
+    blog_id: Optional[str] = None
 
 @app.post("/api/posts/restore")
 def api_restore_post(req: PostRestoreRequest):
     from .db import get_connection
-    from .blogger_api import create_post
     conn = get_connection()
     c = conn.cursor()
     c.execute("SELECT * FROM trash_posts WHERE id = ?", (req.post_id,))
@@ -491,19 +519,99 @@ def api_restore_post(req: PostRestoreRequest):
         conn.close()
         raise HTTPException(status_code=404, detail="Trash item not found.")
     
-    # Restore as draft on Blogger
-    labels = json.loads(item["labels_json"]) if item["labels_json"] else []
-    res = create_post(
-        title=item["title"],
-        content=item["content_html"] or "",
-        labels=labels,
-        is_draft=True,
-        lang=item["lang"] or "ar"
-    )
+    # Insert back into posts as DRAFT
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    c.execute("""
+        INSERT INTO posts (id, blog_id, title, content_html, snippet, url, published_at, updated_at, status, lang, labels_json, image_url, word_count, synced_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?, 0, ?)
+        ON CONFLICT(id) DO UPDATE SET
+            status='DRAFT',
+            updated_at=excluded.updated_at
+    """, (
+        str(item["id"]),
+        str(item["blog_id"] or req.blog_id or ""),
+        str(item["title"] or "بدون عنوان"),
+        str(item["content_html"] or ""),
+        str(item["snippet"] or ""),
+        str(item["url"] or ""),
+        str(item["published_at"] or now_str),
+        now_str,
+        str(item["lang"] or "ar"),
+        str(item["labels_json"] or "[]"),
+        str(item["image_url"] or ""),
+        now_str
+    ))
     c.execute("DELETE FROM trash_posts WHERE id = ?", (req.post_id,))
     conn.commit()
     conn.close()
-    return {"status": "success", "message": "Post restored as draft.", "details": res}
+    return {"status": "success", "message": "تمت استعادة المقال بنجاح إلى المسودات 📝.", "post_id": req.post_id}
+
+@app.post("/api/posts/restore-bulk")
+def api_restore_bulk_posts(req: PostRestoreBulkRequest):
+    from .db import get_connection
+    conn = get_connection()
+    c = conn.cursor()
+    restored_count = 0
+    now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    for pid in req.post_ids:
+        c.execute("SELECT * FROM trash_posts WHERE id = ?", (pid,))
+        item = c.fetchone()
+        if item:
+            c.execute("""
+                INSERT INTO posts (id, blog_id, title, content_html, snippet, url, published_at, updated_at, status, lang, labels_json, image_url, word_count, synced_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?, 0, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    status='DRAFT',
+                    updated_at=excluded.updated_at
+            """, (
+                str(item["id"]),
+                str(item["blog_id"] or req.blog_id or ""),
+                str(item["title"] or "بدون عنوان"),
+                str(item["content_html"] or ""),
+                str(item["snippet"] or ""),
+                str(item["url"] or ""),
+                str(item["published_at"] or now_str),
+                now_str,
+                str(item["lang"] or "ar"),
+                str(item["labels_json"] or "[]"),
+                str(item["image_url"] or ""),
+                now_str
+            ))
+            c.execute("DELETE FROM trash_posts WHERE id = ?", (pid,))
+            restored_count += 1
+    conn.commit()
+    conn.close()
+    return {"status": "success", "restored_count": restored_count, "message": f"تمت استعادة {restored_count} مقالات بنجاح إلى المسودات 📝."}
+
+@app.post("/api/posts/empty-trash")
+def api_empty_trash(req: EmptyTrashRequest):
+    from .db import get_connection
+    from .blogger_api import load_settings
+    settings = load_settings()
+    active_blog_id = str(req.blog_id or settings.get("blog", {}).get("id", "")).strip()
+    conn = get_connection()
+    c = conn.cursor()
+    if active_blog_id:
+        c.execute("SELECT COUNT(*) as cnt FROM trash_posts WHERE blog_id = ?", (active_blog_id,))
+        count = c.fetchone()["cnt"]
+        c.execute("DELETE FROM trash_posts WHERE blog_id = ?", (active_blog_id,))
+    else:
+        c.execute("SELECT COUNT(*) as cnt FROM trash_posts")
+        count = c.fetchone()["cnt"]
+        c.execute("DELETE FROM trash_posts")
+    conn.commit()
+    conn.close()
+    return {"status": "success", "deleted_count": count, "message": f"تم إفراغ سلة المحذوفات وحذف {count} مقال نهائياً."}
+
+@app.post("/api/posts/delete-permanent")
+def api_delete_permanent(req: DeletePermanentRequest):
+    from .db import get_connection
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("DELETE FROM trash_posts WHERE id = ?", (req.post_id,))
+    conn.commit()
+    conn.close()
+    return {"status": "success", "message": "تم حذف المقال بشكل نهائي من سلة المحذوفات."}
 
 @app.get("/api/pages")
 def api_get_pages():
@@ -1756,7 +1864,7 @@ from .deployment_hub import (
     load_hub_config, get_cloudflare_status, verify_github_token,
     push_to_github, deploy_cloudflare as hub_deploy_cf, deploy_all as hub_deploy_all,
     get_github_repo_info, set_github_repo_visibility,
-    check_cloudflare_health, purge_cloudflare_cache, get_git_details, get_github_scopes_info, toggle_maintenance_mode,
+    check_cloudflare_health, purge_cloudflare_cache, get_git_details, get_github_scopes_info, toggle_maintenance_mode, get_maintenance_status,
     get_hub_accounts_grouped, switch_platform_account, delete_platform_account, reconnect_platform_account,
     add_platform_account, get_publishing_centers, switch_publishing_center, save_publishing_center,
     delete_publishing_center, set_publishing_target, get_accounts_list, switch_active_account,
@@ -1812,6 +1920,10 @@ def api_hub_cf_purge_cache():
 
 class ToggleMaintenanceRequest(BaseModel):
     enabled: bool
+
+@app.get("/api/hub/maintenance-status")
+def api_hub_maintenance_status():
+    return get_maintenance_status()
 
 @app.post("/api/hub/cloudflare/toggle-maintenance")
 def api_hub_toggle_maintenance(req: ToggleMaintenanceRequest):

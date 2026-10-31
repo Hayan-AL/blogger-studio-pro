@@ -661,14 +661,54 @@ def get_github_scopes_info() -> Dict[str, Any]:
         "status": "active"
     }
 
+def get_maintenance_status() -> Dict[str, Any]:
+    cfg = load_hub_config()
+    is_maint = bool(cfg.get("cloudflare", {}).get("maintenance_mode", False))
+    return {
+        "success": True,
+        "maintenance_mode": is_maint,
+        "updated_at": cfg.get("cloudflare", {}).get("maintenance_updated_at", datetime.datetime.now().isoformat())
+    }
+
 def toggle_maintenance_mode(enable: bool) -> Dict[str, Any]:
     cfg = load_hub_config()
+    now_iso = datetime.datetime.now().isoformat()
     cfg.setdefault("cloudflare", {})["maintenance_mode"] = enable
+    cfg["cloudflare"]["maintenance_updated_at"] = now_iso
+    
+    # Synchronize all cloudflare accounts so load_hub_config does not revert the state
+    for c_acc in cfg.get("cloudflare_accounts", []):
+        c_acc["maintenance_mode"] = enable
+        c_acc["maintenance_updated_at"] = now_iso
+        
     save_hub_config(cfg)
-    status_text = "قيد التشغيل (موقع مغلق مؤقتاً)" if enable else "معطل (الموقع متاح للجميع)"
+    
+    # Build dist bundle and write static maintenance files immediately
+    try:
+        build_dist_bundle()
+    except Exception as e:
+        print(f"[Maintenance] Error building dist bundle: {e}")
+        
+    # Also update root index.html so static server / cloudflare root has the exact baked state
+    try:
+        root_index = os.path.join(BASE_DIR, "index.html")
+        templates_index = os.path.join(BASE_DIR, "templates", "index.html")
+        maint_val_str = "true" if enable else "false"
+        if os.path.exists(templates_index):
+            with open(templates_index, "r", encoding="utf-8") as f:
+                content = f.read()
+            content = content.replace("window.__MAINTENANCE_MODE__ = false;", f"window.__MAINTENANCE_MODE__ = {maint_val_str};")
+            content = content.replace("window.__MAINTENANCE_MODE__ = true;", f"window.__MAINTENANCE_MODE__ = {maint_val_str};")
+            with open(root_index, "w", encoding="utf-8") as f:
+                f.write(content)
+    except Exception as e:
+        print(f"[Maintenance] Error updating root index.html: {e}")
+        
+    status_text = "قيد التشغيل (الموقع مغلق مؤقتاً للزوار)" if enable else "معطل (الموقع متاح للجميع)"
     return {
         "success": True,
         "maintenance_mode": enable,
+        "updated_at": now_iso,
         "message": f"تم ضبط وضع الصيانة بنجاح ليصبح: {status_text}."
     }
 

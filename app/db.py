@@ -78,9 +78,23 @@ def init_db():
         deleted_at TEXT,
         status TEXT DEFAULT 'TRASH',
         lang TEXT DEFAULT 'ar',
-        labels_json TEXT DEFAULT '[]'
+        labels_json TEXT DEFAULT '[]',
+        image_url TEXT,
+        published_at TEXT,
+        original_status TEXT DEFAULT 'LIVE'
     )
     """)
+    
+    # Safe migration for existing database instances
+    for col_name, col_type in [
+        ("image_url", "TEXT"),
+        ("published_at", "TEXT"),
+        ("original_status", "TEXT DEFAULT 'LIVE'")
+    ]:
+        try:
+            c.execute(f"ALTER TABLE trash_posts ADD COLUMN {col_name} {col_type}")
+        except Exception:
+            pass
 
     # Translation pairs table (mapping Arabic post to English counterpart)
     c.execute("""

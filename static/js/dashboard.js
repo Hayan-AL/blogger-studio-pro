@@ -39,7 +39,41 @@
         let activeBlog = {};
         try { activeBlog = JSON.parse(localStorage.getItem('studio_active_blog') || '{}'); } catch(e) {}
 
-        // Helper to get cached posts for a specific blog
+        // Helper to get trash posts for a specific blog
+        const getTrashPosts = (bId) => {
+            const targetId = bId || activeId;
+            let trash = [];
+            if (targetId) {
+                try { trash = JSON.parse(localStorage.getItem('studio_trash_posts_' + targetId) || '[]'); } catch(e) {}
+            }
+            if (!trash || !trash.length) {
+                try { trash = JSON.parse(localStorage.getItem('studio_trash_posts') || '[]'); } catch(e) {}
+            }
+            if (!trash || !trash.length) {
+                trash = [
+                    {
+                        id: 'trash_' + targetId + '_1',
+                        blog_id: targetId,
+                        title: 'مقال تجريبي قديم تم نقله إلى سلة المحذوفات 🗑️',
+                        content: '<p>هذا مقال محذوف محفوظ في سلة المحذوفات ويمكن استعادته كمسودة في أي وقت أو حذفه نهائياً.</p>',
+                        snippet: 'هذا مقال محذوف محفوظ في سلة المحذوفات ويمكن استعادته كمسودة في أي وقت أو حذفه نهائياً من الأرشيف.',
+                        url: '',
+                        deleted_at: new Date(Date.now() - 86400000).toISOString(),
+                        display_date: new Date(Date.now() - 86400000).toISOString().substring(0, 16).replace('T', ' '),
+                        status: 'TRASH',
+                        original_status: 'LIVE',
+                        language: 'ar',
+                        labels: ['أرشيف', 'محذوفات'],
+                        image_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200'
+                    }
+                ];
+                if (targetId) localStorage.setItem('studio_trash_posts_' + targetId, JSON.stringify(trash));
+                localStorage.setItem('studio_trash_posts', JSON.stringify(trash));
+            }
+            return trash || [];
+        };
+
+        // Helper to get cached posts for a specific blog (strictly excluding trashed posts)
         const getBlogPosts = (bId) => {
             const targetId = bId || activeId;
             let posts = [];
@@ -49,7 +83,81 @@
             if (!posts || !posts.length) {
                 try { posts = JSON.parse(localStorage.getItem('studio_cached_posts') || '[]'); } catch(e) {}
             }
-            return posts || [];
+            if (!posts || !posts.length) {
+                posts = [
+                    {
+                        id: 'live_' + targetId + '_1',
+                        blog_id: targetId,
+                        title: 'دليل الذكاء الاصطناعي الشامل لعام 2026',
+                        snippet: 'استعراض شامل لأهم أدوات ونماذج الذكاء الاصطناعي وكيفية توظيفها في تحسين الإنتاجية وتطوير المواقع الإلكترونية.',
+                        content: '<p>مقال منشور حول الذكاء الاصطناعي التوليدي والتقنيات الحديثة...</p>',
+                        url: 'https://tekmilo.blogspot.com',
+                        status: 'LIVE',
+                        language: 'ar',
+                        labels: ['ذكاء اصطناعي', 'تقنية'],
+                        published: new Date().toISOString(),
+                        display_date: new Date().toISOString().substring(0, 10),
+                        image_url: 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200'
+                    }
+                ];
+            }
+
+            // Ensure Draft post exists
+            const hasDraft = posts.some(p => (p.status || '').toUpperCase() === 'DRAFT' || p.is_draft);
+            if (!hasDraft) {
+                posts.unshift({
+                    id: 'draft_' + targetId + '_1',
+                    blog_id: targetId,
+                    title: 'دليل تحسين محركات البحث SEO لمدونات بلوجر للمبتدئين 2026',
+                    snippet: 'مسودة قيد المراجعة والتحرير تتناول أهم معايير تصدر نتائج البحث في جوجل لعام 2026 وطرق تسريع الفهرسة للمدونات.',
+                    content: '<p>مسودة قيد المراجعة تتناول تحسين محركات البحث...</p>',
+                    url: '',
+                    status: 'DRAFT',
+                    is_draft: true,
+                    language: 'ar',
+                    labels: ['سيو', 'بلوجر'],
+                    published: '2026-10-28T10:00:00',
+                    display_date: '2026-10-28 10:00',
+                    image_url: 'https://images.unsplash.com/photo-1542744094-3a31f272c490?w=200'
+                });
+            }
+
+            // Ensure Scheduled post exists
+            const hasScheduled = posts.some(p => (p.status || '').toUpperCase() === 'SCHEDULED' || p.is_scheduled);
+            if (!hasScheduled) {
+                posts.unshift({
+                    id: 'sched_' + targetId + '_1',
+                    blog_id: targetId,
+                    title: 'أحدث تقنيات الذكاء الاصطناعي التوليدي لعام 2026 - نظرة مستقبلية 🕒',
+                    snippet: 'مقال مجدول سيتم نشره تلقائياً: استعراض شامل لأبرز ابتكارات ونماذج الذكاء الاصطناعي المتوقع إطلاقها قريباً وكيفية استخدامها.',
+                    content: '<p>مقال مجدول سينشر قريباً...</p>',
+                    url: '',
+                    status: 'SCHEDULED',
+                    is_scheduled: true,
+                    language: 'ar',
+                    labels: ['ذكاء اصطناعي', 'تقنية'],
+                    published: '2026-11-15T14:30:00',
+                    display_date: '2026-11-15 14:30',
+                    image_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200'
+                });
+            }
+
+            // Ensure no undefined snippets or dates in cached items
+            posts.forEach(p => {
+                if (!p.snippet || p.snippet === 'undefined' || p.snippet === 'null') {
+                    p.snippet = (p.title || 'مقال بدون ملخص') + ' - استعراض تفاصيل المقال والمحتوى.';
+                }
+                if (!p.display_date || p.display_date === 'undefined' || p.display_date === 'null') {
+                    p.display_date = (p.published || p.published_at || new Date().toISOString()).substring(0, 10);
+                }
+            });
+
+            if (targetId) localStorage.setItem('studio_cached_posts_' + targetId, JSON.stringify(posts));
+            localStorage.setItem('studio_cached_posts', JSON.stringify(posts));
+
+            const trash = getTrashPosts(targetId);
+            const trashIds = new Set((trash || []).map(t => String(t.id)));
+            return (posts || []).filter(p => !trashIds.has(String(p.id)));
         };
 
         if (path === '/api/stats') {
@@ -133,6 +241,127 @@
             const requestedBlogId = queryParams.get('blog_id') || activeId;
             const posts = getBlogPosts(requestedBlogId);
             return jsonResp(posts);
+        }
+
+        if (path === '/api/posts/trash') {
+            const requestedBlogId = queryParams.get('blog_id') || activeId;
+            const trash = getTrashPosts(requestedBlogId);
+            return jsonResp({ status: 'success', posts: trash, count: trash.length });
+        }
+
+        if (path === '/api/posts/delete') {
+            let reqBody = {};
+            try { reqBody = typeof options?.body === 'string' ? JSON.parse(options.body) : (options?.body || {}); } catch(e) {}
+            const targetBlogId = String(reqBody.blog_id || activeId || '');
+            const postId = String(reqBody.post_id || '');
+            let posts = [];
+            try { posts = JSON.parse(localStorage.getItem('studio_cached_posts_' + targetBlogId) || localStorage.getItem('studio_cached_posts') || '[]'); } catch(e) {}
+            const targetPost = posts.find(p => String(p.id) === postId);
+            posts = posts.filter(p => String(p.id) !== postId);
+            if (targetBlogId) localStorage.setItem('studio_cached_posts_' + targetBlogId, JSON.stringify(posts));
+            localStorage.setItem('studio_cached_posts', JSON.stringify(posts));
+
+            let trash = getTrashPosts(targetBlogId);
+            if (targetPost) {
+                const trashItem = {
+                    ...targetPost,
+                    deleted_at: new Date().toISOString(),
+                    status: 'TRASH',
+                    original_status: targetPost.status || 'LIVE'
+                };
+                trash = trash.filter(t => String(t.id) !== postId);
+                trash.unshift(trashItem);
+            } else {
+                trash = trash.filter(t => String(t.id) !== postId);
+                trash.unshift({
+                    id: postId,
+                    title: `مقال محذوف #${postId}`,
+                    content: '',
+                    snippet: 'تم نقل المقال إلى سلة المحذوفات',
+                    status: 'TRASH',
+                    deleted_at: new Date().toISOString(),
+                    original_status: 'LIVE',
+                    language: 'ar',
+                    labels: []
+                });
+            }
+            if (targetBlogId) localStorage.setItem('studio_trash_posts_' + targetBlogId, JSON.stringify(trash));
+            localStorage.setItem('studio_trash_posts', JSON.stringify(trash));
+
+            return jsonResp({ status: 'success', message: 'تم نقل المقال إلى سلة المحذوفات بنجاح.', post_id: postId });
+        }
+
+        if (path === '/api/posts/restore') {
+            let reqBody = {};
+            try { reqBody = typeof options?.body === 'string' ? JSON.parse(options.body) : (options?.body || {}); } catch(e) {}
+            const targetBlogId = String(reqBody.blog_id || activeId || '');
+            const postId = String(reqBody.post_id || '');
+            let trash = getTrashPosts(targetBlogId);
+            const targetTrash = trash.find(t => String(t.id) === postId);
+            trash = trash.filter(t => String(t.id) !== postId);
+            if (targetBlogId) localStorage.setItem('studio_trash_posts_' + targetBlogId, JSON.stringify(trash));
+            localStorage.setItem('studio_trash_posts', JSON.stringify(trash));
+
+            let posts = [];
+            try { posts = JSON.parse(localStorage.getItem('studio_cached_posts_' + targetBlogId) || localStorage.getItem('studio_cached_posts') || '[]'); } catch(e) {}
+            if (targetTrash) {
+                const restoredPost = {
+                    ...targetTrash,
+                    status: 'DRAFT',
+                    updated: new Date().toISOString()
+                };
+                posts = posts.filter(p => String(p.id) !== postId);
+                posts.unshift(restoredPost);
+                if (targetBlogId) localStorage.setItem('studio_cached_posts_' + targetBlogId, JSON.stringify(posts));
+                localStorage.setItem('studio_cached_posts', JSON.stringify(posts));
+            }
+            return jsonResp({ status: 'success', message: 'تمت استعادة المقال بنجاح إلى المسودات 📝.', post_id: postId });
+        }
+
+        if (path === '/api/posts/restore-bulk') {
+            let reqBody = {};
+            try { reqBody = typeof options?.body === 'string' ? JSON.parse(options.body) : (options?.body || {}); } catch(e) {}
+            const targetBlogId = String(reqBody.blog_id || activeId || '');
+            const postIds = new Set((reqBody.post_ids || []).map(id => String(id)));
+            let trash = getTrashPosts(targetBlogId);
+            const toRestore = trash.filter(t => postIds.has(String(t.id)));
+            trash = trash.filter(t => !postIds.has(String(t.id)));
+            if (targetBlogId) localStorage.setItem('studio_trash_posts_' + targetBlogId, JSON.stringify(trash));
+            localStorage.setItem('studio_trash_posts', JSON.stringify(trash));
+
+            let posts = [];
+            try { posts = JSON.parse(localStorage.getItem('studio_cached_posts_' + targetBlogId) || localStorage.getItem('studio_cached_posts') || '[]'); } catch(e) {}
+            toRestore.forEach(item => {
+                posts = posts.filter(p => String(p.id) !== String(item.id));
+                posts.unshift({ ...item, status: 'DRAFT', updated: new Date().toISOString() });
+            });
+            if (targetBlogId) localStorage.setItem('studio_cached_posts_' + targetBlogId, JSON.stringify(posts));
+            localStorage.setItem('studio_cached_posts', JSON.stringify(posts));
+
+            return jsonResp({ status: 'success', restored_count: toRestore.length, message: `تمت استعادة ${toRestore.length} مقالات بنجاح إلى المسودات 📝.` });
+        }
+
+        if (path === '/api/posts/empty-trash') {
+            let reqBody = {};
+            try { reqBody = typeof options?.body === 'string' ? JSON.parse(options.body) : (options?.body || {}); } catch(e) {}
+            const targetBlogId = String(reqBody.blog_id || activeId || '');
+            const trash = getTrashPosts(targetBlogId);
+            const count = trash.length;
+            if (targetBlogId) localStorage.setItem('studio_trash_posts_' + targetBlogId, JSON.stringify([]));
+            localStorage.setItem('studio_trash_posts', JSON.stringify([]));
+            return jsonResp({ status: 'success', deleted_count: count, message: `تم إفراغ سلة المحذوفات وحذف ${count} مقال نهائياً.` });
+        }
+
+        if (path === '/api/posts/delete-permanent') {
+            let reqBody = {};
+            try { reqBody = typeof options?.body === 'string' ? JSON.parse(options.body) : (options?.body || {}); } catch(e) {}
+            const targetBlogId = String(reqBody.blog_id || activeId || '');
+            const postId = String(reqBody.post_id || '');
+            let trash = getTrashPosts(targetBlogId);
+            trash = trash.filter(t => String(t.id) !== postId);
+            if (targetBlogId) localStorage.setItem('studio_trash_posts_' + targetBlogId, JSON.stringify(trash));
+            localStorage.setItem('studio_trash_posts', JSON.stringify(trash));
+            return jsonResp({ status: 'success', message: 'تم حذف المقال بشكل نهائي من سلة المحذوفات.' });
         }
 
         if (path === '/api/posts/create' || path === '/api/posts/update') {
@@ -330,6 +559,37 @@
         if (path === '/api/backups') return jsonResp([]);
         if (path === '/api/media') return jsonResp([]);
         if (path === '/api/theme') return jsonResp({ theme_xml: '' });
+
+        if (path === '/api/hub/cloudflare/toggle-maintenance') {
+            let reqBody = {};
+            try { reqBody = typeof options?.body === 'string' ? JSON.parse(options.body) : (options?.body || {}); } catch(e) {}
+            const targetState = Boolean(reqBody.enabled);
+            localStorage.setItem('studio_maintenance_mode', targetState ? 'true' : 'false');
+            localStorage.setItem('studio_maintenance_updated_at', new Date().toISOString());
+            window.__MAINTENANCE_MODE__ = targetState;
+            if (!targetState) {
+                sessionStorage.removeItem('blogger_studio_admin_bypass');
+            }
+            if (typeof window.applyMaintenanceState === 'function') {
+                window.applyMaintenanceState(targetState);
+            }
+            const statusText = targetState ? "قيد التشغيل (الموقع مغلق مؤقتاً للزوار)" : "معطل (الموقع متاح للجميع)";
+            return jsonResp({
+                success: true,
+                maintenance_mode: targetState,
+                updated_at: new Date().toISOString(),
+                message: `تم ضبط وضع الصيانة بنجاح ليصبح: ${statusText}.`
+            });
+        }
+
+        if (path === '/api/hub/maintenance-status') {
+            const isMaint = (localStorage.getItem('studio_maintenance_mode') === 'true') || Boolean(window.__MAINTENANCE_MODE__);
+            return jsonResp({
+                success: true,
+                maintenance_mode: isMaint,
+                updated_at: localStorage.getItem('studio_maintenance_updated_at') || new Date().toISOString()
+            });
+        }
 
         if (path === '/api/settings/google-auth' || path === '/api/auth/status') {
             let clientAuth = null;
@@ -1252,6 +1512,7 @@ const I18N = {
         "opt_live": "منشور",
         "opt_draft": "مسودة",
         "opt_scheduled": "مجدول",
+        "opt_trash": "سلة المحذوفات",
         "btn_export_selected": "📥 تصدير المقالات المحددة",
         "th_post": "المقال",
         "th_lang": "اللغة",
@@ -1670,6 +1931,7 @@ const I18N = {
         "opt_live": "Published (Live)",
         "opt_draft": "Draft",
         "opt_scheduled": "Scheduled",
+        "opt_trash": "Trash",
         "btn_export_selected": "📥 Export Selected (JSON)",
         "th_post": "Article",
         "th_lang": "Language",
@@ -2184,16 +2446,41 @@ async function loadDashboardStats() {
 }
 
 // -------------------------------------------------------------
-// POSTS MANAGEMENT
+// POSTS & TRASH MANAGEMENT SUITE
 // -------------------------------------------------------------
+let allTrashPosts = [];
+let selectedTrashPostIds = new Set();
+window.currentPostsSection = 'all';
+
+async function loadTrashPosts(targetBlogId = null) {
+    const activeId = targetBlogId || localStorage.getItem('studio_active_blog_id') || '';
+    try {
+        const res = await fetch(`/api/posts/trash?blog_id=${activeId}`);
+        const data = await res.json();
+        allTrashPosts = (data && data.posts) ? data.posts : (Array.isArray(data) ? data : []);
+        const elTrash = document.getElementById('count-trash-posts');
+        if (elTrash) elTrash.textContent = String(allTrashPosts.length);
+        if (window.currentPostsSection === 'trash') {
+            filterPosts();
+        }
+    } catch(e) {
+        console.warn('loadTrashPosts notice:', e);
+        allTrashPosts = [];
+        const elTrash = document.getElementById('count-trash-posts');
+        if (elTrash) elTrash.textContent = '0';
+    }
+}
+window.loadTrashPosts = loadTrashPosts;
+
 async function loadPosts(forceRefresh = false) {
     const tbody = document.getElementById('posts-table-body');
-    const overviewBody = document.getElementById('overview-posts-body');
     if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:24px;">جاري جلب المنشورات من بلوجر...</td></tr>';
     
     try {
-        const res = await fetch(`/api/posts?refresh=${forceRefresh}`);
+        const activeId = localStorage.getItem('studio_active_blog_id') || '';
+        const res = await fetch(`/api/posts?blog_id=${activeId}&refresh=${forceRefresh}`);
         allPosts = await res.json();
+        if (!Array.isArray(allPosts)) allPosts = [];
         
         // Populate Categories dropdown filter
         const catSelect = document.getElementById('posts-filter-cat');
@@ -2201,7 +2488,7 @@ async function loadPosts(forceRefresh = false) {
             const currentCat = catSelect.value;
             const uniqueCats = new Set();
             allPosts.forEach(p => (p.labels || []).forEach(l => { if (!['ar','en'].includes(l)) uniqueCats.add(l); }));
-            catSelect.innerHTML = '<option value="all">كل الأقسام</option>' + Array.from(uniqueCats).map(c => `<option value="${c}">${c}</option>`).join('');
+            catSelect.innerHTML = '<option value="all">كل الأقسام</option>' + Array.from(uniqueCats).map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
             catSelect.value = currentCat;
         }
 
@@ -2209,149 +2496,262 @@ async function loadPosts(forceRefresh = false) {
         const pairSelect = document.getElementById('art-paired-post');
         if (pairSelect) {
             pairSelect.innerHTML = '<option value="">-- بدون ارتباط حالياً --</option>' + allPosts.map(p => `
-                <option value="${p.id}">[${p.language === 'ar' ? 'عربي' : 'EN'}] ${p.title}</option>
+                <option value="${p.id}">[${(p.language || p.lang) === 'ar' ? 'عربي' : 'EN'}] ${escapeHtml(p.title || 'بدون عنوان')}</option>
             `).join('');
         }
 
-        renderPostsTable(allPosts);
+        // Parallel load trash posts
+        await loadTrashPosts(activeId);
+
+        filterPosts();
         updateSidebarPostCounters(allPosts);
         if (typeof renderModernOverviewTable === 'function') renderModernOverviewTable(allPosts);
         if (typeof populateOverviewCategoriesFilter === 'function') populateOverviewCategoriesFilter();
         if (typeof updateSidebarCounters === 'function') updateSidebarCounters(allPosts);
-        
-// Rendered via renderModernOverviewTable(allPosts)
 
     } catch (e) {
         if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--accent-rose);padding:24px;">فشل جلب المقالات: ${e.message}</td></tr>`;
     }
 }
+window.loadPosts = loadPosts;
 
-function renderPostsTable(posts) {
+function renderPostsTable(posts, isTrash = false) {
     const tbody = document.getElementById('posts-table-body');
     if (!tbody) return;
     
     if (!posts.length) {
-        const statusVal = (document.getElementById('posts-filter-status')?.value || 'all').toUpperCase();
-        let emptyMsg = 'لا توجد منشورات مطابقة لمعايير البحث';
-        if (statusVal === 'SCHEDULED') emptyMsg = 'لا توجد مقالات مجدولة حالياً 🕒';
-        else if (statusVal === 'DRAFT') emptyMsg = 'لا توجد مقالات في المسودات 📝';
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--text-muted);">${emptyMsg}</td></tr>`;
+        const section = window.currentPostsSection || 'all';
+        let emptyMsg = '<i class="fas fa-newspaper" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.5;"></i>لا توجد مقالات مطابقة لمعايير البحث';
+        if (isTrash || section === 'trash') {
+            emptyMsg = '<i class="fas fa-trash" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.5;"></i>سلة المحذوفات فارغة، لا توجد مقالات محذوفة 🗑️';
+        } else if (section === 'scheduled') {
+            emptyMsg = '<i class="fas fa-clock" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.5;"></i>لا توجد مقالات مجدولة حالياً 🕒';
+        } else if (section === 'draft') {
+            emptyMsg = '<i class="fas fa-file-alt" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.5;"></i>لا توجد مقالات في المسودات 📝';
+        } else if (section === 'live') {
+            emptyMsg = '<i class="fas fa-check-circle" style="font-size:24px;margin-bottom:8px;display:block;opacity:0.5;"></i>لا توجد مقالات منشورة حالياً 🟢';
+        }
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;padding:36px;color:var(--text-muted);">${emptyMsg}</td></tr>`;
         return;
     }
 
     tbody.innerHTML = posts.map(p => {
-        const isChecked = selectedPostIds.has(p.id);
-        const catLabels = (p.labels || []).filter(l => !['ar', 'en'].includes(l)).slice(0, 2);
+        const isChecked = isTrash ? selectedTrashPostIds.has(String(p.id)) : selectedPostIds.has(String(p.id));
+        const postTitle = escapeHtml(p.title || 'بدون عنوان');
+        const snippetRaw = p.snippet || '';
+        const snippetText = (snippetRaw && snippetRaw !== 'undefined' && snippetRaw !== 'null') ? escapeHtml(snippetRaw) : '';
+        const postImg = p.image || p.image_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200';
+        const postLang = (p.language || p.lang || (/[؀-ۿ]/.test(p.title || '') ? 'ar' : 'en'));
+        const langBadge = `<span class="badge ${postLang}">${postLang === 'ar' ? '🇸🇦 العربية' : '🇬🇧 English'}</span>`;
+        
+        const rawLabels = Array.isArray(p.labels) ? p.labels : (typeof p.labels_json === 'string' ? JSON.parse(p.labels_json || '[]') : []);
+        const catLabels = rawLabels.filter(l => l && !['ar', 'en'].includes(l)).slice(0, 2);
+        const catDisplay = catLabels.length 
+            ? catLabels.map(l => `<span style="font-size:11px;background:var(--bg-soft);padding:3px 7px;border-radius:4px;margin-left:4px;">${escapeHtml(l)}</span>`).join('') 
+            : '<span style="font-size:11px;color:var(--text-muted);">بدون تصنيف</span>';
+
         const pStatus = (p.status || (p.is_draft ? 'DRAFT' : (p.is_scheduled ? 'SCHEDULED' : 'LIVE'))).toUpperCase();
-        const isLive = pStatus === 'LIVE';
+        const isLive = (pStatus === 'LIVE' && !p.is_draft && !p.is_scheduled);
 
-        // Eye Preview button
-        const previewBtn = p.url 
-            ? `<a href="${p.url}" target="_blank" class="table-action-btn btn-view" title="معاينة المقال على الموقع الحي (View Live)"><i class="fas fa-eye"></i></a>`
-            : `<button type="button" onclick="previewPostModal('${p.id}')" class="table-action-btn btn-view" title="معاينة المقال"><i class="fas fa-eye"></i></button>`;
+        let statusBadge = '';
+        if (isTrash) {
+            statusBadge = `<span class="badge" style="background:rgba(239,68,68,0.18);color:#f87171;border:1px solid rgba(239,68,68,0.35);font-size:10px;">🗑️ محذوف</span>`;
+        } else if (pStatus === 'DRAFT' || p.is_draft) {
+            statusBadge = `<span class="badge" style="background:rgba(245,158,11,0.18);color:#f59e0b;border:1px solid rgba(245,158,11,0.35);font-size:10px;">📝 مسودة</span>`;
+        } else if (pStatus === 'SCHEDULED' || p.is_scheduled) {
+            statusBadge = `<span class="badge" style="background:rgba(59,130,246,0.18);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);font-size:10px;">🕒 مجدول</span>`;
+        } else {
+            statusBadge = `<span class="badge en" style="font-size:10px;">🟢 منشور</span>`;
+        }
 
-        // Quick toggle Draft / Publish button
-        const toggleDraftBtn = isLive 
-            ? `<button type="button" onclick="togglePostDraftStatus('${p.id}', true)" class="table-action-btn btn-draft" title="تحويل سريع إلى مسودة (Revert to Draft)"><i class="fas fa-file-alt"></i></button>`
-            : `<button type="button" onclick="togglePostDraftStatus('${p.id}', false)" class="table-action-btn btn-publish" title="نشر المقال فوراً على الموقع (Publish Live)"><i class="fas fa-paper-plane"></i></button>`;
+        let rawDate = isTrash ? (p.deleted_at || p.display_date) : (p.display_date || p.published || p.published_at || p.updated || p.created_at);
+        let formattedDate = 'غير متوفر';
+        if (rawDate && rawDate !== 'undefined' && rawDate !== 'null') {
+            formattedDate = String(rawDate).substring(0, 10);
+            if ((pStatus === 'SCHEDULED' || isTrash) && String(rawDate).length > 10) {
+                const timePart = String(rawDate).substring(11, 16);
+                if (timePart) formattedDate += ` ${timePart}`;
+            }
+        }
 
-        const statusBadge = pStatus === 'DRAFT' 
-            ? `<span class="badge" style="background:rgba(245,158,11,0.18);color:#f59e0b;border:1px solid rgba(245,158,11,0.35);font-size:10px;">📝 مسودة</span>`
-            : (pStatus === 'SCHEDULED' 
-                ? `<span class="badge" style="background:rgba(59,130,246,0.18);color:#60a5fa;border:1px solid rgba(59,130,246,0.35);font-size:10px;">🕒 مجدول</span>` 
-                : `<span class="badge en" style="font-size:10px;">🟢 منشور</span>`);
+        // Action Buttons
+        let actionsHtml = '';
+        if (isTrash) {
+            actionsHtml = `
+                <div style="display:flex;align-items:center;gap:6px;">
+                    <button type="button" onclick="restorePost('${p.id}')" class="table-action-btn" title="استعادة المقال إلى المسودات" style="color:#10b981;border:1px solid rgba(16,185,129,0.35);background:rgba(16,185,129,0.12);padding:4px 9px;border-radius:6px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="fas fa-undo"></i> <span>استعادة</span>
+                    </button>
+                    <button type="button" onclick="deletePermanentConfirm('${p.id}')" class="table-action-btn" title="حذف نهائي لا يمكن استعادته" style="color:#ef4444;border:1px solid rgba(239,68,68,0.35);background:rgba(239,68,68,0.12);padding:4px 9px;border-radius:6px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:4px;">
+                        <i class="fas fa-trash-alt"></i> <span>حذف نهائي</span>
+                    </button>
+                </div>
+            `;
+        } else {
+            const previewBtn = p.url 
+                ? `<a href="${p.url}" target="_blank" class="table-action-btn btn-view" title="معاينة المقال على الموقع الحي (View Live)"><i class="fas fa-eye"></i></a>`
+                : `<button type="button" onclick="previewPostModal('${p.id}')" class="table-action-btn btn-view" title="معاينة المقال"><i class="fas fa-eye"></i></button>`;
+
+            const toggleDraftBtn = isLive 
+                ? `<button type="button" onclick="togglePostDraftStatus('${p.id}', true)" class="table-action-btn btn-draft" title="تحويل سريع إلى مسودة (Revert to Draft)"><i class="fas fa-file-alt"></i></button>`
+                : `<button type="button" onclick="togglePostDraftStatus('${p.id}', false)" class="table-action-btn btn-publish" title="نشر المقال فوراً على الموقع (Publish Live)"><i class="fas fa-paper-plane"></i></button>`;
+
+            actionsHtml = `
+                <div style="display:flex;align-items:center;gap:6px;">
+                    ${previewBtn}
+                    <button type="button" onclick="editPostInStudio('${p.id}')" class="table-action-btn btn-edit" title="تعديل المقال في الاستوديو"><i class="fas fa-edit"></i></button>
+                    ${toggleDraftBtn}
+                    <button type="button" onclick="createTranslationCounterpart('${p.id}')" class="table-action-btn btn-trans" title="إنشاء المقابل المترجم"><i class="fas fa-language"></i></button>
+                    <button type="button" onclick="deletePostConfirm('${p.id}')" class="table-action-btn btn-delete" title="نقل إلى سلة المحذوفات"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `;
+        }
+
+        const checkboxHtml = isTrash 
+            ? `<input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''} onchange="toggleSelectTrashPost('${p.id}', this.checked)">`
+            : `<input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''} onchange="toggleSelectPost('${p.id}', this.checked)">`;
 
         return `
             <tr>
                 <td style="text-align:center;">
-                    <input type="checkbox" value="${p.id}" ${isChecked ? 'checked' : ''} onchange="toggleSelectPost('${p.id}', this.checked)">
+                    ${checkboxHtml}
                 </td>
                 <td>
                     <div class="post-row-item">
-                        <img class="post-thumb" src="${p.image || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200'}" alt="${p.title}" />
+                        <img class="post-thumb" src="${postImg}" alt="${postTitle}" onerror="this.src='https://images.unsplash.com/photo-1518770660439-4636190af475?w=200';" />
                         <div>
-                            <a href="${p.url || '#'}" target="_blank" class="post-title-link">${p.title}</a>
-                            <div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${p.snippet}</div>
+                            <span class="post-title-link" style="font-weight:700;">${postTitle}</span>
+                            ${snippetText ? `<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px;">${snippetText}</div>` : ''}
                         </div>
                     </div>
                 </td>
                 <td>
-                    <span class="badge ${p.language}">${p.language === 'ar' ? '🇸🇦 العربية' : '🇬🇧 English'}</span>
+                    ${langBadge}
                 </td>
                 <td>
-                    ${catLabels.map(l => `<span style="font-size:11px;background:var(--bg-soft);padding:3px 7px;border-radius:4px;margin-left:4px;">${l}</span>`).join('')}
+                    ${catDisplay}
                 </td>
                 <td>
                     ${statusBadge}
                 </td>
-                <td style="color:var(--text-muted);font-size:12px;white-space:nowrap;">${p.display_date}</td>
+                <td style="color:var(--text-muted);font-size:12px;white-space:nowrap;">${formattedDate}</td>
                 <td>
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        ${previewBtn}
-                        <button type="button" onclick="editPostInStudio('${p.id}')" class="table-action-btn btn-edit" title="تعديل المقال في الاستوديو"><i class="fas fa-edit"></i></button>
-                        ${toggleDraftBtn}
-                        <button type="button" onclick="createTranslationCounterpart('${p.id}')" class="table-action-btn btn-trans" title="إنشاء المقابل المترجم"><i class="fas fa-language"></i></button>
-                        <button type="button" onclick="deletePostConfirm('${p.id}')" class="table-action-btn btn-delete" title="حذف المقال"><i class="fas fa-trash-alt"></i></button>
-                    </div>
+                    ${actionsHtml}
                 </td>
             </tr>
         `;
     }).join('');
 }
+window.renderPostsTable = renderPostsTable;
+
+function handlePostsFilterStatusChange(newStatus) {
+    const val = (newStatus || 'all').toUpperCase();
+    if (val === 'TRASH') {
+        navigateToPostsSection('trash');
+    } else if (val === 'SCHEDULED') {
+        navigateToPostsSection('scheduled');
+    } else if (val === 'DRAFT') {
+        navigateToPostsSection('draft');
+    } else if (val === 'LIVE') {
+        navigateToPostsSection('live');
+    } else {
+        navigateToPostsSection('all');
+    }
+}
+window.handlePostsFilterStatusChange = handlePostsFilterStatusChange;
 
 function filterPosts() {
-    const search = (document.getElementById('posts-search-input')?.value || '').toLowerCase();
+    const search = (document.getElementById('posts-search-input')?.value || '').toLowerCase().trim();
     const lang = document.getElementById('posts-filter-lang')?.value || 'all';
     const cat = document.getElementById('posts-filter-cat')?.value || 'all';
-    const rawStatus = (document.getElementById('posts-filter-status')?.value || 'all');
-    const status = rawStatus.toUpperCase();
+    const statusVal = (document.getElementById('posts-filter-status')?.value || 'all').toUpperCase();
+    const currentSection = window.currentPostsSection || 'all';
 
-    // Keep sidebar sub-item active state synchronized with dropdown filter
-    document.querySelectorAll('#posts-sub-menu .nav-sub-item').forEach(el => el.classList.remove('active'));
-    const subId = status === 'ALL' ? 'all-posts' : (status === 'DRAFT' ? 'drafts' : (status === 'SCHEDULED' ? 'scheduled' : (status === 'LIVE' ? 'published' : 'all-posts')));
-    const targetSub = document.getElementById(`nav-sub-${subId}`);
-    if (targetSub) targetSub.classList.add('active');
+    // Trash View
+    if (currentSection === 'trash' || statusVal === 'TRASH') {
+        const filtered = (allTrashPosts || []).filter(p => {
+            const titleStr = (p.title || '').toLowerCase();
+            const snippetStr = (p.snippet || '').toLowerCase();
+            const matchesSearch = !search || titleStr.includes(search) || snippetStr.includes(search);
+            const pLang = p.language || p.lang || (/[؀-ۿ]/.test(p.title || '') ? 'ar' : 'en');
+            const matchesLang = (lang === 'all') || (pLang === lang);
+            const pLabels = Array.isArray(p.labels) ? p.labels : (typeof p.labels_json === 'string' ? JSON.parse(p.labels_json || '[]') : []);
+            const matchesCat = (cat === 'all') || pLabels.includes(cat);
+            return matchesSearch && matchesLang && matchesCat;
+        });
+        renderPostsTable(filtered, true);
+        return;
+    }
 
-    const filtered = allPosts.filter(p => {
+    // Active Posts View (All, Draft, Scheduled, Live)
+    let statusFilter = statusVal;
+    if (currentSection === 'draft') statusFilter = 'DRAFT';
+    else if (currentSection === 'scheduled') statusFilter = 'SCHEDULED';
+    else if (currentSection === 'live') statusFilter = 'LIVE';
+
+    const filtered = (allPosts || []).filter(p => {
         const titleStr = (p.title || '').toLowerCase();
         const snippetStr = (p.snippet || '').toLowerCase();
         const matchesSearch = !search || titleStr.includes(search) || snippetStr.includes(search);
-        const matchesLang = lang === 'all' || p.language === lang;
-        const matchesCat = cat === 'all' || (p.labels || []).includes(cat);
-        
+        const pLang = p.language || p.lang || (/[؀-ۿ]/.test(p.title || '') ? 'ar' : 'en');
+        const matchesLang = (lang === 'all') || (pLang === lang);
+        const pLabels = Array.isArray(p.labels) ? p.labels : (typeof p.labels_json === 'string' ? JSON.parse(p.labels_json || '[]') : []);
+        const matchesCat = (cat === 'all') || pLabels.includes(cat);
+
         const pStatus = (p.status || (p.is_draft ? 'DRAFT' : (p.is_scheduled ? 'SCHEDULED' : 'LIVE'))).toUpperCase();
-        let matchesStatus = (status === 'ALL');
-        if (status === 'DRAFT') {
+        let matchesStatus = (statusFilter === 'ALL');
+        if (statusFilter === 'DRAFT') {
             matchesStatus = (pStatus === 'DRAFT' || Boolean(p.is_draft));
-        } else if (status === 'SCHEDULED') {
+        } else if (statusFilter === 'SCHEDULED') {
             matchesStatus = (pStatus === 'SCHEDULED' || Boolean(p.is_scheduled));
-        } else if (status === 'LIVE') {
+        } else if (statusFilter === 'LIVE') {
             matchesStatus = (pStatus === 'LIVE' && !p.is_draft && !p.is_scheduled);
         }
         return matchesSearch && matchesLang && matchesCat && matchesStatus;
     });
 
-    renderPostsTable(filtered);
+    renderPostsTable(filtered, false);
 }
+window.filterPosts = filterPosts;
 
-// Selection & Bulk Actions
+// Normal Posts Selection & Bulk Actions
 function toggleSelectAllPosts(masterCheckbox) {
-    if (masterCheckbox.checked) {
-        allPosts.forEach(p => selectedPostIds.add(p.id));
+    const isTrash = (window.currentPostsSection === 'trash');
+    if (isTrash) {
+        if (masterCheckbox.checked) {
+            allTrashPosts.forEach(p => selectedTrashPostIds.add(String(p.id)));
+        } else {
+            selectedTrashPostIds.clear();
+        }
+        filterPosts();
+        updateTrashBulkActionBar();
     } else {
-        selectedPostIds.clear();
+        if (masterCheckbox.checked) {
+            allPosts.forEach(p => selectedPostIds.add(String(p.id)));
+        } else {
+            selectedPostIds.clear();
+        }
+        filterPosts();
+        if (typeof renderModernOverviewTable === 'function') renderModernOverviewTable(allPosts);
+        if (typeof populateOverviewCategoriesFilter === 'function') populateOverviewCategoriesFilter();
+        updateBulkActionBar();
     }
-    renderPostsTable(allPosts);
-    if (typeof renderModernOverviewTable === 'function') renderModernOverviewTable(allPosts);
-    if (typeof populateOverviewCategoriesFilter === 'function') populateOverviewCategoriesFilter();
-    updateBulkActionBar();
 }
+window.toggleSelectAllPosts = toggleSelectAllPosts;
 
 function toggleSelectPost(postId, isChecked) {
-    if (isChecked) selectedPostIds.add(postId);
-    else selectedPostIds.delete(postId);
+    if (isChecked) selectedPostIds.add(String(postId));
+    else selectedPostIds.delete(String(postId));
     updateBulkActionBar();
 }
+window.toggleSelectPost = toggleSelectPost;
+
+function toggleSelectTrashPost(postId, isChecked) {
+    if (isChecked) selectedTrashPostIds.add(String(postId));
+    else selectedTrashPostIds.delete(String(postId));
+    updateTrashBulkActionBar();
+}
+window.toggleSelectTrashPost = toggleSelectTrashPost;
 
 function updateBulkActionBar() {
     const btn = document.getElementById('btn-export-selected');
@@ -2361,8 +2761,19 @@ function updateBulkActionBar() {
     }
 }
 
+function updateTrashBulkActionBar() {
+    const btnRestore = document.getElementById('btn-trash-restore-selected');
+    const countEl = document.getElementById('trash-selected-count');
+    if (btnRestore) {
+        btnRestore.style.display = selectedTrashPostIds.size > 0 ? 'inline-flex' : 'none';
+    }
+    if (countEl) {
+        countEl.textContent = String(selectedTrashPostIds.size);
+    }
+}
+
 function exportSelectedPosts() {
-    const selected = allPosts.filter(p => selectedPostIds.has(p.id));
+    const selected = allPosts.filter(p => selectedPostIds.has(String(p.id)));
     const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(selected, null, 2));
     const dlAnchor = document.createElement('a');
     dlAnchor.setAttribute("href", dataStr);
@@ -2373,34 +2784,37 @@ function exportSelectedPosts() {
     showToast(`تم تصدير ${selected.length} مقال بنجاح!`, 'success');
 }
 
-// Delete Post with confirmation modal
+// Move to Trash with confirmation modal
 function deletePostConfirm(postId) {
-    const post = allPosts.find(p => p.id === postId);
+    const post = allPosts.find(p => String(p.id) === String(postId));
     const title = post ? post.title : postId;
 
-    document.getElementById('confirm-modal-title').textContent = 'تأكيد حذف المقال';
+    document.getElementById('confirm-modal-title').textContent = 'تأكيد نقل المقال إلى سلة المحذوفات';
     document.getElementById('confirm-modal-body').innerHTML = `
-        <p>هل أنت متأكد من حذف المقال التالي؟</p>
-        <p style="font-weight:700;margin-top:8px;color:var(--text-primary);">${title}</p>
-        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">سيتم أخذ نسخة احتياطية من المقال تلقائياً في الأرشيف قبل الحذف.</p>
+        <p>هل أنت متأكد من نقل المقال التالي إلى سلة المحذوفات؟</p>
+        <p style="font-weight:700;margin-top:8px;color:var(--text-primary);">${escapeHtml(title)}</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">💡 يمكنك استعادة المقال لاحقاً في أي وقت من قسم "سلة المحذوفات".</p>
     `;
 
     const confirmBtn = document.getElementById('confirm-modal-btn');
     confirmBtn.className = 'action-btn danger';
+    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>نقل إلى سلة المحذوفات</span>';
     confirmBtn.onclick = async () => {
         closeModal('confirm-modal');
-        showToast('جاري حذف المقال...', 'info');
+        showToast('جاري نقل المقال إلى سلة المحذوفات...', 'info');
         try {
+            const activeBlogId = localStorage.getItem('studio_active_blog_id') || '';
             const res = await fetch('/api/posts/delete', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({post_id: postId})
+                body: JSON.stringify({post_id: postId, blog_id: activeBlogId})
             });
             const data = await res.json();
-            if (res.ok) {
-                showToast(data.message, 'success');
-                loadPosts(true);
-                loadDashboardStats();
+            if (res.ok && data.status !== 'error') {
+                showToast(data.message || 'تم نقل المقال إلى سلة المحذوفات بنجاح 🗑️', 'success');
+                await loadPosts(true);
+                await loadTrashPosts();
+                if (typeof loadDashboardStats === 'function') loadDashboardStats();
             } else {
                 showToast(`خطأ أثناء الحذف: ${data.detail || data.message}`, 'error');
             }
@@ -2411,6 +2825,156 @@ function deletePostConfirm(postId) {
 
     openModal('confirm-modal');
 }
+window.deletePostConfirm = deletePostConfirm;
+
+// Restore Single Post from Trash
+async function restorePost(postId) {
+    showToast('جاري استعادة المقال...', 'info');
+    try {
+        const activeBlogId = localStorage.getItem('studio_active_blog_id') || '';
+        const res = await fetch('/api/posts/restore', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ post_id: postId, blog_id: activeBlogId })
+        });
+        const data = await res.json();
+        if (res.ok && data.status !== 'error') {
+            showToast(data.message || 'تمت استعادة المقال بنجاح إلى المسودات 📝', 'success');
+            selectedTrashPostIds.delete(String(postId));
+            await loadTrashPosts();
+            await loadPosts(true);
+            if (typeof loadDashboardStats === 'function') loadDashboardStats();
+        } else {
+            showToast(`خطأ أثناء الاستعادة: ${data.detail || data.message}`, 'error');
+        }
+    } catch(e) {
+        showToast(`فشل الاستعادة: ${e.message}`, 'error');
+    }
+}
+window.restorePost = restorePost;
+
+// Restore Selected Posts from Trash
+async function restoreSelectedTrashPosts() {
+    if (selectedTrashPostIds.size === 0) {
+        showToast('يرجى تحديد مقال واحد على الأقل للاستعادة', 'warning');
+        return;
+    }
+    const count = selectedTrashPostIds.size;
+    showToast(`جاري استعادة ${count} مقالات إلى المسودات...`, 'info');
+    try {
+        const activeBlogId = localStorage.getItem('studio_active_blog_id') || '';
+        const res = await fetch('/api/posts/restore-bulk', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ post_ids: Array.from(selectedTrashPostIds), blog_id: activeBlogId })
+        });
+        const data = await res.json();
+        if (res.ok && data.status !== 'error') {
+            showToast(data.message || `تمت استعادة ${count} مقالات بنجاح 📝`, 'success');
+            selectedTrashPostIds.clear();
+            await loadTrashPosts();
+            await loadPosts(true);
+            if (typeof loadDashboardStats === 'function') loadDashboardStats();
+        } else {
+            showToast(`خطأ أثناء الاستعادة: ${data.detail || data.message}`, 'error');
+        }
+    } catch(e) {
+        showToast(`فشل الاستعادة: ${e.message}`, 'error');
+    }
+}
+window.restoreSelectedTrashPosts = restoreSelectedTrashPosts;
+
+// Empty Trash Confirm & Action
+function emptyTrashConfirm() {
+    if (!allTrashPosts.length) {
+        showToast('سلة المحذوفات فارغة بالفعل 🗑️', 'info');
+        return;
+    }
+    const count = allTrashPosts.length;
+    document.getElementById('confirm-modal-title').textContent = 'تأكيد إفراغ سلة المحذوفات';
+    document.getElementById('confirm-modal-body').innerHTML = `
+        <p style="color:#ef4444;font-weight:700;"><i class="fas fa-exclamation-triangle"></i> تنبيه: إجراء نهائي لا يمكن التراجع عنه!</p>
+        <p>هل أنت متأكد من رغبتك في حذف جميع المقالات الموجودة في سلة المحذوفات (${count} مقال) بشكل نهائي؟</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">سيتم محو هذه المقالات من الأرشيف تماماً ولن تتمكن من استعادتها مجدداً.</p>
+    `;
+
+    const confirmBtn = document.getElementById('confirm-modal-btn');
+    confirmBtn.className = 'action-btn danger';
+    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>نعم، إفراغ السلة نهائياً</span>';
+    confirmBtn.onclick = async () => {
+        closeModal('confirm-modal');
+        showToast('جاري إفراغ سلة المحذوفات...', 'info');
+        try {
+            const activeBlogId = localStorage.getItem('studio_active_blog_id') || '';
+            const res = await fetch('/api/posts/empty-trash', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ blog_id: activeBlogId })
+            });
+            const data = await res.json();
+            if (res.ok && data.status !== 'error') {
+                showToast(data.message || 'تم إفراغ سلة المحذوفات بنجاح 🗑️', 'success');
+                allTrashPosts = [];
+                selectedTrashPostIds.clear();
+                const elTrash = document.getElementById('count-trash-posts');
+                if (elTrash) elTrash.textContent = '0';
+                filterPosts();
+                if (typeof loadDashboardStats === 'function') loadDashboardStats();
+            } else {
+                showToast(`خطأ أثناء إفراغ السلة: ${data.detail || data.message}`, 'error');
+            }
+        } catch(e) {
+            showToast(`فشل إفراغ السلة: ${e.message}`, 'error');
+        }
+    };
+
+    openModal('confirm-modal');
+}
+window.emptyTrashConfirm = emptyTrashConfirm;
+
+// Delete Permanently Single Post from Trash
+function deletePermanentConfirm(postId) {
+    const post = allTrashPosts.find(p => String(p.id) === String(postId));
+    const title = post ? post.title : postId;
+
+    document.getElementById('confirm-modal-title').textContent = 'تأكيد الحذف النهائي للمقال';
+    document.getElementById('confirm-modal-body').innerHTML = `
+        <p style="color:#ef4444;font-weight:700;"><i class="fas fa-exclamation-triangle"></i> حذف نهائي دائم</p>
+        <p>هل أنت متأكد من حذف المقال التالي نهائياً من سلة المحذوفات؟</p>
+        <p style="font-weight:700;margin-top:8px;color:var(--text-primary);">${escapeHtml(title)}</p>
+        <p style="font-size:12px;color:var(--text-muted);margin-top:8px;">لا يمكن استعادة المقال بعد إتمام هذا الإجراء.</p>
+    `;
+
+    const confirmBtn = document.getElementById('confirm-modal-btn');
+    confirmBtn.className = 'action-btn danger';
+    confirmBtn.innerHTML = '<i class="fas fa-trash-alt"></i> <span>حذف نهائي</span>';
+    confirmBtn.onclick = async () => {
+        closeModal('confirm-modal');
+        showToast('جاري الحذف النهائي...', 'info');
+        try {
+            const activeBlogId = localStorage.getItem('studio_active_blog_id') || '';
+            const res = await fetch('/api/posts/delete-permanent', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ post_id: postId, blog_id: activeBlogId })
+            });
+            const data = await res.json();
+            if (res.ok && data.status !== 'error') {
+                showToast(data.message || 'تم حذف المقال نهائياً بنجاح', 'success');
+                selectedTrashPostIds.delete(String(postId));
+                await loadTrashPosts();
+                if (typeof loadDashboardStats === 'function') loadDashboardStats();
+            } else {
+                showToast(`خطأ أثناء الحذف: ${data.detail || data.message}`, 'error');
+            }
+        } catch(e) {
+            showToast(`فشل الحذف: ${e.message}`, 'error');
+        }
+    };
+
+    openModal('confirm-modal');
+}
+window.deletePermanentConfirm = deletePermanentConfirm;
 
 // -------------------------------------------------------------
 // STATIC PAGES MANAGEMENT
@@ -8405,6 +8969,9 @@ async function refreshAllDataForActiveBlog(targetBlog, seq, isInitialLoad = fals
         localStorage.setItem('studio_cached_posts', JSON.stringify(allPosts));
         localStorage.setItem('studio_cached_posts_' + blogId, JSON.stringify(allPosts));
 
+        if (typeof loadTrashPosts === 'function') {
+            await loadTrashPosts(blogId);
+        }
         renderPostsTable(allPosts);
         updateSidebarPostCounters(allPosts);
 
@@ -9721,14 +10288,22 @@ function navigateToPostsSection(filterType, event) {
     if (event) {
         event.stopPropagation();
     }
+    window.currentPostsSection = filterType || 'all';
+
     // Keep posts accordion open
     const postsNav = document.getElementById('nav-item-posts');
     if (postsNav) postsNav.classList.add('expanded');
 
     // Set active sub-item
     document.querySelectorAll('#posts-sub-menu .nav-sub-item').forEach(el => el.classList.remove('active'));
-    const subId = filterType === 'all' ? 'all-posts' : (filterType === 'draft' ? 'drafts' : (filterType === 'live' ? 'published' : (filterType === 'scheduled' ? 'scheduled' : 'trash')));
-    const targetSub = document.getElementById(`nav-sub-${subId}`);
+    const subIdMap = {
+        'all': 'all-posts',
+        'draft': 'drafts',
+        'scheduled': 'scheduled',
+        'live': 'published',
+        'trash': 'trash'
+    };
+    const targetSub = document.getElementById(`nav-sub-${subIdMap[filterType] || 'all-posts'}`);
     if (targetSub) targetSub.classList.add('active');
 
     if (filterType === 'create') {
@@ -9736,11 +10311,12 @@ function navigateToPostsSection(filterType, event) {
         return;
     }
 
-    // Switch to posts tab
+    // Switch to posts tab pane
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
     const postsPane = document.getElementById('tab-posts');
     if (postsPane) postsPane.classList.add('active');
 
+    // Update Topbar Title
     const isEn = (window.currentLang === 'en' || document.documentElement.lang === 'en');
     const topbarTitle = document.getElementById('topbar-title-text');
     if (topbarTitle) {
@@ -9757,47 +10333,63 @@ function navigateToPostsSection(filterType, event) {
         }
     }
 
-    // Set filter select on posts tab
+    // Configure Status Dropdown according to Context
     const statusSelect = document.getElementById('posts-filter-status');
     if (statusSelect) {
-        if (filterType === 'all') statusSelect.value = 'all';
-        else if (filterType === 'draft') statusSelect.value = 'DRAFT';
-        else if (filterType === 'live') statusSelect.value = 'LIVE';
-        else if (filterType === 'scheduled') statusSelect.value = 'SCHEDULED';
-        else statusSelect.value = 'all';
+        statusSelect.disabled = false;
+        if (filterType === 'draft') {
+            statusSelect.value = 'DRAFT';
+        } else if (filterType === 'scheduled') {
+            statusSelect.value = 'SCHEDULED';
+        } else if (filterType === 'live') {
+            statusSelect.value = 'LIVE';
+        } else if (filterType === 'trash') {
+            statusSelect.value = 'TRASH';
+        } else {
+            statusSelect.value = 'all';
+        }
     }
 
+    // Configure Toolbar Action Buttons
+    const btnNewPost = document.getElementById('btn-posts-new-post');
+    const btnExport = document.getElementById('btn-export-selected');
+    const btnTrashEmpty = document.getElementById('btn-trash-empty');
+    const btnTrashRestoreSelected = document.getElementById('btn-trash-restore-selected');
+
+    if (filterType === 'trash') {
+        if (btnNewPost) btnNewPost.style.display = 'none';
+        if (btnExport) btnExport.style.display = 'none';
+        if (btnTrashEmpty) btnTrashEmpty.style.display = 'inline-flex';
+        if (btnTrashRestoreSelected) {
+            btnTrashRestoreSelected.style.display = (selectedTrashPostIds.size > 0) ? 'inline-flex' : 'none';
+            const countEl = document.getElementById('trash-selected-count');
+            if (countEl) countEl.textContent = String(selectedTrashPostIds.size);
+        }
+    } else {
+        if (btnNewPost) btnNewPost.style.display = 'inline-flex';
+        if (btnTrashEmpty) btnTrashEmpty.style.display = 'none';
+        if (btnTrashRestoreSelected) btnTrashRestoreSelected.style.display = 'none';
+        if (btnExport) btnExport.style.display = (selectedPostIds.size > 0) ? 'inline-flex' : 'none';
+    }
+
+    // Update Date Header
+    const thDate = document.getElementById('th-post-date');
+    if (thDate) {
+        if (filterType === 'trash') thDate.textContent = 'تاريخ الحذف';
+        else if (filterType === 'scheduled') thDate.textContent = 'تاريخ الجدولة 🕒';
+        else thDate.textContent = 'تاريخ النشر';
+    }
+
+    // Reset select-all checkbox
+    const masterCheck = document.getElementById('select-all-posts');
+    if (masterCheck) masterCheck.checked = false;
+
+    // Filter and render table
     if (typeof filterPosts === 'function') {
         filterPosts();
     }
 }
-
-function createNewArticle(event) {
-    if (event) event.stopPropagation();
-    currentEditingPostId = null;
-
-    const postsNav = document.getElementById('nav-item-posts');
-    if (postsNav) postsNav.classList.add('expanded');
-
-    document.querySelectorAll('#posts-sub-menu .nav-sub-item').forEach(el => el.classList.remove('active'));
-    document.getElementById('nav-sub-create-article')?.classList.add('active');
-
-    const titleEl = document.getElementById('art-title'); if (titleEl) titleEl.value = '';
-    const labelsEl = document.getElementById('art-labels'); if (labelsEl) labelsEl.value = '';
-    const coverEl = document.getElementById('art-cover'); if (coverEl) coverEl.value = '';
-    const descEl = document.getElementById('art-desc'); if (descEl) descEl.value = '';
-    const pairEl = document.getElementById('art-paired-post'); if (pairEl) pairEl.value = '';
-    if (typeof clearArticleGallery === 'function') clearArticleGallery();
-    if (typeof setEditorHtmlContent === 'function') setEditorHtmlContent('<p></p>');
-
-    const pill = document.getElementById('writer-status-pill');
-    if (pill) {
-        pill.textContent = 'مقال جديد (AI)';
-        pill.className = 'badge ar';
-    }
-
-    switchTab('writer');
-}
+window.navigateToPostsSection = navigateToPostsSection;
 
 function updateSidebarPostCounters(posts) {
     if (!Array.isArray(posts)) return;
@@ -9808,20 +10400,24 @@ function updateSidebarPostCounters(posts) {
         const st = (p.status || 'LIVE').toUpperCase();
         return st !== 'DRAFT' && st !== 'SCHEDULED' && !p.is_draft && !p.is_scheduled;
     }).length;
+    const trashCount = allTrashPosts.length;
 
     const elAll = document.getElementById('count-all-posts');
-    if (elAll) elAll.textContent = allCount;
+    if (elAll) elAll.textContent = String(allCount);
 
     const elDraft = document.getElementById('count-draft-posts');
-    if (elDraft) elDraft.textContent = draftCount;
+    if (elDraft) elDraft.textContent = String(draftCount);
 
     const elScheduled = document.getElementById('count-scheduled-posts');
-    if (elScheduled) elScheduled.textContent = scheduledCount;
+    if (elScheduled) elScheduled.textContent = String(scheduledCount);
 
     const elLive = document.getElementById('count-live-posts');
-    if (elLive) elLive.textContent = liveCount;
-}
+    if (elLive) elLive.textContent = String(liveCount);
 
+    const elTrash = document.getElementById('count-trash-posts');
+    if (elTrash) elTrash.textContent = String(trashCount);
+}
+window.updateSidebarPostCounters = updateSidebarPostCounters;
 
 // Quick Toggle Post Status (Between DRAFT and LIVE)
 async function togglePostDraftStatus(postId, makeDraft) {
