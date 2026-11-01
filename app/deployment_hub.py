@@ -462,7 +462,7 @@ def build_dist_bundle() -> bool:
     # Cloudflare SPA redirect routing file (_redirects)
     redirects_file = os.path.join(dist_dir, "_redirects")
     with open(redirects_file, "w", encoding="utf-8") as f:
-        f.write("/deployment-hub  /deployment-hub.html  200\n/article  /article.html  200\n/*  /index.html  200\n")
+        f.write("/deployment-hub  /deployment-hub.html  200\n/*  /index.html  200\n")
         
     # _headers file for edge security & cache
     headers_file = os.path.join(dist_dir, "_headers")

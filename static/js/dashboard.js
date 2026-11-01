@@ -5503,7 +5503,7 @@ function viewArticleOnLiveSite(postOverride = null) {
         post.labels = labels;
     }
 
-    const articleViewerUrl = `article.html?id=${encodeURIComponent(liveSnapshot.id)}&blog=${encodeURIComponent(blogId)}`;
+    const articleViewerUrl = `article?id=${encodeURIComponent(liveSnapshot.id)}&blog=${encodeURIComponent(blogId)}`;
     window.open(articleViewerUrl, '_blank');
     showToast('جاري فتح المقال في صفحة الموقع المباشرة في تبويب جديد... 🌐✨', 'success');
 }
