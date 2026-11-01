@@ -2732,9 +2732,7 @@ function renderPostsTable(posts, isTrash = false) {
                 </div>
             `;
         } else {
-            const previewBtn = p.url 
-                ? `<a href="${p.url}" target="_blank" class="table-action-btn btn-view" title="معاينة المقال على الموقع الحي (View Live)"><i class="fas fa-eye"></i></a>`
-                : `<button type="button" onclick="previewPostModal('${p.id}')" class="table-action-btn btn-view" title="معاينة المقال"><i class="fas fa-eye"></i></button>`;
+            const previewBtn = `<button type="button" onclick="viewPostOnLiveSite('${p.id}')" class="table-action-btn btn-view" title="عرض المقال في الموقع"><i class="fas fa-eye"></i></button>`;
 
             const toggleDraftBtn = isLive 
                 ? `<button type="button" onclick="togglePostDraftStatus('${p.id}', true)" class="table-action-btn btn-draft" title="تحويل سريع إلى مسودة (Revert to Draft)"><i class="fas fa-file-alt"></i></button>`
@@ -4654,6 +4652,27 @@ function cleanGalleryHtmlForExport(html) {
                 })();
             `;
             temp.appendChild(scriptTag);
+
+            // Bulletproof inline styles enforcement on all gallery layouts
+            temp.querySelectorAll('.blogger-gallery-container, .studio-gallery-block').forEach(gal => {
+                gal.setAttribute('style', 'margin:28px 0 !important;padding:14px !important;background:rgba(15,23,42,0.55) !important;border:1px solid rgba(56,189,248,0.25) !important;border-radius:14px !important;box-shadow:0 6px 20px rgba(0,0,0,0.25) !important;direction:rtl !important;max-width:100% !important;box-sizing:border-box !important;');
+            });
+            temp.querySelectorAll('.blogger-gallery-grid-items').forEach(el => {
+                el.setAttribute('style', 'display:grid !important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important;gap:14px !important;max-width:100% !important;box-sizing:border-box !important;');
+            });
+            temp.querySelectorAll('.blogger-gallery-vertical-items').forEach(el => {
+                el.setAttribute('style', 'display:flex !important;flex-direction:column !important;gap:16px !important;max-height:560px !important;overflow-y:auto !important;scroll-snap-type:y mandatory !important;padding:8px !important;border-radius:12px !important;background:rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.08) !important;-webkit-overflow-scrolling:touch !important;max-width:100% !important;box-sizing:border-box !important;');
+            });
+            temp.querySelectorAll('.blogger-gallery-carousel-items').forEach(el => {
+                el.setAttribute('style', 'display:flex !important;gap:14px !important;overflow-x:auto !important;scroll-snap-type:x mandatory !important;padding:6px 2px 14px 2px !important;max-width:100% !important;box-sizing:border-box !important;-webkit-overflow-scrolling:touch !important;');
+            });
+            temp.querySelectorAll('.blogger-gallery-masonry-items').forEach(el => {
+                el.setAttribute('style', 'column-count:auto !important;column-width:210px !important;column-gap:14px !important;max-width:100% !important;box-sizing:border-box !important;');
+            });
+            temp.querySelectorAll('.gallery-card-item img').forEach(img => {
+                img.style.maxWidth = '100%';
+                img.style.boxSizing = 'border-box';
+            });
         }
 
         return temp.innerHTML;
@@ -5272,24 +5291,81 @@ function previewArticleLive() {
 }
 window.previewArticleLive = previewArticleLive;
 
-function viewArticleOnLiveSite() {
+function viewArticleOnLiveSite(postOverride = null) {
     const currentId = window.currentEditingPostId || (typeof currentEditingPostId !== 'undefined' ? currentEditingPostId : null);
-    const post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(currentId));
-    if (post && post.url) {
-        window.open(post.url, '_blank');
-        showToast('جاري فتح المقال في صفحة جديدة على موقع المدونة... 🌐', 'info');
-        return;
+    const post = postOverride || (window.allPosts || allPosts || []).find(p => String(p.id) === String(currentId));
+
+    const titleAr = document.getElementById('art-title')?.value || '';
+    const titleEn = document.getElementById('art-title-en')?.value || '';
+    const currentTitle = (titleAr || titleEn || post?.title || 'مقال بدون عنوان').trim();
+
+    // Fresh formatted HTML from editor with clean gallery export
+    let contentToDisplay = '';
+    if (!postOverride && typeof getEditorHtmlContent === 'function') {
+        contentToDisplay = getEditorHtmlContent(true);
     }
+    if (!contentToDisplay || contentToDisplay.trim() === '<p></p>' || contentToDisplay.trim() === '<p><br></p>') {
+        const rawP = post?.content || post?.content_html || '';
+        contentToDisplay = (typeof cleanGalleryHtmlForExport === 'function') ? cleanGalleryHtmlForExport(rawP) : rawP;
+    }
+
+    const cover = (!postOverride ? (document.getElementById('art-cover')?.value || currentFeaturedImage) : '') || post?.image || '';
+    const labels = (!postOverride && typeof getArticleTagsList === 'function' && getArticleTagsList().length > 0)
+        ? getArticleTagsList()
+        : (post?.labels || []);
+
     const activeBlog = (window.connectedBlogs || []).find(b => String(b.id) === String(window.currentActiveBlogId)) || {};
-    const blogUrl = activeBlog.url || window.currentActiveBlogUrl || localStorage.getItem('studio_active_blog_url') || 'https://tekmilo.blogspot.com';
-    if (blogUrl) {
-        window.open(blogUrl, '_blank');
-        showToast('المقال قيد التحرير، تم فتح موقع المدونة في صفحة جديدة 🌐', 'info');
-    } else {
-        showToast('يرجى حفظ أو نشر المقال أولاً لتوليد رابطه المباشر على الموقع', 'warning');
+    const blogId = String(window.currentActiveBlogId || localStorage.getItem('studio_active_blog_id') || '');
+    const blogName = activeBlog.name || window.currentActiveBlogName || 'Blogger';
+    const blogUrl = activeBlog.url || window.currentActiveBlogUrl || '';
+    const bloggerPostUrl = post?.url || '';
+
+    // Live Snapshot payload
+    const liveSnapshot = {
+        id: currentId || (post ? post.id : 'current_' + Date.now()),
+        title: currentTitle,
+        content: contentToDisplay,
+        cover: cover,
+        labels: labels,
+        display_date: post?.display_date || post?.published || new Date().toLocaleDateString('ar-EG'),
+        blog_id: blogId,
+        blog_name: blogName,
+        blog_url: blogUrl,
+        blogger_url: bloggerPostUrl,
+        author: post?.author?.displayName || 'مدير الموقع',
+        author_image: post?.author?.image?.url || '',
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        localStorage.setItem('studio_live_view_post', JSON.stringify(liveSnapshot));
+    } catch(e) {
+        console.warn('Could not save studio_live_view_post:', e);
     }
+
+    if (post) {
+        post.title = currentTitle;
+        post.content = contentToDisplay;
+        post.content_html = contentToDisplay;
+        post.image = cover;
+        post.labels = labels;
+    }
+
+    const articleViewerUrl = `article.html?id=${encodeURIComponent(liveSnapshot.id)}&blog=${encodeURIComponent(blogId)}`;
+    window.open(articleViewerUrl, '_blank');
+    showToast('جاري فتح المقال في صفحة الموقع المباشرة في تبويب جديد... 🌐✨', 'success');
 }
 window.viewArticleOnLiveSite = viewArticleOnLiveSite;
+
+function viewPostOnLiveSite(postId) {
+    const post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(postId));
+    if (!post) {
+        showToast('لم يتم العثور على المقال المطلوب', 'error');
+        return;
+    }
+    viewArticleOnLiveSite(post);
+}
+window.viewPostOnLiveSite = viewPostOnLiveSite;
 
 
 // SAVE AS DRAFT — مسودة

@@ -1,0 +1,1571 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="site-page-title">عرض المقال في الموقع | Blogger Studio Pro</title>
+  
+  <!-- Favicon & Fonts -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2338bdf8'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@400;500;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-base: #070b14;
+      --bg-surface: #0d1527;
+      --bg-card: #111d35;
+      --bg-hover: #172647;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-glow: rgba(56, 189, 248, 0.3);
+      --accent-primary: #38bdf8;
+      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #38bdf8 100%);
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+      --container-max: 1200px;
+      --content-max: 860px;
+    }
+
+    [data-theme="light"] {
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-card: #f1f5f9;
+      --bg-hover: #e2e8f0;
+      --border-subtle: rgba(0, 0, 0, 0.08);
+      --border-glow: rgba(2, 132, 199, 0.3);
+      --accent-primary: #0284c7;
+      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #0ea5e9 100%);
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
+      --shadow-card: 0 10px 25px -5px rgba(0, 0, 0, 0.07);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-main);
+      font-family: 'Cairo', system-ui, -apple-system, sans-serif;
+      line-height: 1.8;
+      font-size: 16px;
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    /* -----------------------------------------------------------
+       TOP STUDIO CONTROL BAR (معاينة حية وإدارة سريعة)
+       ----------------------------------------------------------- */
+    .studio-live-bar {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(13, 21, 39, 0.95);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-glow);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      font-size: 13px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.35);
+    }
+
+    [data-theme="light"] .studio-live-bar {
+      background: rgba(255, 255, 255, 0.95);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .studio-bar-right, .studio-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .studio-live-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-primary);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-weight: 700;
+      font-size: 12px;
+      border: 1px solid rgba(56, 189, 248, 0.35);
+    }
+
+    .studio-live-tag .pulse-dot {
+      width: 8px;
+      height: 8px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: livePulse 2s infinite;
+    }
+
+    @keyframes livePulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    .blog-badge-pill {
+      background: var(--bg-card);
+      color: var(--text-muted);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border-subtle);
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .studio-bar-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--bg-card);
+      color: var(--text-main);
+      padding: 6px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 12.5px;
+      border: 1px solid var(--border-subtle);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .studio-bar-btn:hover {
+      background: var(--bg-hover);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      transform: translateY(-1px);
+    }
+
+    .studio-bar-btn.primary {
+      background: var(--accent-gradient);
+      color: #fff;
+      border: none;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35);
+    }
+
+    .studio-bar-btn.primary:hover {
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.55);
+      color: #fff;
+    }
+
+    .studio-bar-btn.blogger {
+      background: #ea580c;
+      color: #fff;
+      border: none;
+    }
+
+    .studio-bar-btn.blogger:hover {
+      background: #c2410c;
+      color: #fff;
+    }
+
+    /* -----------------------------------------------------------
+       SITE PUBLIC HEADER
+       ----------------------------------------------------------- */
+    .site-public-header {
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 16px 24px;
+    }
+
+    .header-inner {
+      max-width: var(--container-max);
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+    }
+
+    .site-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text-main);
+    }
+
+    .site-brand-logo {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 20px;
+      box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+    }
+
+    .site-brand-text h2 {
+      font-size: 19px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .site-brand-text p {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    .site-nav {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      list-style: none;
+    }
+
+    .site-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+
+    .site-nav a:hover, .site-nav a.active {
+      color: var(--accent-primary);
+    }
+
+    .site-search-box {
+      display: flex;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: 20px;
+      padding: 6px 14px;
+      gap: 8px;
+    }
+
+    .site-search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text-main);
+      font-size: 13px;
+      width: 140px;
+    }
+
+    .site-search-box i {
+      color: var(--text-dim);
+      font-size: 13px;
+    }
+
+    /* -----------------------------------------------------------
+       MAIN ARTICLE LAYOUT
+       ----------------------------------------------------------- */
+    .article-main-container {
+      max-width: var(--container-max);
+      margin: 32px auto 60px auto;
+      padding: 0 20px;
+    }
+
+    .article-breadcrumbs {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .article-breadcrumbs a {
+      color: var(--text-muted);
+      text-decoration: none;
+    }
+
+    .article-breadcrumbs a:hover {
+      color: var(--accent-primary);
+    }
+
+    .article-breadcrumbs .sep {
+      color: var(--text-dim);
+      font-size: 10px;
+    }
+
+    .article-breadcrumbs .current {
+      color: var(--accent-primary);
+      font-weight: 600;
+    }
+
+    /* HERO */
+    .article-hero-section {
+      margin-bottom: 30px;
+    }
+
+    .article-labels-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .article-label-pill {
+      background: linear-gradient(135deg, rgba(14, 165, 233, 0.15), rgba(99, 102, 241, 0.15));
+      color: var(--accent-primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .article-main-title {
+      font-size: clamp(24px, 4vw, 36px);
+      font-weight: 900;
+      line-height: 1.35;
+      color: var(--text-main);
+      margin-bottom: 18px;
+      letter-spacing: -0.3px;
+    }
+
+    .article-meta-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px;
+      background: var(--bg-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+
+    .author-info-group {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 800;
+      font-size: 16px;
+      border: 2px solid var(--border-glow);
+    }
+
+    .author-name-title h4 {
+      font-size: 14.5px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .author-name-title span {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .meta-metrics-group {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      color: var(--text-muted);
+      font-size: 13px;
+      flex-wrap: wrap;
+    }
+
+    .meta-metric-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-metric-item i {
+      color: var(--accent-primary);
+    }
+
+    .article-cover-wrapper {
+      width: 100%;
+      max-height: 460px;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-card);
+      border: 1px solid var(--border-subtle);
+      background: #000;
+    }
+
+    .article-cover-img {
+      width: 100%;
+      max-height: 460px;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.4s ease;
+    }
+
+    .article-cover-wrapper:hover .article-cover-img {
+      transform: scale(1.015);
+    }
+
+    /* -----------------------------------------------------------
+       TWO-COLUMN CONTENT & SIDEBAR
+       ----------------------------------------------------------- */
+    .article-grid-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 300px;
+      gap: 36px;
+      align-items: start;
+    }
+
+    @media (max-width: 980px) {
+      .article-grid-layout {
+        grid-template-columns: 1fr;
+      }
+      .article-sidebar {
+        order: 2;
+      }
+    }
+
+    /* MAIN CONTENT */
+    .article-pro-content {
+      background: var(--bg-surface);
+      border-radius: var(--radius-lg);
+      padding: 36px 32px;
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+      font-size: 16px;
+      line-height: 1.9;
+      color: var(--text-main);
+      word-break: break-word;
+      overflow-wrap: break-word;
+    }
+
+    @media (max-width: 640px) {
+      .article-pro-content {
+        padding: 22px 16px;
+      }
+    }
+
+    /* TYPOGRAPHY IN CONTENT */
+    .article-pro-content h1,
+    .article-pro-content h2,
+    .article-pro-content h3,
+    .article-pro-content h4 {
+      color: var(--text-main);
+      font-weight: 800;
+      margin-top: 36px;
+      margin-bottom: 16px;
+      line-height: 1.4;
+      position: relative;
+    }
+
+    .article-pro-content h2 {
+      font-size: 24px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .article-pro-content h2::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 22px;
+      background: var(--accent-primary);
+      border-radius: 4px;
+    }
+
+    .article-pro-content h3 {
+      font-size: 20px;
+      color: var(--accent-primary);
+    }
+
+    .article-pro-content p {
+      margin-bottom: 20px;
+      color: var(--text-main);
+    }
+
+    .article-pro-content a {
+      color: var(--accent-primary);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+      font-weight: 600;
+    }
+
+    .article-pro-content a:hover {
+      opacity: 0.85;
+    }
+
+    .article-pro-content ul,
+    .article-pro-content ol {
+      margin: 18px 0 24px 28px;
+      padding: 0;
+    }
+
+    .article-pro-content li {
+      margin-bottom: 10px;
+    }
+
+    .article-pro-content blockquote {
+      margin: 28px 0;
+      padding: 18px 24px;
+      background: rgba(56, 189, 248, 0.08);
+      border-right: 4px solid var(--accent-primary);
+      border-radius: 8px;
+      font-style: italic;
+      color: var(--text-main);
+    }
+
+    .article-pro-content img {
+      max-width: 100% !important;
+      height: auto;
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    }
+
+    /* CALLOUT BOXES */
+    .pro-callout {
+      margin: 26px 0;
+      padding: 18px 22px;
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .pro-callout-info {
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: #7dd3fc;
+    }
+
+    .pro-callout-success {
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .pro-callout-warning {
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+
+    /* RESPONSIVE TABLES */
+    .table-responsive-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin: 26px 0;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .article-pro-content table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+      font-size: 14.5px;
+    }
+
+    .article-pro-content th {
+      background: var(--bg-card);
+      color: var(--accent-primary);
+      padding: 12px 16px;
+      font-weight: 700;
+      border-bottom: 2px solid var(--border-subtle);
+    }
+
+    .article-pro-content td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-main);
+    }
+
+    .article-pro-content tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* DOWNLOAD BUTTONS */
+    .btn-download-action, .pro-download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: var(--accent-gradient);
+      color: #fff !important;
+      padding: 12px 24px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 15px;
+      text-decoration: none !important;
+      box-shadow: 0 6px 20px rgba(2, 132, 199, 0.35);
+      margin: 18px 0;
+      transition: all 0.25s ease;
+    }
+
+    .btn-download-action:hover, .pro-download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px rgba(2, 132, 199, 0.5);
+    }
+
+    /* -----------------------------------------------------------
+       SMART GALLERY COMPONENT STYLES
+       ----------------------------------------------------------- */
+    .blogger-gallery-container {
+      margin: 32px 0;
+      padding: 16px;
+      background: rgba(15, 23, 42, 0.55);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+      direction: rtl;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    [data-theme="light"] .blogger-gallery-container {
+      background: #f8fafc;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    /* 1. Grid */
+    .blogger-gallery-grid-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* 2. Masonry */
+    .blogger-gallery-masonry-items {
+      column-count: auto;
+      column-width: 220px;
+      column-gap: 16px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* 3. Carousel */
+    .blogger-gallery-carousel-items {
+      display: flex;
+      gap: 16px;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding: 6px 2px 14px 2px;
+      max-width: 100%;
+      box-sizing: border-box;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .blogger-gallery-carousel-items .gallery-card-item {
+      flex: 0 0 280px;
+      scroll-snap-align: start;
+    }
+
+    /* 4. Vertical Slider */
+    .blogger-gallery-vertical-items {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 560px;
+      overflow-y: auto;
+      scroll-snap-type: y mandatory;
+      padding: 10px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      -webkit-overflow-scrolling: touch;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .blogger-gallery-vertical-items .gallery-card-item {
+      scroll-snap-align: start;
+      border-radius: 10px;
+      overflow: hidden;
+      flex-shrink: 0;
+      max-width: 100%;
+    }
+
+    .blogger-gallery-vertical-items .gallery-card-item img {
+      width: 100%;
+      max-height: 440px;
+      object-fit: contain;
+      background: #050b14;
+      display: block;
+    }
+
+    /* 5. Featured Hero */
+    .blogger-gallery-featured-items {
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .blogger-gallery-featured-items .gallery-featured-hero {
+      border-radius: 12px;
+      overflow: hidden;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #000;
+      cursor: pointer;
+    }
+
+    .blogger-gallery-featured-items .gallery-featured-hero img {
+      width: 100%;
+      max-height: 420px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .blogger-gallery-featured-items .gallery-featured-thumbs-row {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* Common Card Item */
+    .gallery-card-item {
+      position: relative;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      border: 1px solid rgba(255,255,255,0.12);
+      background: #0f172a;
+      cursor: pointer;
+      transition: transform 0.22s ease, box-shadow 0.22s ease;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+
+    .gallery-card-item:hover {
+      transform: translateY(-3px) scale(1.01);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+    }
+
+    .gallery-card-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      border: 0;
+    }
+
+    .gallery-card-caption {
+      padding: 6px 10px;
+      background: rgba(15, 23, 42, 0.92);
+      font-size: 12px;
+      color: #cbd5e1;
+      text-align: center;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+
+    /* -----------------------------------------------------------
+       SIDEBAR & WIDGETS
+       ----------------------------------------------------------- */
+    .article-sidebar {
+      position: sticky;
+      top: 76px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .sidebar-widget {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 22px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .widget-title {
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--text-main);
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .widget-title i {
+      color: var(--accent-primary);
+    }
+
+    /* TOC In Sidebar */
+    .toc-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 13.5px;
+    }
+
+    .toc-item a {
+      color: var(--text-muted);
+      text-decoration: none;
+      display: block;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+
+    .toc-item a:hover {
+      color: var(--accent-primary);
+      background: var(--bg-hover);
+      padding-right: 12px;
+    }
+
+    .toc-item.h3 {
+      padding-right: 14px;
+      font-size: 12.5px;
+    }
+
+    /* Share Buttons Widget */
+    .sidebar-share-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .share-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 12.5px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .share-btn:hover {
+      opacity: 0.9;
+    }
+
+    .share-btn.twitter { background: #000; border: 1px solid #333; }
+    .share-btn.facebook { background: #1877f2; }
+    .share-btn.whatsapp { background: #25d366; }
+    .share-btn.telegram { background: #229ed9; }
+    .share-btn.copy { background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border-subtle); }
+
+    /* AUTHOR BIO BOX (Bottom of Article) */
+    .author-bio-card {
+      margin-top: 36px;
+      padding: 24px;
+      background: var(--bg-card);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+
+    .author-bio-avatar {
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: var(--accent-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 26px;
+      font-weight: 800;
+      flex-shrink: 0;
+    }
+
+    .author-bio-text h3 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .author-bio-text p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* -----------------------------------------------------------
+       SITE FOOTER
+       ----------------------------------------------------------- */
+    .site-public-footer {
+      background: var(--bg-surface);
+      border-top: 1px solid var(--border-subtle);
+      padding: 36px 20px 24px 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      list-style: none;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .footer-links a:hover {
+      color: var(--accent-primary);
+    }
+
+    /* -----------------------------------------------------------
+       LIGHTBOX MODAL
+       ----------------------------------------------------------- */
+    #studio-live-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.92);
+      z-index: 999999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(8px);
+      cursor: zoom-out;
+    }
+
+    .lightbox-content-box {
+      position: relative;
+      max-width: 92vw;
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: default;
+    }
+
+    .lightbox-close-btn {
+      position: absolute;
+      top: -40px;
+      left: 0;
+      background: none;
+      border: none;
+      color: #fff;
+      font-size: 36px;
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+    }
+
+    .lightbox-close-btn:hover {
+      color: var(--accent-primary);
+    }
+
+    #studio-live-lb-img {
+      max-width: 100%;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.85);
+      object-fit: contain;
+    }
+
+    #studio-live-lb-caption {
+      margin-top: 12px;
+      color: #e2e8f0;
+      font-size: 14.5px;
+      text-align: center;
+      background: rgba(0,0,0,0.5);
+      padding: 4px 16px;
+      border-radius: 20px;
+    }
+
+    /* TOAST */
+    #studio-toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .studio-toast {
+      background: #0f172a;
+      color: #f8fafc;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border: 1px solid var(--accent-primary);
+      font-size: 13.5px;
+      font-weight: 600;
+      animation: toastIn 0.3s ease;
+    }
+
+    @keyframes toastIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 1. TOP STUDIO ADMIN / LIVE PREVIEW BAR -->
+  <header class="studio-live-bar" id="studio-live-bar">
+    <div class="studio-bar-right">
+      <span class="studio-live-tag">
+        <span class="pulse-dot"></span>
+        <span>عرض المقال في الموقع مباشرة</span>
+      </span>
+      <span class="blog-badge-pill" id="bar-blog-badge">
+        <i class="fas fa-blog" style="color:var(--accent-primary);"></i>
+        <span id="bar-blog-name">جاري التحميل...</span>
+      </span>
+    </div>
+
+    <div class="studio-bar-left">
+      <a href="/" class="studio-bar-btn primary" id="bar-btn-return-editor" title="العودة لمحرر الاستوديو وتعديل المقال">
+        <i class="fas fa-edit"></i>
+        <span>العودة للمحرر ✏️</span>
+      </a>
+
+      <a href="#" target="_blank" class="studio-bar-btn blogger" id="bar-btn-blogger-link" style="display:none;" title="فتح رابط المقال على خادم Blogger الأصلي">
+        <i class="fab fa-blogger"></i>
+        <span>زيارة الرابط على Blogger 🌐</span>
+      </a>
+
+      <button type="button" class="studio-bar-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="تبديل مظهر العرض بين الداكن والفاتح">
+        <i class="fas fa-moon"></i>
+      </button>
+
+      <button type="button" class="studio-bar-btn" onclick="window.print()" title="طباعة المقال">
+        <i class="fas fa-print"></i>
+      </button>
+
+      <button type="button" class="studio-bar-btn" onclick="copyCurrentArticleUrl()" title="نسخ رابط المقال">
+        <i class="fas fa-link"></i>
+        <span>نسخ الرابط</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- 2. PUBLIC BLOG HEADER -->
+  <header class="site-public-header">
+    <div class="header-inner">
+      <a href="/" class="site-brand">
+        <div class="site-brand-logo">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="site-brand-text">
+          <h2 id="public-blog-title">مدونة تقنية</h2>
+          <p id="public-blog-sub">Blogger Studio Pro Live View</p>
+        </div>
+      </a>
+
+      <ul class="site-nav">
+        <li><a href="/" class="active">الرئيسية</a></li>
+        <li><a href="#article-content-body">المحتوى</a></li>
+        <li><a href="#article-gallery">المعرض</a></li>
+        <li><a href="#" onclick="showShareOptions(); return false;">مشاركة</a></li>
+      </ul>
+
+      <div class="site-search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="بحث في المدونة..." readonly onclick="showToast('البحث مفعل في الموقع الرسمي', 'info')">
+      </div>
+    </div>
+  </header>
+
+  <!-- 3. MAIN ARTICLE CONTAINER -->
+  <main class="article-main-container">
+
+    <!-- Breadcrumbs -->
+    <nav class="article-breadcrumbs">
+      <a href="/"><i class="fas fa-home"></i> الرئيسية</a>
+      <span class="sep"><i class="fas fa-chevron-left"></i></span>
+      <span id="breadcrumb-category">مقالات</span>
+      <span class="sep"><i class="fas fa-chevron-left"></i></span>
+      <span id="breadcrumb-title" class="current">عنوان المقال</span>
+    </nav>
+
+    <!-- Hero Header -->
+    <section class="article-hero-section">
+      <div class="article-labels-row" id="article-labels-container">
+        <!-- Labels badges -->
+      </div>
+
+      <h1 class="article-main-title" id="article-title-heading">جاري تحميل عنوان المقال...</h1>
+
+      <!-- Meta Row -->
+      <div class="article-meta-row">
+        <div class="author-info-group">
+          <div class="author-avatar" id="article-author-avatar">A</div>
+          <div class="author-name-title">
+            <h4 id="article-author-name">مدير الموقع</h4>
+            <span id="article-publish-date">--/--/----</span>
+          </div>
+        </div>
+
+        <div class="meta-metrics-group">
+          <span class="meta-metric-item">
+            <i class="fas fa-clock"></i>
+            <span id="article-read-time">3 دقائق قراءة</span>
+          </span>
+          <span class="meta-metric-item">
+            <i class="fas fa-eye"></i>
+            <span id="article-views-count">1,240 مشاهدة</span>
+          </span>
+          <span class="meta-metric-item">
+            <i class="fas fa-comments"></i>
+            <span>تعليقات مفعلة</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Cover Image -->
+      <div class="article-cover-wrapper" id="article-cover-wrapper" style="display:none;">
+        <img src="" alt="Cover" class="article-cover-img" id="article-cover-image">
+      </div>
+    </section>
+
+    <!-- Two Column Grid -->
+    <div class="article-grid-layout">
+
+      <!-- Main Column: Full Content -->
+      <section class="article-content-column">
+        <article class="article-pro-content" id="article-content-body">
+          <p style="text-align:center;color:var(--text-muted);padding:40px 0;">جاري تحميل محتوى المقال والتنسيق الاحترافي... ⏳</p>
+        </article>
+
+        <!-- Author Bio Card -->
+        <div class="author-bio-card">
+          <div class="author-bio-avatar" id="author-bio-avatar-img">✍️</div>
+          <div class="author-bio-text">
+            <h3 id="author-bio-name">مدير التحرير</h3>
+            <p>كاتب ومحرر تقني متخصص في التدوين الرقمي والبرمجيات ونشر المحتوى الاحترافي عبر منصات Blogger و Blogger Studio Pro.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sidebar Column -->
+      <aside class="article-sidebar">
+
+        <!-- Table of Contents Widget -->
+        <div class="sidebar-widget" id="sidebar-toc-widget" style="display:none;">
+          <h3 class="widget-title"><i class="fas fa-list-ul"></i> فهرس المقال</h3>
+          <ul class="toc-list" id="sidebar-toc-list">
+            <!-- Dynamically generated TOC -->
+          </ul>
+        </div>
+
+        <!-- Social Share Widget -->
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-share-alt"></i> مشاركة المقال</h3>
+          <div class="sidebar-share-grid">
+            <button type="button" class="share-btn twitter" onclick="shareOnSocial('x')"><i class="fab fa-x-twitter"></i> X (Twitter)</button>
+            <button type="button" class="share-btn facebook" onclick="shareOnSocial('facebook')"><i class="fab fa-facebook-f"></i> Facebook</button>
+            <button type="button" class="share-btn whatsapp" onclick="shareOnSocial('whatsapp')"><i class="fab fa-whatsapp"></i> WhatsApp</button>
+            <button type="button" class="share-btn telegram" onclick="shareOnSocial('telegram')"><i class="fab fa-telegram-plane"></i> Telegram</button>
+            <button type="button" class="share-btn copy" style="grid-column: span 2;" onclick="copyCurrentArticleUrl()"><i class="fas fa-copy"></i> نسخ رابط المقال</button>
+          </div>
+        </div>
+
+        <!-- Blog Info Widget -->
+        <div class="sidebar-widget">
+          <h3 class="widget-title"><i class="fas fa-info-circle"></i> معلومات العرض</h3>
+          <p style="font-size:13px;color:var(--text-muted);line-height:1.7;">
+            يتم عرض هذا المقال بتنسيق <strong>Blogger Studio Pro</strong> المتقدم، مع دعم المعرض الذكي (Smart Gallery)، والخطوط المحسنة، والتنسيق المتجاوب 100%.
+          </p>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </main>
+
+  <!-- 4. SITE FOOTER -->
+  <footer class="site-public-footer">
+    <ul class="footer-links">
+      <li><a href="/">الرئيسية</a></li>
+      <li><a href="/">لوحة التحكم</a></li>
+      <li><a href="https://blogger.com" target="_blank">منصة Blogger</a></li>
+      <li><a href="/">سياسة الخصوصية</a></li>
+    </ul>
+    <p>© 2026 <span id="footer-blog-title">Blogger Studio Pro</span> — جميع الحقوق محفوظة | تم إعداده وتنسيقه باحترافية.</p>
+  </footer>
+
+  <!-- 5. LIGHTBOX MODAL -->
+  <div id="studio-live-lightbox" onclick="closeLightbox()">
+    <div class="lightbox-content-box" onclick="event.stopPropagation()">
+      <button class="lightbox-close-btn" onclick="closeLightbox()" title="إغلاق">&times;</button>
+      <img id="studio-live-lb-img" src="" alt="Enlarged view">
+      <div id="studio-live-lb-caption"></div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="studio-toast-container"></div>
+
+  <!-- 6. CORE LIVE VIEW RENDERING SCRIPT -->
+  <script>
+    // Lightbox Controls
+    window.openGalleryLightbox = function(url, caption) {
+      const modal = document.getElementById('studio-live-lightbox');
+      const img = document.getElementById('studio-live-lb-img');
+      const cap = document.getElementById('studio-live-lb-caption');
+      if (img) img.src = url;
+      if (cap) {
+        cap.textContent = caption || '';
+        cap.style.display = caption ? 'block' : 'none';
+      }
+      if (modal) modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    };
+
+    window.closeLightbox = function() {
+      const modal = document.getElementById('studio-live-lightbox');
+      if (modal) modal.style.display = 'none';
+      document.body.style.overflow = '';
+    };
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeLightbox();
+    });
+
+    // Theme Switcher
+    window.toggleTheme = function() {
+      const html = document.documentElement;
+      const current = html.getAttribute('data-theme') || 'dark';
+      const target = current === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', target);
+      localStorage.setItem('studio_article_theme', target);
+      const icon = document.querySelector('#theme-toggle-btn i');
+      if (icon) icon.className = target === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+    };
+
+    // Load saved theme
+    (function(){
+      const savedTheme = localStorage.getItem('studio_article_theme');
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        const icon = document.querySelector('#theme-toggle-btn i');
+        if (icon) icon.className = savedTheme === 'dark' ? 'fas fa-moon' : 'fas fa-sun';
+      }
+    })();
+
+    // Toast helper
+    function showToast(msg, type = 'info') {
+      const c = document.getElementById('studio-toast-container');
+      if (!c) return;
+      const t = document.createElement('div');
+      t.className = 'studio-toast';
+      t.textContent = msg;
+      c.appendChild(t);
+      setTimeout(() => {
+        t.style.opacity = '0';
+        t.style.transition = 'opacity 0.3s ease';
+        setTimeout(() => t.remove(), 300);
+      }, 3500);
+    }
+
+    function copyCurrentArticleUrl() {
+      navigator.clipboard.writeText(window.location.href).then(() => {
+        showToast('تم نسخ رابط المقال بنجاح! 📋✨', 'success');
+      }).catch(() => {
+        showToast('رابط المقال: ' + window.location.href, 'info');
+      });
+    }
+
+    function shareOnSocial(platform) {
+      const url = encodeURIComponent(window.location.href);
+      const title = encodeURIComponent(document.title || 'مقال تقني رائع');
+      let target = '';
+      if (platform === 'x') target = `https://twitter.com/intent/tweet?text=${title}&url=${url}`;
+      else if (platform === 'facebook') target = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+      else if (platform === 'whatsapp') target = `https://api.whatsapp.com/send?text=${title}%20${url}`;
+      else if (platform === 'telegram') target = `https://t.me/share/url?url=${url}&text=${title}`;
+      if (target) window.open(target, '_blank', 'width=600,height=480');
+    }
+
+    function showShareOptions() {
+      if (navigator.share) {
+        navigator.share({ title: document.title, url: window.location.href }).catch(() => {});
+      } else {
+        copyCurrentArticleUrl();
+      }
+    }
+
+    // Calculate reading time
+    function calculateReadingTime(text) {
+      if (!text) return 'دقيقتان قراءة';
+      const words = text.trim().split(/\s+/).length;
+      const minutes = Math.max(1, Math.ceil(words / 180));
+      return `${minutes} دقائق قراءة`;
+    }
+
+    // Build Table of Contents
+    function generateTableOfContents(contentContainer) {
+      const headings = contentContainer.querySelectorAll('h2, h3');
+      const tocList = document.getElementById('sidebar-toc-list');
+      const tocWidget = document.getElementById('sidebar-toc-widget');
+      if (!headings || headings.length < 2 || !tocList || !tocWidget) {
+        if (tocWidget) tocWidget.style.display = 'none';
+        return;
+      }
+
+      tocList.innerHTML = '';
+      headings.forEach((h, idx) => {
+        const id = 'heading-sec-' + (idx + 1);
+        h.id = id;
+        const li = document.createElement('li');
+        li.className = 'toc-item ' + h.tagName.toLowerCase();
+        const a = document.createElement('a');
+        a.href = '#' + id;
+        a.textContent = h.textContent.trim();
+        a.onclick = function(e) {
+          e.preventDefault();
+          h.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        };
+        li.appendChild(a);
+        tocList.appendChild(li);
+      });
+
+      tocWidget.style.display = 'block';
+    }
+
+    // MAIN RENDER FUNCTION
+    function renderArticlePage(data) {
+      if (!data) return;
+
+      const pageTitle = (data.title || 'مقال بدون عنوان').trim();
+      document.title = pageTitle + ' | ' + (data.blog_name || 'Blogger Studio Pro');
+      
+      // Top bar info
+      const blogName = data.blog_name || 'مدونة بلوجر';
+      document.getElementById('bar-blog-name').textContent = blogName;
+      document.getElementById('public-blog-title').textContent = blogName;
+      document.getElementById('footer-blog-title').textContent = blogName;
+
+      // Blogger external button
+      const bloggerBtn = document.getElementById('bar-btn-blogger-link');
+      if (data.blogger_url || data.url) {
+        bloggerBtn.href = data.blogger_url || data.url;
+        bloggerBtn.style.display = 'inline-flex';
+      } else {
+        bloggerBtn.style.display = 'none';
+      }
+
+      // Title & Breadcrumb
+      document.getElementById('article-title-heading').textContent = pageTitle;
+      document.getElementById('breadcrumb-title').textContent = pageTitle;
+
+      // Category / Labels
+      const labels = Array.isArray(data.labels) ? data.labels : (typeof data.labels === 'string' ? data.labels.split(',').map(s=>s.trim()).filter(Boolean) : []);
+      const labelsWrap = document.getElementById('article-labels-container');
+      const breadCat = document.getElementById('breadcrumb-category');
+      labelsWrap.innerHTML = '';
+      if (labels.length > 0) {
+        breadCat.textContent = labels[0];
+        labels.forEach(lbl => {
+          const pill = document.createElement('span');
+          pill.className = 'article-label-pill';
+          pill.innerHTML = `<i class="fas fa-tag"></i> ${lbl}`;
+          labelsWrap.appendChild(pill);
+        });
+      } else {
+        breadCat.textContent = 'عام';
+        const pill = document.createElement('span');
+        pill.className = 'article-label-pill';
+        pill.innerHTML = `<i class="fas fa-tag"></i> عام`;
+        labelsWrap.appendChild(pill);
+      }
+
+      // Author & Date
+      const author = data.author || 'مدير الموقع';
+      document.getElementById('article-author-name').textContent = author;
+      document.getElementById('author-bio-name').textContent = author;
+      document.getElementById('article-author-avatar').textContent = author.charAt(0).toUpperCase();
+
+      const pubDate = data.display_date || data.published || new Date().toLocaleDateString('ar-EG', { year: 'numeric', month: 'long', day: 'numeric' });
+      document.getElementById('article-publish-date').textContent = pubDate;
+
+      // Cover image
+      const cover = data.cover || data.image || '';
+      const coverWrap = document.getElementById('article-cover-wrapper');
+      const coverImg = document.getElementById('article-cover-image');
+      if (cover) {
+        coverImg.src = cover;
+        coverWrap.style.display = 'block';
+      } else {
+        coverWrap.style.display = 'none';
+      }
+
+      // Content
+      const contentBody = document.getElementById('article-content-body');
+      let rawContent = data.content || data.content_html || '<p>لا يوجد محتوى لهذا المقال.</p>';
+      
+      // Set content
+      contentBody.innerHTML = rawContent;
+
+      // Reading time calculation
+      document.getElementById('article-read-time').textContent = calculateReadingTime(contentBody.textContent);
+
+      // Generate Table of Contents
+      generateTableOfContents(contentBody);
+
+      // Ensure gallery interactive thumbnail clicks work seamlessly for featured layout
+      contentBody.querySelectorAll('.blogger-gallery-featured-items').forEach(feat => {
+        const heroImg = feat.querySelector('.featured-hero-main-img');
+        feat.querySelectorAll('.gallery-thumb-click').forEach(thumb => {
+          thumb.onclick = function() {
+            const tImg = thumb.querySelector('img');
+            if (heroImg && tImg) heroImg.src = tImg.src;
+            feat.querySelectorAll('.gallery-thumb-click').forEach(t => t.style.borderColor = 'rgba(255,255,255,0.15)');
+            thumb.style.borderColor = '#0284c7';
+          };
+        });
+      });
+
+      // Ensure all images with lightbox capability trigger lightbox
+      contentBody.querySelectorAll('.gallery-card-item').forEach(card => {
+        const img = card.querySelector('img');
+        const cap = card.querySelector('.gallery-card-caption');
+        if (img && !card.getAttribute('onclick')) {
+          card.onclick = function() {
+            window.openGalleryLightbox(img.src, cap ? cap.textContent : img.alt);
+          };
+        }
+      });
+    }
+
+    // INITIALIZATION & DATA RESOLUTION
+    (async function initLiveArticleView() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const requestedId = urlParams.get('id');
+      const requestedBlog = urlParams.get('blog');
+
+      // 1. Primary Priority: Check freshly serialized snapshot in localStorage
+      let postData = null;
+      try {
+        const raw = localStorage.getItem('studio_live_view_post');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          // If no requestedId or matches requestedId
+          if (!requestedId || String(parsed.id) === String(requestedId) || requestedId === 'current') {
+            postData = parsed;
+          }
+        }
+      } catch(e) {
+        console.warn('Error reading studio_live_view_post:', e);
+      }
+
+      // 2. Secondary Priority: Check window.REAL_BLOG_PRESEEDED_POSTS or cached posts
+      if (!postData && requestedId) {
+        // Try to load preseeded posts if available
+        let candidatePost = null;
+        if (typeof window.REAL_BLOG_PRESEEDED_POSTS !== 'undefined') {
+          for (const bId of Object.keys(window.REAL_BLOG_PRESEEDED_POSTS)) {
+            const found = window.REAL_BLOG_PRESEEDED_POSTS[bId]?.find(p => String(p.id) === String(requestedId));
+            if (found) { candidatePost = found; break; }
+          }
+        }
+
+        // Check studio_posts_cache
+        if (!candidatePost && requestedBlog) {
+          try {
+            const cached = JSON.parse(localStorage.getItem('studio_posts_cache_' + requestedBlog) || '[]');
+            candidatePost = cached.find(p => String(p.id) === String(requestedId));
+          } catch(e) {}
+        }
+
+        if (candidatePost) {
+          postData = {
+            id: candidatePost.id,
+            title: candidatePost.title,
+            content: candidatePost.content || candidatePost.content_html || '',
+            cover: candidatePost.image || '',
+            labels: candidatePost.labels || [],
+            display_date: candidatePost.display_date || candidatePost.published || '',
+            blog_name: requestedBlog || 'مدونة بلوجر',
+            blog_url: candidatePost.url || '',
+            blogger_url: candidatePost.url || '',
+            author: candidatePost.author?.displayName || 'مدير الموقع'
+          };
+        }
+      }
+
+      // 3. Fallback: If still no postData, load default demo
+      if (!postData) {
+        postData = {
+          id: 'demo',
+          title: 'مقال تجريبي - استعراض مظهر الموقع الحقيقي',
+          content: `
+            <p>أهلاً بك في صفحة <strong>عرض المقال في الموقع</strong> الحية الخاصة بمنصة Blogger Studio Pro.</p>
+            <p>عندما تفتح أي مقال في لوحة التحكم وتضغط على <strong>"عرض المقال في الموقع"</strong>، سيتم نقل التنسيق الاحترافي الكامل، ومعرض الصور الذكي بكافة أنماطه (شبكة، سلايدر رأسي، كاروسيل، فسيفسائي، ورئيسي) مباشرة إلى هذه الصفحة لتراها كما تظهر للزوار في الموقع الفعلي بدقة 100%.</p>
+            <div class="pro-callout pro-callout-info">
+              <i class="fas fa-info-circle" style="font-size:20px;"></i>
+              <div>
+                <strong>نصيحة الاستوديو:</strong>
+                <p style="margin:4px 0 0 0;">يمكنك العودة إلى محرر المقال في أي لحظة بالضغط على زر <strong>"العودة للمحرر ✏️"</strong> في الشريط العلوي.</p>
+              </div>
+            </div>
+          `,
+          cover: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80',
+          labels: ['استعراض حي', 'تنسيق متقدم'],
+          display_date: new Date().toLocaleDateString('ar-EG'),
+          blog_name: 'Blogger Studio Pro',
+          author: 'فريق التطوير'
+        };
+      }
+
+      // Render the page
+      renderArticlePage(postData);
+    })();
+  </script>
+
+</body>
+</html>

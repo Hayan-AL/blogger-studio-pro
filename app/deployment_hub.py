@@ -447,6 +447,12 @@ def build_dist_bundle() -> bool:
     hub_html = os.path.join(templates_dir, "deployment_hub.html")
     if os.path.exists(hub_html):
         shutil.copy2(hub_html, os.path.join(dist_dir, "deployment-hub.html"))
+    # Copy article live viewer standalone html
+    article_html = os.path.join(templates_dir, "article.html")
+    if os.path.exists(article_html):
+        shutil.copy2(article_html, os.path.join(dist_dir, "article.html"))
+        shutil.copy2(article_html, os.path.join(BASE_DIR, "article.html"))
+
         
     # Copy favicon
     fav_ico = os.path.join(BASE_DIR, "favicon.ico")
@@ -456,7 +462,7 @@ def build_dist_bundle() -> bool:
     # Cloudflare SPA redirect routing file (_redirects)
     redirects_file = os.path.join(dist_dir, "_redirects")
     with open(redirects_file, "w", encoding="utf-8") as f:
-        f.write("/deployment-hub  /deployment-hub.html  200\n/*  /index.html  200\n")
+        f.write("/deployment-hub  /deployment-hub.html  200\n/article  /article.html  200\n/*  /index.html  200\n")
         
     # _headers file for edge security & cache
     headers_file = os.path.join(dist_dir, "_headers")

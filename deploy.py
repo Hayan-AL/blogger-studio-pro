@@ -136,6 +136,7 @@ def sync_assets():
     dist_dir = "dist"
     if os.path.exists(dist_dir):
         shutil.copy2(dest_html, os.path.join(dist_dir, "index.html"))
+        if os.path.exists("article.html"): shutil.copy2("article.html", os.path.join(dist_dir, "article.html"))
         if os.path.exists("static"):
             shutil.copytree("static", os.path.join(dist_dir, "static"), dirs_exist_ok=True)
 

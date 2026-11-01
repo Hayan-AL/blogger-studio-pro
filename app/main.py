@@ -95,6 +95,16 @@ def get_dashboard():
     if os.path.exists(index_path):
         with open(index_path, "r", encoding="utf-8") as f:
             return f.read()
+
+@app.get("/article.html", response_class=HTMLResponse)
+@app.get("/article", response_class=HTMLResponse)
+def get_article_page():
+    article_path = os.path.join(TEMPLATES_DIR, "article.html")
+    if os.path.exists(article_path):
+        with open(article_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return "<h1>المقال غير موجود</h1>"
+
     return "<h1>Blogger Studio Pro - لوحة التحكم الاحترافية</h1>"
 
 # -------------------------------------------------------------
