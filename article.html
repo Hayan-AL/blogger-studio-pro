@@ -1049,7 +1049,123 @@
       from { transform: translateY(20px); opacity: 0; }
       to { transform: translateY(0); opacity: 1; }
     }
-  </style>
+  
+    /* Ultra-sleek Custom Scrollbars for Galleries & Page */
+    .blogger-gallery-vertical-items::-webkit-scrollbar,
+    .blogger-gallery-carousel-items::-webkit-scrollbar,
+    .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar,
+    body::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .blogger-gallery-vertical-items::-webkit-scrollbar-track,
+    .blogger-gallery-carousel-items::-webkit-scrollbar-track,
+    .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar-track,
+    body::-webkit-scrollbar-track {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: 10px;
+    }
+    .blogger-gallery-vertical-items::-webkit-scrollbar-thumb,
+    .blogger-gallery-carousel-items::-webkit-scrollbar-thumb,
+    .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar-thumb,
+    body::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, #0284c7 0%, #38bdf8 100%);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);
+    }
+    .blogger-gallery-vertical-items::-webkit-scrollbar-thumb:hover,
+    .blogger-gallery-carousel-items::-webkit-scrollbar-thumb:hover,
+    body::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 100%);
+    }
+    .blogger-gallery-vertical-items,
+    .blogger-gallery-carousel-items {
+      scrollbar-width: thin;
+      scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.6);
+      scroll-behavior: smooth;
+    }
+    .gallery-scroll-ctrl {
+      position: absolute;
+      z-index: 10;
+      background: rgba(15, 23, 42, 0.88);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+      backdrop-filter: blur(8px);
+      transition: all 0.22s ease;
+    }
+    .gallery-scroll-ctrl:hover {
+      background: #0284c7;
+      color: #fff;
+      border-color: #38bdf8;
+      transform: scale(1.12);
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6);
+    }
+    .gallery-card-item .gallery-zoom-badge {
+      position: absolute;
+      inset: 0;
+      background: rgba(7, 11, 20, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+      pointer-events: none;
+    }
+    .gallery-card-item:hover .gallery-zoom-badge {
+      opacity: 1;
+    }
+    .gallery-card-item:hover img {
+      transform: scale(1.02);
+      transition: transform 0.25s ease;
+    }
+    .pro-download-card {
+      margin: 36px auto;
+      max-width: 680px;
+      background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.92) 100%);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 18px;
+      padding: 26px 22px;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.12);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      box-sizing: border-box;
+      clear: both;
+      direction: rtl;
+    }
+    .pro-download-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 38px;
+      background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+      color: #ffffff !important;
+      font-weight: 900;
+      font-size: 15.5px;
+      border-radius: 13px;
+      text-decoration: none !important;
+      box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
+      transition: transform 0.2s, box-shadow 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      cursor: pointer;
+      box-sizing: border-box;
+      max-width: 100%;
+    }
+    .pro-download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.6);
+    }
+</style>
 </head>
 <body>
 
@@ -1252,6 +1368,17 @@
 
   <!-- 6. CORE LIVE VIEW RENDERING SCRIPT -->
   <script>
+window.scrollGalleryVerticalBlock = function(btn, dir) {
+    const wrap = btn.closest('.blogger-gallery-vertical-wrap') || btn.parentElement;
+    const box = wrap ? wrap.querySelector('.blogger-gallery-vertical-items') : null;
+    if (box) box.scrollBy({ top: 380 * dir, behavior: 'smooth' });
+};
+window.scrollGalleryHorizontalBlock = function(btn, dir) {
+    const wrap = btn.closest('.blogger-gallery-carousel-wrap') || btn.parentElement;
+    const box = wrap ? wrap.querySelector('.blogger-gallery-carousel-items') : null;
+    if (box) box.scrollBy({ left: 300 * dir, behavior: 'smooth' });
+};
+
     // Lightbox Controls
     window.openGalleryLightbox = function(url, caption) {
       const modal = document.getElementById('studio-live-lightbox');

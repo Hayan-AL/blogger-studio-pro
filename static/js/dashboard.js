@@ -4416,6 +4416,18 @@ function openGalleryLightbox(imgUrl, caption) {
 }
 window.openGalleryLightbox = openGalleryLightbox;
 
+
+window.scrollGalleryVerticalBlock = function(btn, dir) {
+    const wrap = btn.closest('.blogger-gallery-vertical-wrap') || btn.parentElement;
+    const box = wrap ? wrap.querySelector('.blogger-gallery-vertical-items') : null;
+    if (box) box.scrollBy({ top: 380 * dir, behavior: 'smooth' });
+};
+window.scrollGalleryHorizontalBlock = function(btn, dir) {
+    const wrap = btn.closest('.blogger-gallery-carousel-wrap') || btn.parentElement;
+    const box = wrap ? wrap.querySelector('.blogger-gallery-carousel-items') : null;
+    if (box) box.scrollBy({ left: 300 * dir, behavior: 'smooth' });
+};
+
 function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
     if (!images || !images.length) return '';
     const safeLayout = ['grid', 'vertical-slider', 'masonry', 'carousel', 'featured'].includes(layout) ? layout : 'grid';
@@ -4459,8 +4471,12 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
         itemsHtml = `
             <div class="blogger-gallery-grid-items" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
                 ${images.map((img, idx) => `
-                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="position:relative;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;transition:transform 0.2s ease;">
+                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="position:relative;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;transition:transform 0.2s ease;">
                         <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:190px;object-fit:cover;display:block;">
+                        <div class="gallery-zoom-badge" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s ease;">
+                            <span style="background:rgba(15,23,42,0.85);color:#38bdf8;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 12px rgba(0,0,0,0.5);">🔍 تكبير</span>
+                        </div>
+                        <span class="gallery-idx-pill" style="position:absolute;top:8px;right:8px;background:rgba(15,23,42,0.8);color:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.15);">${idx+1} / ${images.length}</span>
                         ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
                     </div>
                 `).join('')}
@@ -4479,24 +4495,44 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
         `;
     } else if (safeLayout === 'carousel') {
         itemsHtml = `
-            <div class="blogger-gallery-carousel-items" style="display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px 2px;-webkit-overflow-scrolling:touch;">
-                ${images.map((img, idx) => `
-                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="flex:0 0 280px;scroll-snap-align:start;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;">
-                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:210px;object-fit:cover;display:block;">
-                        ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
-                    </div>
-                `).join('')}
+            <div class="blogger-gallery-carousel-wrap" style="position:relative;max-width:100%;box-sizing:border-box;">
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-prev" onclick="scrollGalleryHorizontalBlock(this, -1)" title="السابق" style="position:absolute;top:50%;right:6px;transform:translateY(-50%);z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);">▶</button>
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-next" onclick="scrollGalleryHorizontalBlock(this, 1)" title="التالي" style="position:absolute;top:50%;left:6px;transform:translateY(-50%);z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);">◀</button>
+                <div class="blogger-gallery-carousel-items" style="display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px 2px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;">
+                    ${images.map((img, idx) => `
+                        <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="flex:0 0 280px;scroll-snap-align:start;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;position:relative;">
+                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:210px;object-fit:cover;display:block;">
+                            <div class="gallery-zoom-badge" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s ease;">
+                                <span style="background:rgba(15,23,42,0.85);color:#38bdf8;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 12px rgba(0,0,0,0.5);">🔍 تكبير الصورة</span>
+                            </div>
+                            <span class="gallery-idx-pill" style="position:absolute;top:8px;right:8px;background:rgba(15,23,42,0.8);color:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.15);">${idx+1} / ${images.length}</span>
+                            ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
     } else if (safeLayout === 'vertical-slider') {
         itemsHtml = `
-            <div class="blogger-gallery-vertical-items" style="display:flex;flex-direction:column;gap:16px;max-height:560px;overflow-y:auto;scroll-snap-type:y mandatory;padding:8px;border-radius:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.08);-webkit-overflow-scrolling:touch;">
-                ${images.map((img, idx) => `
-                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="scroll-snap-align:start;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;flex-shrink:0;">
-                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;max-height:420px;object-fit:contain;background:#050b14;display:block;">
-                        ${img.caption ? `<div class="gallery-card-caption" style="padding:8px 12px;background:rgba(15,23,42,0.95);font-size:12px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.08);">${escapeSmartHtml(img.caption)}</div>` : ''}
-                    </div>
-                `).join('')}
+            <div class="blogger-gallery-vertical-wrap" style="position:relative;max-width:100%;box-sizing:border-box;">
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-up" onclick="scrollGalleryVerticalBlock(this, -1)" title="الصورة السابقة" style="position:absolute;top:12px;left:12px;z-index:10;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.5);backdrop-filter:blur(6px);transition:all 0.2s;">
+                    ▲
+                </button>
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-down" onclick="scrollGalleryVerticalBlock(this, 1)" title="الصورة التالية" style="position:absolute;bottom:12px;left:12px;z-index:10;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.5);backdrop-filter:blur(6px);transition:all 0.2s;">
+                    ▼
+                </button>
+                <div class="blogger-gallery-vertical-items" style="display:flex;flex-direction:column;gap:16px;max-height:560px;overflow-y:auto;scroll-snap-type:y mandatory;padding:12px;border-radius:14px;background:rgba(5,11,20,0.7);border:1px solid rgba(56,189,248,0.2);-webkit-overflow-scrolling:touch;scroll-behavior:smooth;">
+                    ${images.map((img, idx) => `
+                        <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="scroll-snap-align:start;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);background:#050b14;cursor:pointer;flex-shrink:0;position:relative;">
+                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;max-height:420px;object-fit:contain;background:#050b14;display:block;">
+                            <div class="gallery-zoom-badge" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s ease;">
+                                <span style="background:rgba(15,23,42,0.85);color:#38bdf8;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 12px rgba(0,0,0,0.5);">🔍 تكبير الصورة</span>
+                            </div>
+                            <span class="gallery-idx-pill" style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.8);color:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.15);">${idx+1} / ${images.length}</span>
+                            ${img.caption ? `<div class="gallery-card-caption" style="padding:8px 12px;background:rgba(15,23,42,0.95);font-size:12px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.08);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                        </div>
+                    `).join('')}
+                </div>
             </div>
         `;
     } else if (safeLayout === 'featured') {
@@ -4620,7 +4656,123 @@ function cleanGalleryHtmlForExport(html) {
                     .gallery-card-item img { height: 140px !important; }
                     .blogger-gallery-carousel-items .gallery-card-item { flex: 0 0 220px !important; }
                 }
-            `;
+            
+                /* Ultra-sleek Custom Scrollbars for Galleries */
+                .blogger-gallery-vertical-items::-webkit-scrollbar,
+                .blogger-gallery-carousel-items::-webkit-scrollbar,
+                .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar {
+                    width: 6px !important;
+                    height: 6px !important;
+                }
+                .blogger-gallery-vertical-items::-webkit-scrollbar-track,
+                .blogger-gallery-carousel-items::-webkit-scrollbar-track,
+                .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar-track {
+                    background: rgba(15, 23, 42, 0.6) !important;
+                    border-radius: 10px !important;
+                }
+                .blogger-gallery-vertical-items::-webkit-scrollbar-thumb,
+                .blogger-gallery-carousel-items::-webkit-scrollbar-thumb,
+                .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar-thumb {
+                    background: linear-gradient(180deg, #0284c7 0%, #38bdf8 100%) !important;
+                    border-radius: 10px !important;
+                    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
+                }
+                .blogger-gallery-vertical-items::-webkit-scrollbar-thumb:hover,
+                .blogger-gallery-carousel-items::-webkit-scrollbar-thumb:hover {
+                    background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 100%) !important;
+                }
+                .blogger-gallery-vertical-items,
+                .blogger-gallery-carousel-items {
+                    scrollbar-width: thin !important;
+                    scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.6) !important;
+                    scroll-behavior: smooth !important;
+                }
+                .gallery-scroll-ctrl {
+                    position: absolute;
+                    z-index: 10;
+                    background: rgba(15, 23, 42, 0.88);
+                    color: #38bdf8;
+                    border: 1px solid rgba(56, 189, 248, 0.4);
+                    border-radius: 50%;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+                    backdrop-filter: blur(8px);
+                    transition: all 0.22s ease;
+                }
+                .gallery-scroll-ctrl:hover {
+                    background: #0284c7;
+                    color: #fff;
+                    border-color: #38bdf8;
+                    transform: scale(1.12);
+                    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6);
+                }
+                .gallery-card-item {
+                    position: relative;
+                    overflow: hidden;
+                }
+                .gallery-card-item .gallery-zoom-badge {
+                    position: absolute;
+                    inset: 0;
+                    background: rgba(7, 11, 20, 0.45);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    opacity: 0;
+                    transition: opacity 0.25s ease;
+                    pointer-events: none;
+                }
+                .gallery-card-item:hover .gallery-zoom-badge {
+                    opacity: 1;
+                }
+                .gallery-card-item:hover img {
+                    transform: scale(1.02);
+                    transition: transform 0.25s ease;
+                }
+                .pro-download-card {
+                    margin: 36px auto;
+                    max-width: 680px;
+                    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.92) 100%);
+                    border: 1px solid rgba(56, 189, 248, 0.35);
+                    border-radius: 18px;
+                    padding: 26px 22px;
+                    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.12);
+                    text-align: center;
+                    position: relative;
+                    overflow: hidden;
+                    backdrop-filter: blur(10px);
+                    box-sizing: border-box;
+                    clear: both;
+                    direction: rtl;
+                }
+                .pro-download-btn {
+                    display: inline-flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 12px;
+                    padding: 14px 38px;
+                    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
+                    color: #ffffff !important;
+                    font-weight: 900;
+                    font-size: 15.5px;
+                    border-radius: 13px;
+                    text-decoration: none !important;
+                    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
+                    transition: transform 0.2s, box-shadow 0.2s;
+                    border: 1px solid rgba(255, 255, 255, 0.22);
+                    cursor: pointer;
+                    box-sizing: border-box;
+                    max-width: 100%;
+                }
+                .pro-download-btn:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.6);
+                }
+`;
             temp.prepend(styleTag);
 
             // Lightbox script for visitors
@@ -15763,30 +15915,127 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
         });
     }
 
-    // 4. Transform Download & External Links
+    // 4. Transform Download & External Links with Intelligent Bulky Background Removal
     if (optButtons) {
         container.querySelectorAll('a').forEach(a => {
             const text = (a.textContent || '').trim().toLowerCase();
             const href = (a.getAttribute('href') || '').toLowerCase();
-            const isDownload = text.includes('تحميل') || text.includes('download') || text.includes('تنزيل') || href.includes('drive.google.com') || href.includes('mediafire.com') || href.includes('mega.nz') || (href.includes('github.com') && href.includes('/releases')) || href.includes('apkpure.com') || href.includes('play.google.com');
+            const isDownload = text.includes('تحميل') || text.includes('download') || text.includes('تنزيل') || 
+                               href.includes('drive.google.com') || href.includes('mediafire.com') || 
+                               href.includes('mega.nz') || (href.includes('github.com') && href.includes('/releases')) || 
+                               href.includes('apkpure.com') || href.includes('play.google.com') || 
+                               href.includes('appcenter.ms') || href.includes('.apk') || href.includes('.zip');
 
             if (isDownload) {
                 downloadCount++;
-                const btnWrap = document.createElement('div');
-                btnWrap.style.cssText = 'text-align:center;margin:28px 0;clear:both;max-width:100%;';
-                btnWrap.innerHTML = `
-                    <a href="${a.href}" target="_blank" rel="noopener" class="pro-download-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 28px;background:${currentTheme.buttonGradient};color:#ffffff!important;font-weight:800;font-size:15px;border-radius:12px;text-decoration:none!important;box-shadow:0 6px 20px rgba(2,132,199,0.35);transition:transform 0.2s,box-shadow 0.2s;max-width:100%;box-sizing:border-box;">
-                        <span style="font-size:20px;">📥</span>
-                        <span>${a.textContent.trim() || (isAr ? 'تحميل مباشر للملف' : 'Download Now')}</span>
-                        <span style="font-size:11px;background:rgba(255,255,255,0.22);padding:2px 8px;border-radius:20px;">v.Latest</span>
-                    </a>
-                `;
-                if (a.parentElement && a.parentElement.tagName === 'P' && a.parentElement.children.length === 1 && a.parentElement.textContent.trim() === a.textContent.trim()) {
-                    a.parentElement.replaceWith(btnWrap);
-                } else {
-                    a.replaceWith(btnWrap);
+
+                // Intelligently find the highest ancestor that is purely a download wrapper
+                let targetWrapper = a;
+                let extractedTitle = '';
+
+                let curr = a.parentElement;
+                let steps = 0;
+                while (curr && curr !== container && steps < 5) {
+                    const tag = curr.tagName.toUpperCase();
+                    const currText = (curr.textContent || '').trim();
+                    const currId = (curr.id || '').toLowerCase();
+                    const currClass = (curr.className || '').toLowerCase();
+                    const currStyle = (curr.getAttribute('style') || '').toLowerCase();
+
+                    // If it's a list item inside a list
+                    if (tag === 'LI') {
+                        targetWrapper = curr.parentElement && (curr.parentElement.tagName === 'UL' || curr.parentElement.tagName === 'OL') 
+                            ? curr.parentElement 
+                            : curr;
+                    } 
+                    // If it's a UL/OL with id or class 'btnd' or download or only 1-2 links
+                    else if (tag === 'UL' || tag === 'OL') {
+                        if (currId.includes('btn') || currClass.includes('btn') || currId.includes('download') || curr.querySelectorAll('a').length <= 2) {
+                            targetWrapper = curr;
+                        }
+                    }
+                    // If it's a DIV, BLOCKQUOTE, P, SECTION with download ID/class or background styling
+                    else if (['DIV', 'BLOCKQUOTE', 'SECTION', 'P'].includes(tag)) {
+                        const anchorsInCurr = curr.querySelectorAll('a');
+                        const isMainlyDownload = anchorsInCurr.length <= 2 && currText.length < 350;
+                        const hasDownloadMarker = currId.includes('btn') || currClass.includes('btn') || 
+                                                  currId.includes('download') || currClass.includes('download') || 
+                                                  currStyle.includes('background') || currStyle.includes('border') || 
+                                                  tag === 'BLOCKQUOTE' || currClass.includes('separator');
+
+                        if (isMainlyDownload && hasDownloadMarker) {
+                            // Extract any title from headers before replacing
+                            const headerEl = curr.querySelector('h1, h2, h3, h4, blockquote, strong, b');
+                            if (headerEl && headerEl !== a && !extractedTitle) {
+                                extractedTitle = headerEl.textContent.replace(/&nbsp;/g, ' ').trim();
+                            }
+                            targetWrapper = curr;
+                        } else {
+                            break;
+                        }
+                    }
+                    curr = curr.parentElement;
+                    steps++;
                 }
-            } else if (!a.closest('.pro-article-figure') && !a.closest('.pro-download-btn') && !a.closest('.studio-gallery-block') && !a.style.color) {
+
+                // If no specific title was extracted from wrapper, try anchor text or fallback
+                if (!extractedTitle) {
+                    const cleanText = a.textContent.trim();
+                    if (cleanText && cleanText.length > 3 && !['تحميل', 'download', 'free download', 'تحميل مباشر'].includes(cleanText.toLowerCase())) {
+                        extractedTitle = cleanText;
+                    } else {
+                        extractedTitle = isAr ? 'رابط التحميل المباشر والمفحوص' : 'Direct Verified Download';
+                    }
+                }
+
+                extractedTitle = extractedTitle.replace(/^[\s\u00a0\-\–\—\:\•\·\*\>]+|[\s\u00a0\-\–\—\:\•\·\*]+$/g, '').trim();
+                const btnText = (a.textContent || '').trim() || (isAr ? 'تحميل الآن (Download)' : 'Download Now');
+
+                // Create sleek, clean, modern Download Card
+                const cardEl = document.createElement('div');
+                cardEl.className = 'pro-download-card';
+                cardEl.setAttribute('style', 'margin:36px auto;max-width:680px;background:linear-gradient(135deg,rgba(15,23,42,0.92) 0%,rgba(30,41,59,0.92) 100%);border:1px solid rgba(56,189,248,0.35);border-radius:18px;padding:26px 22px;box-shadow:0 14px 40px rgba(0,0,0,0.5),0 0 20px rgba(56,189,248,0.12);text-align:center;position:relative;overflow:hidden;backdrop-filter:blur(10px);box-sizing:border-box;clear:both;direction:rtl;');
+                cardEl.innerHTML = `
+                    <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0284c7,#38bdf8,#818cf8,#0284c7);"></div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
+                        <span style="font-size:24px;">📥</span>
+                        <span style="font-size:18px;font-weight:800;color:#f8fafc;letter-spacing:-0.2px;">${escapeSmartHtml(extractedTitle)}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:20px;flex-wrap:wrap;">
+                        <span style="background:rgba(16,185,129,0.15);color:#34d399;border:1px solid rgba(16,185,129,0.35);padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+                            <span>🛡️</span> <span>${isAr ? 'آمن ومفحوص 100%' : '100% Virus Free'}</span>
+                        </span>
+                        <span style="background:rgba(56,189,248,0.15);color:#38bdf8;border:1px solid rgba(56,189,248,0.35);padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+                            <span>⚡</span> <span>${isAr ? 'سيرفر سريع ومباشر' : 'Fast Server'}</span>
+                        </span>
+                        <span style="background:rgba(168,85,247,0.15);color:#c084fc;border:1px solid rgba(168,85,247,0.35);padding:3px 11px;border-radius:20px;font-size:11.5px;font-weight:700;display:inline-flex;align-items:center;gap:5px;">
+                            <span>✨</span> <span>${isAr ? 'أحدث إصدار' : 'Latest Version'}</span>
+                        </span>
+                    </div>
+                    <div>
+                        <a href="${a.href}" target="_blank" rel="noopener" class="pro-download-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 38px;background:${currentTheme.buttonGradient || 'linear-gradient(135deg, #0284c7 0%, #38bdf8 100%)'};color:#ffffff!important;font-weight:900;font-size:15.5px;border-radius:13px;text-decoration:none!important;box-shadow:0 8px 24px rgba(2,132,199,0.45);transition:transform 0.2s,box-shadow 0.2s;border:1px solid rgba(255,255,255,0.22);cursor:pointer;box-sizing:border-box;max-width:100%;">
+                            <span style="font-size:18px;">⬇️</span>
+                            <span>${escapeSmartHtml(btnText)}</span>
+                        </a>
+                    </div>
+                `;
+
+                // Clean lingering empty siblings
+                let prev = targetWrapper.previousElementSibling;
+                while (prev && (prev.tagName === 'BR' || (prev.tagName === 'P' && prev.textContent.trim().length === 0))) {
+                    const toDel = prev;
+                    prev = prev.previousElementSibling;
+                    toDel.remove();
+                }
+                let next = targetWrapper.nextElementSibling;
+                while (next && (next.tagName === 'BR' || (next.tagName === 'P' && next.textContent.trim().length === 0))) {
+                    const toDel = next;
+                    next = next.nextElementSibling;
+                    toDel.remove();
+                }
+
+                targetWrapper.replaceWith(cardEl);
+            } else if (!a.closest('.pro-article-figure') && !a.closest('.pro-download-btn') && !a.closest('.pro-download-card') && !a.closest('.studio-gallery-block') && !a.style.color) {
                 a.style.cssText = `color:${currentTheme.badge};text-decoration:underline;font-weight:600;word-break:break-word;`;
             }
         });
