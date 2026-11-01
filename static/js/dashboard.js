@@ -4469,44 +4469,57 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
 
     if (safeLayout === 'grid') {
         itemsHtml = `
-            <div class="blogger-gallery-grid-items" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+            <div class="blogger-gallery-grid-items" style="display:grid !important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important;gap:14px !important;margin:0 !important;padding:0 !important;box-sizing:border-box !important;max-width:100% !important;">
                 ${images.map((img, idx) => `
-                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="position:relative;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;transition:transform 0.2s ease;">
-                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:190px;object-fit:cover;display:block;">
-                        <div class="gallery-zoom-badge" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s ease;">
-                            <span style="background:rgba(15,23,42,0.85);color:#38bdf8;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 12px rgba(0,0,0,0.5);">🔍 تكبير</span>
+                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="border-radius:12px !important;overflow:hidden !important;box-shadow:0 4px 14px rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#0f172a !important;max-width:100% !important;box-sizing:border-box !important;position:relative !important;margin:0 !important;cursor:pointer !important;">
+                        <a href="${img.url}" target="_blank" rel="noopener" title="${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}" style="display:block !important;width:100% !important;text-decoration:none !important;margin:0 !important;padding:0 !important;border:none !important;background:transparent !important;cursor:zoom-in !important;">
+                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" loading="lazy" style="width:100% !important;height:200px !important;object-fit:cover !important;display:block !important;margin:0 !important;border:none !important;">
+                        </a>
+                        <div class="gallery-zoom-badge" style="position:absolute !important;top:10px !important;left:10px !important;background:rgba(15,23,42,0.85) !important;color:#38bdf8 !important;padding:3px 10px !important;border-radius:12px !important;font-size:11px !important;font-weight:800 !important;border:1px solid rgba(56,189,248,0.4) !important;pointer-events:none !important;">
+                            🔍 تكبير
                         </div>
-                        <span class="gallery-idx-pill" style="position:absolute;top:8px;right:8px;background:rgba(15,23,42,0.8);color:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.15);">${idx+1} / ${images.length}</span>
-                        ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                        <span class="gallery-idx-pill" style="position:absolute !important;top:10px !important;right:10px !important;background:rgba(15,23,42,0.85) !important;color:#e2e8f0 !important;padding:3px 9px !important;border-radius:12px !important;font-size:11px !important;font-weight:700 !important;border:1px solid rgba(255,255,255,0.15) !important;pointer-events:none !important;">${idx+1} / ${images.length}</span>
+                        <div style="display:flex !important;align-items:center !important;justify-content:space-between !important;padding:8px 12px !important;background:#0f172a !important;border-top:1px solid rgba(255,255,255,0.06) !important;box-sizing:border-box !important;">
+                            <span style="font-size:11px !important;color:#94a3b8 !important;font-weight:700 !important;">${idx+1} من ${images.length}</span>
+                            ${img.caption ? `<span style="font-size:11.5px !important;color:#cbd5e1 !important;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:160px;">${escapeSmartHtml(img.caption)}</span>` : '<span style="font-size:11px !important;color:#38bdf8 !important;">انقر للتكبير</span>'}
+                        </div>
                     </div>
                 `).join('')}
             </div>
         `;
     } else if (safeLayout === 'masonry') {
         itemsHtml = `
-            <div class="blogger-gallery-masonry-items" style="column-count:auto;column-width:210px;column-gap:14px;">
+            <div class="blogger-gallery-masonry-items" style="column-count:auto !important;column-width:210px !important;column-gap:14px !important;max-width:100% !important;box-sizing:border-box !important;margin:0 !important;padding:0 !important;">
                 ${images.map((img, idx) => `
-                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="break-inside:avoid;margin-bottom:14px;border-radius:10px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;">
-                        <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:auto;display:block;">
-                        ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                    <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="break-inside:avoid !important;margin-bottom:14px !important;border-radius:12px !important;overflow:hidden !important;box-shadow:0 4px 14px rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#0f172a !important;cursor:pointer !important;box-sizing:border-box !important;position:relative !important;">
+                        <a href="${img.url}" target="_blank" rel="noopener" title="${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}" style="display:block !important;width:100% !important;text-decoration:none !important;margin:0 !important;padding:0 !important;border:none !important;background:transparent !important;cursor:zoom-in !important;">
+                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" loading="lazy" style="width:100% !important;height:auto !important;display:block !important;margin:0 !important;border:none !important;">
+                        </a>
+                        <span class="gallery-idx-pill" style="position:absolute !important;top:10px !important;right:10px !important;background:rgba(15,23,42,0.85) !important;color:#e2e8f0 !important;padding:3px 9px !important;border-radius:12px !important;font-size:11px !important;font-weight:700 !important;border:1px solid rgba(255,255,255,0.15) !important;pointer-events:none !important;">${idx+1} / ${images.length}</span>
+                        <div style="display:flex !important;align-items:center !important;justify-content:space-between !important;padding:8px 12px !important;background:#0f172a !important;border-top:1px solid rgba(255,255,255,0.06) !important;box-sizing:border-box !important;">
+                            <span style="font-size:11px !important;color:#94a3b8 !important;font-weight:700 !important;">${idx+1} من ${images.length}</span>
+                            ${img.caption ? `<span style="font-size:11.5px !important;color:#cbd5e1 !important;">${escapeSmartHtml(img.caption)}</span>` : '<span style="font-size:11px !important;color:#38bdf8 !important;">🔍 تكبير</span>'}
+                        </div>
                     </div>
                 `).join('')}
             </div>
         `;
     } else if (safeLayout === 'carousel') {
         itemsHtml = `
-            <div class="blogger-gallery-carousel-wrap" style="position:relative;max-width:100%;box-sizing:border-box;">
-                <button type="button" class="gallery-scroll-ctrl gallery-scroll-prev" onclick="scrollGalleryHorizontalBlock(this, -1)" title="السابق" style="position:absolute;top:50%;right:6px;transform:translateY(-50%);z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);">▶</button>
-                <button type="button" class="gallery-scroll-ctrl gallery-scroll-next" onclick="scrollGalleryHorizontalBlock(this, 1)" title="التالي" style="position:absolute;top:50%;left:6px;transform:translateY(-50%);z-index:10;width:34px;height:34px;border-radius:50%;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px rgba(0,0,0,0.5);">◀</button>
-                <div class="blogger-gallery-carousel-items" style="display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px 2px 14px 2px;-webkit-overflow-scrolling:touch;scroll-behavior:smooth;">
+            <div class="blogger-gallery-carousel-wrap" style="position:relative !important;max-width:100% !important;box-sizing:border-box !important;">
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-prev" onclick="scrollGalleryHorizontalBlock(this, -1)" title="السابق" style="position:absolute !important;top:50% !important;right:8px !important;transform:translateY(-50%) !important;z-index:10 !important;width:36px !important;height:36px !important;border-radius:50% !important;background:rgba(15,23,42,0.9) !important;color:#38bdf8 !important;border:1px solid rgba(56,189,248,0.4) !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 4px 14px rgba(0,0,0,0.6) !important;">▶</button>
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-next" onclick="scrollGalleryHorizontalBlock(this, 1)" title="التالي" style="position:absolute !important;top:50% !important;left:8px !important;transform:translateY(-50%) !important;z-index:10 !important;width:36px !important;height:36px !important;border-radius:50% !important;background:rgba(15,23,42,0.9) !important;color:#38bdf8 !important;border:1px solid rgba(56,189,248,0.4) !important;cursor:pointer !important;display:flex !important;align-items:center !important;justify-content:center !important;box-shadow:0 4px 14px rgba(0,0,0,0.6) !important;">◀</button>
+                <div class="blogger-gallery-carousel-items" style="display:flex !important;gap:14px !important;overflow-x:auto !important;scroll-snap-type:x mandatory !important;padding:6px 2px 14px 2px !important;-webkit-overflow-scrolling:touch !important;scroll-behavior:smooth !important;scrollbar-width:thin !important;scrollbar-color:#38bdf8 #0f172a !important;box-sizing:border-box !important;">
                     ${images.map((img, idx) => `
-                        <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="flex:0 0 280px;scroll-snap-align:start;border-radius:12px;overflow:hidden;box-shadow:0 4px 14px rgba(0,0,0,0.25);border:1px solid rgba(255,255,255,0.12);background:#0f172a;cursor:pointer;position:relative;">
-                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;height:210px;object-fit:cover;display:block;">
-                            <div class="gallery-zoom-badge" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s ease;">
-                                <span style="background:rgba(15,23,42,0.85);color:#38bdf8;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 12px rgba(0,0,0,0.5);">🔍 تكبير الصورة</span>
+                        <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="flex:0 0 280px !important;scroll-snap-align:start !important;border-radius:12px !important;overflow:hidden !important;box-shadow:0 4px 14px rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#0f172a !important;cursor:pointer !important;box-sizing:border-box !important;position:relative !important;">
+                            <a href="${img.url}" target="_blank" rel="noopener" title="${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}" style="display:block !important;width:100% !important;text-decoration:none !important;margin:0 !important;padding:0 !important;border:none !important;background:transparent !important;cursor:zoom-in !important;">
+                                <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" loading="lazy" style="width:100% !important;height:210px !important;object-fit:cover !important;display:block !important;margin:0 !important;border:none !important;">
+                            </a>
+                            <span class="gallery-idx-pill" style="position:absolute !important;top:10px !important;right:10px !important;background:rgba(15,23,42,0.85) !important;color:#e2e8f0 !important;padding:3px 9px !important;border-radius:12px !important;font-size:11px !important;font-weight:700 !important;border:1px solid rgba(255,255,255,0.15) !important;pointer-events:none !important;">${idx+1} / ${images.length}</span>
+                            <div style="display:flex !important;align-items:center !important;justify-content:space-between !important;padding:8px 12px !important;background:#0f172a !important;border-top:1px solid rgba(255,255,255,0.06) !important;box-sizing:border-box !important;">
+                                <span style="font-size:11px !important;color:#94a3b8 !important;font-weight:700 !important;">${idx+1} من ${images.length}</span>
+                                ${img.caption ? `<span style="font-size:11.5px !important;color:#cbd5e1 !important;text-overflow:ellipsis;overflow:hidden;white-space:nowrap;max-width:170px;">${escapeSmartHtml(img.caption)}</span>` : '<span style="font-size:11px !important;color:#38bdf8 !important;">🔍 تكبير</span>'}
                             </div>
-                            <span class="gallery-idx-pill" style="position:absolute;top:8px;right:8px;background:rgba(15,23,42,0.8);color:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.15);">${idx+1} / ${images.length}</span>
-                            ${img.caption ? `<div class="gallery-card-caption" style="padding:6px 10px;background:rgba(15,23,42,0.92);font-size:11.5px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">${escapeSmartHtml(img.caption)}</div>` : ''}
                         </div>
                     `).join('')}
                 </div>
@@ -4514,22 +4527,26 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
         `;
     } else if (safeLayout === 'vertical-slider') {
         itemsHtml = `
-            <div class="blogger-gallery-vertical-wrap" style="position:relative;max-width:100%;box-sizing:border-box;">
-                <button type="button" class="gallery-scroll-ctrl gallery-scroll-up" onclick="scrollGalleryVerticalBlock(this, -1)" title="الصورة السابقة" style="position:absolute;top:12px;left:12px;z-index:10;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.5);backdrop-filter:blur(6px);transition:all 0.2s;">
+            <div class="blogger-gallery-vertical-wrap" style="position:relative !important;max-width:100% !important;box-sizing:border-box !important;">
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-up" onclick="scrollGalleryVerticalBlock(this, -1)" title="الصورة السابقة" style="position:absolute !important;top:14px !important;left:14px !important;z-index:10 !important;background:rgba(15,23,42,0.88) !important;color:#38bdf8 !important;border:1px solid rgba(56,189,248,0.45) !important;border-radius:50% !important;width:38px !important;height:38px !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;box-shadow:0 6px 16px rgba(0,0,0,0.5) !important;backdrop-filter:blur(6px) !important;transition:all 0.2s !important;">
                     ▲
                 </button>
-                <button type="button" class="gallery-scroll-ctrl gallery-scroll-down" onclick="scrollGalleryVerticalBlock(this, 1)" title="الصورة التالية" style="position:absolute;bottom:12px;left:12px;z-index:10;background:rgba(15,23,42,0.85);color:#38bdf8;border:1px solid rgba(56,189,248,0.4);border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,0.5);backdrop-filter:blur(6px);transition:all 0.2s;">
+                <button type="button" class="gallery-scroll-ctrl gallery-scroll-down" onclick="scrollGalleryVerticalBlock(this, 1)" title="الصورة التالية" style="position:absolute !important;bottom:14px !important;left:14px !important;z-index:10 !important;background:rgba(15,23,42,0.88) !important;color:#38bdf8 !important;border:1px solid rgba(56,189,248,0.45) !important;border-radius:50% !important;width:38px !important;height:38px !important;display:flex !important;align-items:center !important;justify-content:center !important;cursor:pointer !important;box-shadow:0 6px 16px rgba(0,0,0,0.5) !important;backdrop-filter:blur(6px) !important;transition:all 0.2s !important;">
                     ▼
                 </button>
-                <div class="blogger-gallery-vertical-items" style="display:flex;flex-direction:column;gap:16px;max-height:560px;overflow-y:auto;scroll-snap-type:y mandatory;padding:12px;border-radius:14px;background:rgba(5,11,20,0.7);border:1px solid rgba(56,189,248,0.2);-webkit-overflow-scrolling:touch;scroll-behavior:smooth;">
+                <div class="blogger-gallery-vertical-items" style="display:flex !important;flex-direction:column !important;gap:16px !important;max-height:540px !important;overflow-y:auto !important;scroll-snap-type:y mandatory !important;padding:12px !important;border-radius:14px !important;background:#050b14 !important;border:1px solid rgba(56,189,248,0.25) !important;-webkit-overflow-scrolling:touch !important;scroll-behavior:smooth !important;scrollbar-width:thin !important;scrollbar-color:#38bdf8 #0f172a !important;box-sizing:border-box !important;">
                     ${images.map((img, idx) => `
-                        <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="scroll-snap-align:start;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.4);border:1px solid rgba(255,255,255,0.12);background:#050b14;cursor:pointer;flex-shrink:0;position:relative;">
-                            <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" style="width:100%;max-height:420px;object-fit:contain;background:#050b14;display:block;">
-                            <div class="gallery-zoom-badge" style="position:absolute;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.22s ease;">
-                                <span style="background:rgba(15,23,42,0.85);color:#38bdf8;padding:6px 14px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid rgba(56,189,248,0.4);box-shadow:0 4px 12px rgba(0,0,0,0.5);">🔍 تكبير الصورة</span>
+                        <div class="gallery-card-item" onclick="if(window.openGalleryLightbox)openGalleryLightbox('${img.url}','${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}')" style="scroll-snap-align:start !important;border-radius:12px !important;overflow:hidden !important;box-shadow:0 6px 20px rgba(0,0,0,0.4) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#050b14 !important;cursor:pointer !important;flex-shrink:0 !important;max-width:100% !important;margin:0 !important;box-sizing:border-box !important;position:relative !important;">
+                            <a href="${img.url}" target="_blank" rel="noopener" title="${escapeSmartHtml(img.caption || img.alt || `صورة ${idx+1}`)}" style="display:block !important;width:100% !important;text-decoration:none !important;margin:0 !important;padding:0 !important;border:none !important;background:#050b14 !important;text-align:center !important;cursor:zoom-in !important;">
+                                <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Gallery image')}" loading="lazy" style="width:100% !important;max-height:440px !important;object-fit:contain !important;background:#050b14 !important;display:block !important;margin:0 auto !important;border:none !important;">
+                            </a>
+                            <div class="gallery-zoom-badge" style="position:absolute !important;top:12px !important;right:12px !important;background:rgba(15,23,42,0.85) !important;color:#38bdf8 !important;padding:4px 12px !important;border-radius:14px !important;font-size:11.5px !important;font-weight:800 !important;border:1px solid rgba(56,189,248,0.4) !important;pointer-events:none !important;">
+                                📸 ${idx+1} / ${images.length}
                             </div>
-                            <span class="gallery-idx-pill" style="position:absolute;top:10px;right:10px;background:rgba(15,23,42,0.8);color:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;border:1px solid rgba(255,255,255,0.15);">${idx+1} / ${images.length}</span>
-                            ${img.caption ? `<div class="gallery-card-caption" style="padding:8px 12px;background:rgba(15,23,42,0.95);font-size:12px;color:#cbd5e1;text-align:center;border-top:1px solid rgba(255,255,255,0.08);">${escapeSmartHtml(img.caption)}</div>` : ''}
+                            <div style="display:flex !important;align-items:center !important;justify-content:space-between !important;padding:9px 14px !important;background:#0f172a !important;border-top:1px solid rgba(255,255,255,0.08) !important;box-sizing:border-box !important;">
+                                <span style="font-size:11.5px !important;color:#94a3b8 !important;font-weight:700 !important;">صورة ${idx+1} من ${images.length}</span>
+                                ${img.caption ? `<span style="font-size:12px !important;color:#cbd5e1 !important;font-weight:600 !important;">${escapeSmartHtml(img.caption)}</span>` : '<span style="font-size:11px !important;color:#38bdf8 !important;">🔍 انقر للتكبير بالحجم الكامل</span>'}
+                            </div>
                         </div>
                     `).join('')}
                 </div>
@@ -4537,15 +4554,17 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
         `;
     } else if (safeLayout === 'featured') {
         itemsHtml = `
-            <div class="blogger-gallery-featured-items">
-                <div class="gallery-featured-hero" style="border-radius:12px;overflow:hidden;margin-bottom:12px;box-shadow:0 6px 20px rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.12);background:#000;cursor:pointer;" onclick="if(window.openGalleryLightbox){const img=this.querySelector('img');openGalleryLightbox(img.src,img.alt);}">
-                    <img class="featured-hero-main-img" src="${images[0].url}" alt="${escapeSmartHtml(images[0].alt || 'Featured')}" style="width:100%;max-height:400px;object-fit:cover;display:block;">
+            <div class="blogger-gallery-featured-items" style="max-width:100% !important;box-sizing:border-box !important;">
+                <div class="gallery-featured-hero" style="border-radius:12px !important;overflow:hidden !important;margin-bottom:12px !important;box-shadow:0 6px 20px rgba(0,0,0,0.35) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#000 !important;cursor:pointer !important;" onclick="if(window.openGalleryLightbox){const img=this.querySelector('img');openGalleryLightbox(img.src,img.alt);}">
+                    <a href="${images[0].url}" target="_blank" rel="noopener" style="display:block !important;width:100% !important;text-decoration:none !important;">
+                        <img class="featured-hero-main-img" src="${images[0].url}" alt="${escapeSmartHtml(images[0].alt || 'Featured')}" style="width:100% !important;max-height:420px !important;object-fit:cover !important;display:block !important;margin:0 !important;border:none !important;">
+                    </a>
                 </div>
                 ${images.length > 1 ? `
-                    <div class="gallery-featured-thumbs-row" style="display:flex;gap:10px;overflow-x:auto;padding-bottom:6px;">
+                    <div class="gallery-featured-thumbs-row" style="display:flex !important;gap:10px !important;overflow-x:auto !important;padding-bottom:6px !important;scrollbar-width:thin !important;scrollbar-color:#38bdf8 #0f172a !important;">
                         ${images.map((img, i) => `
-                            <div class="gallery-thumb-click" onclick="const hero=this.closest('.blogger-gallery-featured-items')?.querySelector('.featured-hero-main-img');if(hero)hero.src='${img.url}';this.parentElement.querySelectorAll('.gallery-thumb-click').forEach(t=>t.style.borderColor='rgba(255,255,255,0.15)');this.style.borderColor='#0968ef';" style="flex:0 0 100px;height:70px;border-radius:8px;overflow:hidden;cursor:pointer;border:2px solid ${i === 0 ? '#0968ef' : 'rgba(255,255,255,0.15)'};transition:border-color 0.2s;">
-                                <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Thumb')}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                            <div class="gallery-thumb-click" onclick="const hero=this.closest('.blogger-gallery-featured-items')?.querySelector('.featured-hero-main-img');if(hero)hero.src='${img.url}';this.parentElement.querySelectorAll('.gallery-thumb-click').forEach(t=>t.style.borderColor='rgba(255,255,255,0.15)');this.style.borderColor='#0284c7';" style="flex:0 0 100px !important;height:70px !important;border-radius:8px !important;overflow:hidden !important;cursor:pointer !important;border:2px solid ${i === 0 ? '#0284c7' : 'rgba(255,255,255,0.15)'} !important;transition:border-color 0.2s !important;">
+                                <img src="${img.url}" alt="${escapeSmartHtml(img.alt || 'Thumb')}" style="width:100% !important;height:100% !important;object-fit:cover !important;display:block !important;">
                             </div>
                         `).join('')}
                     </div>
@@ -4556,7 +4575,7 @@ function buildGalleryBlockHtml(images, layout = 'grid', forEditor = true) {
 
     const editAttr = forEditor ? 'contenteditable="false"' : '';
     return `
-        <div class="blogger-gallery-container studio-gallery-block" data-gallery-layout="${safeLayout}" ${editAttr} style="margin:28px 0;padding:14px;background:rgba(15,23,42,0.45);border:1px solid rgba(56,189,248,0.25);border-radius:14px;box-shadow:0 6px 20px rgba(0,0,0,0.25);">
+        <div class="blogger-gallery-container studio-gallery-block" data-gallery-layout="${safeLayout}" ${editAttr} style="display:block !important;margin:28px auto !important;padding:16px !important;background:#0b1120 !important;border:1px solid rgba(56,189,248,0.35) !important;border-radius:16px !important;box-shadow:0 8px 24px rgba(0,0,0,0.35) !important;direction:rtl !important;clear:both !important;box-sizing:border-box !important;max-width:100% !important;">
             ${toolbarHtml}
             ${itemsHtml}
         </div>
@@ -4588,7 +4607,7 @@ function cleanGalleryHtmlForExport(html) {
         const temp = document.createElement('div');
         temp.innerHTML = html;
 
-        // 1. Remove editor interactive toolbar
+        // 1. Remove editor interactive toolbars
         temp.querySelectorAll('.studio-gallery-toolbar').forEach(el => el.remove());
 
         // 2. Remove contenteditable attributes
@@ -4596,7 +4615,7 @@ function cleanGalleryHtmlForExport(html) {
             el.removeAttribute('contenteditable');
         });
 
-        // 3. Remove any loose duplicate images that already exist inside the gallery
+        // 3. Remove loose duplicate images already inside the gallery
         const galleryImgs = Array.from(temp.querySelectorAll('.studio-gallery-block img, .blogger-gallery-container img'));
         if (galleryImgs.length > 0) {
             const gallerySrcs = new Set();
@@ -4604,7 +4623,6 @@ function cleanGalleryHtmlForExport(html) {
                 const s = img.getAttribute('src')?.trim();
                 if (s) {
                     gallerySrcs.add(s);
-                    // Also add normalized versions without size params
                     gallerySrcs.add(s.replace(/\/(s(320|200|400|640|72-c|120|150|1600))\//, '/'));
                 }
             });
@@ -4621,210 +4639,119 @@ function cleanGalleryHtmlForExport(html) {
                     if (wrap && wrap !== temp && (wrap.children.length <= 1 || wrap.textContent.trim().length === 0)) {
                         wrap.remove();
                     } else if (img.parentElement) {
-                        img.remove();
+                        const parentA = img.closest('a');
+                        if (parentA && parentA.textContent.trim().length === 0) parentA.remove();
+                        else img.remove();
                     }
                 }
             });
         }
 
-        // 4. Inject responsive styles & lightbox script for live Blogger display
-        const hasGallery = temp.querySelector('.studio-gallery-block, .blogger-gallery-container');
-        if (hasGallery && !temp.querySelector('#blogger-studio-gallery-styles')) {
-            const styleTag = document.createElement('style');
-            styleTag.id = 'blogger-studio-gallery-styles';
+        // 4. Remove any legacy post style tags or scripts inherited from old Blogger content
+        temp.querySelectorAll('script:not(#studio-live-lb-script), style:not(#blogger-studio-gallery-styles)').forEach(el => {
+            if (!el.textContent.includes('blogger-gallery')) {
+                el.remove();
+            }
+        });
+
+        // 5. Enforce Bulletproof Inline Styles on Galleries
+        temp.querySelectorAll('.blogger-gallery-container, .studio-gallery-block').forEach(gal => {
+            gal.setAttribute('style', 'display:block !important;margin:28px auto !important;padding:16px !important;background:#0b1120 !important;border:1px solid rgba(56,189,248,0.35) !important;border-radius:16px !important;box-shadow:0 8px 24px rgba(0,0,0,0.35) !important;direction:rtl !important;clear:both !important;box-sizing:border-box !important;max-width:100% !important;');
+        });
+
+        temp.querySelectorAll('.blogger-gallery-grid-items').forEach(el => {
+            el.setAttribute('style', 'display:grid !important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important;gap:14px !important;margin:0 !important;padding:0 !important;box-sizing:border-box !important;max-width:100% !important;');
+        });
+
+        temp.querySelectorAll('.blogger-gallery-vertical-items').forEach(el => {
+            el.setAttribute('style', 'display:flex !important;flex-direction:column !important;gap:16px !important;max-height:540px !important;overflow-y:auto !important;scroll-snap-type:y mandatory !important;padding:12px !important;border-radius:14px !important;background:#050b14 !important;border:1px solid rgba(56,189,248,0.25) !important;-webkit-overflow-scrolling:touch !important;scroll-behavior:smooth !important;scrollbar-width:thin !important;scrollbar-color:#38bdf8 #0f172a !important;box-sizing:border-box !important;');
+        });
+
+        temp.querySelectorAll('.blogger-gallery-carousel-items').forEach(el => {
+            el.setAttribute('style', 'display:flex !important;gap:14px !important;overflow-x:auto !important;scroll-snap-type:x mandatory !important;padding:6px 2px 14px 2px !important;-webkit-overflow-scrolling:touch !important;scroll-behavior:smooth !important;scrollbar-width:thin !important;scrollbar-color:#38bdf8 #0f172a !important;box-sizing:border-box !important;');
+        });
+
+        temp.querySelectorAll('.blogger-gallery-masonry-items').forEach(el => {
+            el.setAttribute('style', 'column-count:auto !important;column-width:210px !important;column-gap:14px !important;max-width:100% !important;box-sizing:border-box !important;margin:0 !important;padding:0 !important;');
+        });
+
+        temp.querySelectorAll('.gallery-card-item').forEach(el => {
+            const isVert = Boolean(el.closest('.blogger-gallery-vertical-items'));
+            const isCar = Boolean(el.closest('.blogger-gallery-carousel-items'));
+            if (isVert) {
+                el.setAttribute('style', 'scroll-snap-align:start !important;border-radius:12px !important;overflow:hidden !important;box-shadow:0 6px 20px rgba(0,0,0,0.4) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#050b14 !important;cursor:pointer !important;flex-shrink:0 !important;max-width:100% !important;margin:0 !important;box-sizing:border-box !important;position:relative !important;');
+            } else if (isCar) {
+                el.setAttribute('style', 'flex:0 0 280px !important;scroll-snap-align:start !important;border-radius:12px !important;overflow:hidden !important;box-shadow:0 4px 14px rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#0f172a !important;cursor:pointer !important;box-sizing:border-box !important;position:relative !important;');
+            } else {
+                el.setAttribute('style', 'border-radius:12px !important;overflow:hidden !important;box-shadow:0 4px 14px rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.12) !important;background:#0f172a !important;max-width:100% !important;box-sizing:border-box !important;position:relative !important;margin:0 !important;cursor:pointer !important;');
+            }
+        });
+
+        temp.querySelectorAll('.gallery-card-item img').forEach(img => {
+            const isVert = Boolean(img.closest('.blogger-gallery-vertical-items'));
+            if (isVert) {
+                img.setAttribute('style', 'width:100% !important;max-height:440px !important;object-fit:contain !important;background:#050b14 !important;display:block !important;margin:0 auto !important;border:none !important;');
+            } else {
+                img.setAttribute('style', 'width:100% !important;height:200px !important;object-fit:cover !important;display:block !important;margin:0 !important;border:none !important;');
+            }
+        });
+
+        // Ensure all gallery images are wrapped in clean zoom anchors
+        temp.querySelectorAll('.gallery-card-item').forEach(card => {
+            const img = card.querySelector('img');
+            if (img && !card.querySelector('a')) {
+                const a = document.createElement('a');
+                a.href = img.src;
+                a.target = '_blank';
+                a.rel = 'noopener';
+                a.setAttribute('style', 'display:block !important;width:100% !important;text-decoration:none !important;margin:0 !important;padding:0 !important;border:none !important;background:transparent !important;cursor:zoom-in !important;');
+                img.replaceWith(a);
+                a.appendChild(img);
+            }
+        });
+
+        // 6. Enforce Bulletproof Inline Styles on Download Cards
+        temp.querySelectorAll('.pro-download-card').forEach(card => {
+            card.setAttribute('style', 'display:block !important;margin:36px auto !important;max-width:680px !important;background:#0b1120 !important;background-image:linear-gradient(135deg,#0b1120 0%,#1e293b 100%) !important;border:2px solid #0284c7 !important;border-radius:18px !important;padding:26px 22px !important;box-shadow:0 14px 40px rgba(0,0,0,0.5), 0 0 20px rgba(56,189,248,0.2) !important;text-align:center !important;position:relative !important;overflow:hidden !important;box-sizing:border-box !important;clear:both !important;direction:rtl !important;');
+        });
+
+        temp.querySelectorAll('.pro-download-btn').forEach(btn => {
+            btn.setAttribute('style', 'display:inline-flex !important;align-items:center !important;justify-content:center !important;gap:12px !important;padding:15px 42px !important;background:linear-gradient(135deg,#0284c7 0%,#0ea5e9 50%,#38bdf8 100%) !important;color:#ffffff !important;font-weight:900 !important;font-size:16px !important;border-radius:14px !important;text-decoration:none !important;box-shadow:0 10px 25px rgba(2,132,199,0.5) !important;border:1px solid rgba(255,255,255,0.25) !important;cursor:pointer !important;box-sizing:border-box !important;max-width:100% !important;');
+        });
+
+        // 7. Embedded CSS Stylesheet fallback (for browsers/themes supporting style tags)
+        if (temp.querySelector('.blogger-gallery-container, .studio-gallery-block, .pro-download-card')) {
+            let styleTag = temp.querySelector('#blogger-studio-gallery-styles');
+            if (!styleTag) {
+                styleTag = document.createElement('style');
+                styleTag.id = 'blogger-studio-gallery-styles';
+            }
             styleTag.textContent = `
-                .blogger-gallery-container { margin: 28px 0; padding: 14px; background: rgba(15,23,42,0.55); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); direction: rtl; font-family: inherit; max-width: 100%; box-sizing: border-box; }
-                .blogger-gallery-grid-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; max-width: 100%; box-sizing: border-box; }
-                .blogger-gallery-masonry-items { column-count: auto; column-width: 210px; column-gap: 14px; max-width: 100%; box-sizing: border-box; }
-                .blogger-gallery-carousel-items { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 14px 2px; max-width: 100%; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
-                .blogger-gallery-carousel-items .gallery-card-item { flex: 0 0 280px; scroll-snap-align: start; }
-                .blogger-gallery-vertical-items { display: flex; flex-direction: column; gap: 16px; max-height: 560px; overflow-y: auto; scroll-snap-type: y mandatory; padding: 8px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); -webkit-overflow-scrolling: touch; max-width: 100%; box-sizing: border-box; }
-                .blogger-gallery-vertical-items .gallery-card-item { scroll-snap-align: start; border-radius: 10px; overflow: hidden; flex-shrink: 0; max-width: 100%; }
-                .blogger-gallery-vertical-items .gallery-card-item img { width: 100%; max-height: 420px; object-fit: contain; background: #050b14; display: block; }
-                .blogger-gallery-featured-items { max-width: 100%; box-sizing: border-box; }
-                .blogger-gallery-featured-items .gallery-featured-hero { border-radius: 12px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); background: #000; cursor: pointer; }
-                .blogger-gallery-featured-items .gallery-featured-hero img { width: 100%; max-height: 400px; object-fit: cover; display: block; }
-                .blogger-gallery-featured-items .gallery-featured-thumbs-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; max-width: 100%; box-sizing: border-box; }
-                .gallery-card-item { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12); background: #0f172a; cursor: pointer; transition: transform 0.22s ease, box-shadow 0.22s ease; max-width: 100%; box-sizing: border-box; }
-                .gallery-card-item:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
-                .gallery-card-item img { width: 100%; height: 200px; object-fit: cover; display: block; border: 0; }
-                .gallery-card-caption { padding: 6px 10px; background: rgba(15,23,42,0.92); font-size: 11.5px; color: #cbd5e1; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); }
-                .table-responsive-wrapper { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 20px 0; box-sizing: border-box; }
-                .blogger-gallery-container *, .pro-article-figure * { box-sizing: border-box; max-width: 100%; }
-                @media (max-width: 640px) {
-                    .blogger-gallery-grid-items { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; gap: 10px !important; }
-                    .gallery-card-item img { height: 140px !important; }
-                    .blogger-gallery-carousel-items .gallery-card-item { flex: 0 0 220px !important; }
-                }
-            
-                /* Ultra-sleek Custom Scrollbars for Galleries */
                 .blogger-gallery-vertical-items::-webkit-scrollbar,
-                .blogger-gallery-carousel-items::-webkit-scrollbar,
-                .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar {
+                .blogger-gallery-carousel-items::-webkit-scrollbar {
                     width: 6px !important;
                     height: 6px !important;
                 }
                 .blogger-gallery-vertical-items::-webkit-scrollbar-track,
-                .blogger-gallery-carousel-items::-webkit-scrollbar-track,
-                .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar-track {
+                .blogger-gallery-carousel-items::-webkit-scrollbar-track {
                     background: rgba(15, 23, 42, 0.6) !important;
                     border-radius: 10px !important;
                 }
                 .blogger-gallery-vertical-items::-webkit-scrollbar-thumb,
-                .blogger-gallery-carousel-items::-webkit-scrollbar-thumb,
-                .blogger-gallery-featured-items .gallery-featured-thumbs-row::-webkit-scrollbar-thumb {
+                .blogger-gallery-carousel-items::-webkit-scrollbar-thumb {
                     background: linear-gradient(180deg, #0284c7 0%, #38bdf8 100%) !important;
                     border-radius: 10px !important;
-                    box-shadow: 0 0 10px rgba(56, 189, 248, 0.5) !important;
                 }
-                .blogger-gallery-vertical-items::-webkit-scrollbar-thumb:hover,
-                .blogger-gallery-carousel-items::-webkit-scrollbar-thumb:hover {
-                    background: linear-gradient(180deg, #38bdf8 0%, #7dd3fc 100%) !important;
-                }
-                .blogger-gallery-vertical-items,
-                .blogger-gallery-carousel-items {
-                    scrollbar-width: thin !important;
-                    scrollbar-color: #38bdf8 rgba(15, 23, 42, 0.6) !important;
-                    scroll-behavior: smooth !important;
-                }
-                .gallery-scroll-ctrl {
-                    position: absolute;
-                    z-index: 10;
-                    background: rgba(15, 23, 42, 0.88);
-                    color: #38bdf8;
-                    border: 1px solid rgba(56, 189, 248, 0.4);
-                    border-radius: 50%;
-                    width: 36px;
-                    height: 36px;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    cursor: pointer;
-                    box-shadow: 0 6px 16px rgba(0,0,0,0.5);
-                    backdrop-filter: blur(8px);
-                    transition: all 0.22s ease;
-                }
-                .gallery-scroll-ctrl:hover {
-                    background: #0284c7;
-                    color: #fff;
-                    border-color: #38bdf8;
-                    transform: scale(1.12);
-                    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.6);
-                }
-                .gallery-card-item {
-                    position: relative;
-                    overflow: hidden;
-                }
-                .gallery-card-item .gallery-zoom-badge {
-                    position: absolute;
-                    inset: 0;
-                    background: rgba(7, 11, 20, 0.45);
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    opacity: 0;
-                    transition: opacity 0.25s ease;
-                    pointer-events: none;
-                }
-                .gallery-card-item:hover .gallery-zoom-badge {
-                    opacity: 1;
-                }
-                .gallery-card-item:hover img {
-                    transform: scale(1.02);
-                    transition: transform 0.25s ease;
-                }
-                .pro-download-card {
-                    margin: 36px auto;
-                    max-width: 680px;
-                    background: linear-gradient(135deg, rgba(15, 23, 42, 0.92) 0%, rgba(30, 41, 59, 0.92) 100%);
-                    border: 1px solid rgba(56, 189, 248, 0.35);
-                    border-radius: 18px;
-                    padding: 26px 22px;
-                    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(56, 189, 248, 0.12);
-                    text-align: center;
-                    position: relative;
-                    overflow: hidden;
-                    backdrop-filter: blur(10px);
-                    box-sizing: border-box;
-                    clear: both;
-                    direction: rtl;
-                }
-                .pro-download-btn {
-                    display: inline-flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 12px;
-                    padding: 14px 38px;
-                    background: linear-gradient(135deg, #0284c7 0%, #0ea5e9 50%, #38bdf8 100%);
-                    color: #ffffff !important;
-                    font-weight: 900;
-                    font-size: 15.5px;
-                    border-radius: 13px;
-                    text-decoration: none !important;
-                    box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45);
-                    transition: transform 0.2s, box-shadow 0.2s;
-                    border: 1px solid rgba(255, 255, 255, 0.22);
-                    cursor: pointer;
-                    box-sizing: border-box;
-                    max-width: 100%;
+                .gallery-card-item:hover {
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 24px rgba(0,0,0,0.5) !important;
                 }
                 .pro-download-btn:hover {
                     transform: translateY(-2px);
-                    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.6);
+                    box-shadow: 0 12px 30px rgba(2, 132, 199, 0.6) !important;
                 }
-`;
-            temp.prepend(styleTag);
-
-            // Lightbox script for visitors
-            const scriptTag = document.createElement('script');
-            scriptTag.textContent = `
-                (function(){
-                    if (window.__studioGalleryLbInit) return;
-                    window.__studioGalleryLbInit = true;
-                    window.openGalleryLightbox = function(url, caption) {
-                        var m = document.getElementById('studio-live-lightbox');
-                        if (!m) {
-                            m = document.createElement('div');
-                            m.id = 'studio-live-lightbox';
-                            m.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(6px);cursor:zoom-out;';
-                            m.onclick = function() { m.style.display = 'none'; };
-                            m.innerHTML = '<div style="position:relative;max-width:92vw;max-height:88vh;display:flex;flex-direction:column;align-items:center;" onclick="event.stopPropagation()">' +
-                                '<button onclick="document.getElementById(\'studio-live-lightbox\').style.display=\'none\'" style="position:absolute;top:-36px;left:0;background:none;border:none;color:#fff;font-size:32px;cursor:pointer;line-height:1;">&times;</button>' +
-                                '<img id="studio-live-lb-img" style="max-width:100%;max-height:82vh;border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,0.8);object-fit:contain;" src="" />' +
-                                '<div id="studio-live-lb-caption" style="margin-top:10px;color:#e2e8f0;font-size:14px;text-align:center;"></div>' +
-                                '</div>';
-                            document.body.appendChild(m);
-                        }
-                        var im = document.getElementById('studio-live-lb-img');
-                        var cp = document.getElementById('studio-live-lb-caption');
-                        if (im) im.src = url;
-                        if (cp) cp.textContent = caption || '';
-                        m.style.display = 'flex';
-                    };
-                })();
             `;
-            temp.appendChild(scriptTag);
-
-            // Bulletproof inline styles enforcement on all gallery layouts
-            temp.querySelectorAll('.blogger-gallery-container, .studio-gallery-block').forEach(gal => {
-                gal.setAttribute('style', 'margin:28px 0 !important;padding:14px !important;background:rgba(15,23,42,0.55) !important;border:1px solid rgba(56,189,248,0.25) !important;border-radius:14px !important;box-shadow:0 6px 20px rgba(0,0,0,0.25) !important;direction:rtl !important;max-width:100% !important;box-sizing:border-box !important;');
-            });
-            temp.querySelectorAll('.blogger-gallery-grid-items').forEach(el => {
-                el.setAttribute('style', 'display:grid !important;grid-template-columns:repeat(auto-fit,minmax(220px,1fr)) !important;gap:14px !important;max-width:100% !important;box-sizing:border-box !important;');
-            });
-            temp.querySelectorAll('.blogger-gallery-vertical-items').forEach(el => {
-                el.setAttribute('style', 'display:flex !important;flex-direction:column !important;gap:16px !important;max-height:560px !important;overflow-y:auto !important;scroll-snap-type:y mandatory !important;padding:8px !important;border-radius:12px !important;background:rgba(0,0,0,0.3) !important;border:1px solid rgba(255,255,255,0.08) !important;-webkit-overflow-scrolling:touch !important;max-width:100% !important;box-sizing:border-box !important;');
-            });
-            temp.querySelectorAll('.blogger-gallery-carousel-items').forEach(el => {
-                el.setAttribute('style', 'display:flex !important;gap:14px !important;overflow-x:auto !important;scroll-snap-type:x mandatory !important;padding:6px 2px 14px 2px !important;max-width:100% !important;box-sizing:border-box !important;-webkit-overflow-scrolling:touch !important;');
-            });
-            temp.querySelectorAll('.blogger-gallery-masonry-items').forEach(el => {
-                el.setAttribute('style', 'column-count:auto !important;column-width:210px !important;column-gap:14px !important;max-width:100% !important;box-sizing:border-box !important;');
-            });
-            temp.querySelectorAll('.gallery-card-item img').forEach(img => {
-                img.style.maxWidth = '100%';
-                img.style.boxSizing = 'border-box';
-            });
+            temp.prepend(styleTag);
         }
 
         return temp.innerHTML;
@@ -5443,69 +5370,55 @@ function previewArticleLive() {
 }
 window.previewArticleLive = previewArticleLive;
 
-function viewArticleOnLiveSite(postOverride = null) {
+async function viewArticleOnLiveSite(postOverride = null) {
     const currentId = window.currentEditingPostId || (typeof currentEditingPostId !== 'undefined' ? currentEditingPostId : null);
-    const post = postOverride || (window.allPosts || allPosts || []).find(p => String(p.id) === String(currentId));
-
-    const titleAr = document.getElementById('art-title')?.value || '';
-    const titleEn = document.getElementById('art-title-en')?.value || '';
-    const currentTitle = (titleAr || titleEn || post?.title || 'مقال بدون عنوان').trim();
-
-    // Fresh formatted HTML from editor with clean gallery export
-    let contentToDisplay = '';
-    if (!postOverride && typeof getEditorHtmlContent === 'function') {
-        contentToDisplay = getEditorHtmlContent(true);
-    }
-    if (!contentToDisplay || contentToDisplay.trim() === '<p></p>' || contentToDisplay.trim() === '<p><br></p>') {
-        const rawP = post?.content || post?.content_html || '';
-        contentToDisplay = (typeof cleanGalleryHtmlForExport === 'function') ? cleanGalleryHtmlForExport(rawP) : rawP;
-    }
-
-    const cover = (!postOverride ? (document.getElementById('art-cover')?.value || currentFeaturedImage) : '') || post?.image || '';
-    const labels = (!postOverride && typeof getArticleTagsList === 'function' && getArticleTagsList().length > 0)
-        ? getArticleTagsList()
-        : (post?.labels || []);
+    let post = postOverride || (window.allPosts || allPosts || []).find(p => String(p.id) === String(currentId));
 
     const activeBlog = (window.connectedBlogs || []).find(b => String(b.id) === String(window.currentActiveBlogId)) || {};
     const blogId = String(window.currentActiveBlogId || localStorage.getItem('studio_active_blog_id') || '');
-    const blogName = activeBlog.name || window.currentActiveBlogName || 'Blogger';
+    const activeBlogName = activeBlog.name || window.currentActiveBlogName || 'Blogger';
     const blogUrl = activeBlog.url || window.currentActiveBlogUrl || '';
-    const bloggerPostUrl = post?.url || '';
 
-    // Live Snapshot payload
-    const liveSnapshot = {
-        id: currentId || (post ? post.id : 'current_' + Date.now()),
-        title: currentTitle,
-        content: contentToDisplay,
-        cover: cover,
-        labels: labels,
-        display_date: post?.display_date || post?.published || new Date().toLocaleDateString('ar-EG'),
-        blog_id: blogId,
-        blog_name: blogName,
-        blog_url: blogUrl,
-        blogger_url: bloggerPostUrl,
-        author: post?.author?.displayName || 'مدير الموقع',
-        author_image: post?.author?.image?.url || '',
-        updated_at: new Date().toISOString()
-    };
-
-    try {
-        localStorage.setItem('studio_live_view_post', JSON.stringify(liveSnapshot));
-    } catch(e) {
-        console.warn('Could not save studio_live_view_post:', e);
+    // If currently editing inside the writer tab, auto-sync/save to Blogger first
+    if (!postOverride && currentId) {
+        showToast('جاري مزامنة وتحديث المنشور في بلوجر لضمان ظهور التنسيق الجديد على الموقع... 🔄', 'info');
+        try {
+            const isLive = post && (post.status === 'LIVE' || !post.is_draft);
+            if (isLive) {
+                await publishArticleLive();
+            } else {
+                await saveArticleDraft(true);
+            }
+            // Re-fetch post from allPosts after save
+            post = (window.allPosts || allPosts || []).find(p => String(p.id) === String(currentId)) || post;
+        } catch(syncErr) {
+            console.warn('Auto-sync before viewing on live site notice:', syncErr);
+        }
     }
 
-    if (post) {
-        post.title = currentTitle;
-        post.content = contentToDisplay;
-        post.content_html = contentToDisplay;
-        post.image = cover;
-        post.labels = labels;
+    const bloggerPostUrl = post?.url || post?.blogger_url || '';
+    if (bloggerPostUrl) {
+        window.open(bloggerPostUrl, '_blank');
+        showToast(`تم فتح المقال في مدونة بلوجر الرسمية (${activeBlogName}) بنجاح! 🌐✨`, 'success');
+        return;
     }
 
-    const articleViewerUrl = `article?id=${encodeURIComponent(liveSnapshot.id)}&blog=${encodeURIComponent(blogId)}`;
-    window.open(articleViewerUrl, '_blank');
-    showToast('جاري فتح المقال في صفحة الموقع المباشرة في تبويب جديد... 🌐✨', 'success');
+    // If draft without published permalink:
+    if (post && post.id && blogId) {
+        const draftPreviewUrl = `https://draft.blogger.com/blog/post/edit/preview/${blogId}/${post.id}`;
+        window.open(draftPreviewUrl, '_blank');
+        showToast('المقال مسودة (Draft) - تم فتح صفحة المعاينة الرسمية على بلوجر 🌐', 'info');
+        return;
+    }
+
+    // Fallback: blog home
+    if (blogUrl) {
+        window.open(blogUrl, '_blank');
+        showToast(`تم فتح موقع مدونة ${activeBlogName} على بلوجر 🌐`, 'info');
+        return;
+    }
+
+    showToast('يرجى نشر المقال أولاً للحصول على رابط مباشر على بلوجر', 'warning');
 }
 window.viewArticleOnLiveSite = viewArticleOnLiveSite;
 
@@ -5515,7 +5428,23 @@ function viewPostOnLiveSite(postId) {
         showToast('لم يتم العثور على المقال المطلوب', 'error');
         return;
     }
-    viewArticleOnLiveSite(post);
+    const activeBlog = (window.connectedBlogs || []).find(b => String(b.id) === String(window.currentActiveBlogId)) || {};
+    const blogId = String(window.currentActiveBlogId || localStorage.getItem('studio_active_blog_id') || '');
+    const blogUrl = activeBlog.url || window.currentActiveBlogUrl || '';
+
+    if (post.url) {
+        window.open(post.url, '_blank');
+        showToast('تم فتح المقال في مدونة بلوجر الرسمية 🌐', 'success');
+    } else if (post.id && blogId) {
+        const draftUrl = `https://draft.blogger.com/blog/post/edit/preview/${blogId}/${post.id}`;
+        window.open(draftUrl, '_blank');
+        showToast('المقال مسودة (Draft) - تم فتح معاينة المسودة على بلوجر 🌐', 'info');
+    } else if (blogUrl) {
+        window.open(blogUrl, '_blank');
+        showToast('تم فتح موقع المدونة على بلوجر 🌐', 'info');
+    } else {
+        showToast('لا يتوفر رابط مباشر لهذا المنشور حالياً', 'warning');
+    }
 }
 window.viewPostOnLiveSite = viewPostOnLiveSite;
 
@@ -15590,7 +15519,7 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
     container.innerHTML = rawHtml;
 
     // Remove legacy junk
-    container.querySelectorAll('script, head, meta, title, link[rel="stylesheet"]').forEach(el => el.remove());
+    container.querySelectorAll('script, style, head, meta, title, link[rel="stylesheet"]').forEach(el => el.remove());
 
     const isAr = /[؀-ۿ]/.test(container.textContent || '');
     const align = isAr ? 'right' : 'left';
@@ -15955,19 +15884,21 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
                         }
                     }
                     // If it's a DIV, BLOCKQUOTE, P, SECTION with download ID/class or background styling
-                    else if (['DIV', 'BLOCKQUOTE', 'SECTION', 'P'].includes(tag)) {
+                    else if (['DIV', 'BLOCKQUOTE', 'SECTION', 'P', 'CENTER', 'TABLE'].includes(tag)) {
                         const anchorsInCurr = curr.querySelectorAll('a');
-                        const isMainlyDownload = anchorsInCurr.length <= 2 && currText.length < 350;
+                        const isMainlyDownload = anchorsInCurr.length <= 3 && currText.length < 500;
                         const hasDownloadMarker = currId.includes('btn') || currClass.includes('btn') || 
                                                   currId.includes('download') || currClass.includes('download') || 
                                                   currStyle.includes('background') || currStyle.includes('border') || 
-                                                  tag === 'BLOCKQUOTE' || currClass.includes('separator');
+                                                  tag === 'BLOCKQUOTE' || currClass.includes('separator') ||
+                                                  Boolean(curr.querySelector('ul#btnd, [id*="btn"], [class*="btn"], [id*="download"], [class*="download"]')) ||
+                                                  /download|تحميل|تنزيل|رابط|appcenter|drive\.google|mediafire|mega\.nz/i.test(curr.innerHTML);
 
                         if (isMainlyDownload && hasDownloadMarker) {
                             // Extract any title from headers before replacing
                             const headerEl = curr.querySelector('h1, h2, h3, h4, blockquote, strong, b');
                             if (headerEl && headerEl !== a && !extractedTitle) {
-                                extractedTitle = headerEl.textContent.replace(/&nbsp;/g, ' ').trim();
+                                extractedTitle = headerEl.textContent.replace(/&nbsp;/g, ' ').replace(/\s+/g, ' ').trim();
                             }
                             targetWrapper = curr;
                         } else {
@@ -15994,7 +15925,7 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
                 // Create sleek, clean, modern Download Card
                 const cardEl = document.createElement('div');
                 cardEl.className = 'pro-download-card';
-                cardEl.setAttribute('style', 'margin:36px auto;max-width:680px;background:linear-gradient(135deg,rgba(15,23,42,0.92) 0%,rgba(30,41,59,0.92) 100%);border:1px solid rgba(56,189,248,0.35);border-radius:18px;padding:26px 22px;box-shadow:0 14px 40px rgba(0,0,0,0.5),0 0 20px rgba(56,189,248,0.12);text-align:center;position:relative;overflow:hidden;backdrop-filter:blur(10px);box-sizing:border-box;clear:both;direction:rtl;');
+                cardEl.setAttribute('style', 'display:block !important;margin:36px auto !important;max-width:680px !important;background:#0b1120 !important;background-image:linear-gradient(135deg,#0b1120 0%,#1e293b 100%) !important;border:2px solid #0284c7 !important;border-radius:18px !important;padding:26px 22px !important;box-shadow:0 14px 40px rgba(0,0,0,0.5), 0 0 20px rgba(56,189,248,0.2) !important;text-align:center !important;position:relative !important;overflow:hidden !important;box-sizing:border-box !important;clear:both !important;direction:rtl !important;');
                 cardEl.innerHTML = `
                     <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#0284c7,#38bdf8,#818cf8,#0284c7);"></div>
                     <div style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;">
@@ -16020,7 +15951,15 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
                     </div>
                 `;
 
-                // Clean lingering empty siblings
+                // Clean lingering empty siblings or duplicate download headings
+                let prevH = targetWrapper.previousElementSibling;
+                if (prevH && (prevH.tagName === 'BLOCKQUOTE' || ['H1','H2','H3','H4'].includes(prevH.tagName))) {
+                    if (/download|تحميل|تنزيل/i.test(prevH.textContent || '')) {
+                        const toDel = prevH;
+                        prevH = prevH.previousElementSibling;
+                        toDel.remove();
+                    }
+                }
                 let prev = targetWrapper.previousElementSibling;
                 while (prev && (prev.tagName === 'BR' || (prev.tagName === 'P' && prev.textContent.trim().length === 0))) {
                     const toDel = prev;
