@@ -103,33 +103,40 @@ def preflight_security_scan():
     return True
 
 def sync_assets():
-    """Synchronize templates/index.html to root index.html with universal paths."""
-    print(f"{C.BOLD}[2/4] 🔄 مزامنة ملفات الواجهة والترويسات لـ Cloudflare...{C.RESET}")
+    """Synchronize templates/index.html to root index.html with universal paths, dist bundle and dynamic cache-buster."""
+    print(f"{C.BOLD}[2/4] 🔄 مزامنة وبناء ملفات الواجهة والترويسات وحزمة dist لـ Cloudflare...{C.RESET}")
     
+    try:
+        from app.deployment_hub import build_dist_bundle
+        build_dist_bundle()
+        print(f"   {C.GREEN}✓ تم بناء حزمة dist وحقن إصدار التخزين المؤقت الجديد (Cache Buster) بنجاح.{C.RESET}")
+        return True
+    except Exception as err:
+        print(f"   {C.YELLOW}⚠️ استدعاء المحرك المساعد: {err}{C.RESET}")
+        
     src_html = os.path.join("templates", "index.html")
     dest_html = "index.html"
     
+    import time
+    b_ts = str(int(time.time()))
     if os.path.exists(src_html):
         with open(src_html, "r", encoding="utf-8") as f:
             content = f.read()
-        # Ensure relative asset paths for Cloudflare / GitHub compatibility
         content = content.replace('href="/static/', 'href="./static/').replace('src="/static/', 'src="./static/')
+        content = re.sub(r'dashboard\.js(\?v=[^\s"\'\>]+)?', f'dashboard.js?v={b_ts}', content)
+        content = re.sub(r'style\.css(\?v=[^\s"\'\>]+)?', f'style.css?v={b_ts}', content)
         with open(dest_html, "w", encoding="utf-8") as f:
             f.write(content)
-        print(f"   {C.GREEN}✓ تم تحديث index.html الرئيسي بنجاح.{C.RESET}")
-    else:
-        print(f"{C.YELLOW}⚠️ لم يتم العثور على templates/index.html{C.RESET}")
+        with open(src_html, "w", encoding="utf-8") as f:
+            f.write(content)
+        print(f"   {C.GREEN}✓ تم تحديث index.html و templates/index.html مع Cache-Buster {b_ts}.{C.RESET}")
 
-    # Verify _headers and _redirects
-    if not os.path.exists("_headers"):
-        with open("_headers", "w", encoding="utf-8") as f:
-            f.write("/*\n  X-Frame-Options: SAMEORIGIN\n  X-Content-Type-Options: nosniff\n/static/*\n  Cache-Control: public, max-age=31536000, immutable\n")
-        print(f"   {C.GREEN}✓ تم إنشاء ملف الترويسات _headers.{C.RESET}")
-        
-    if not os.path.exists("_redirects"):
-        with open("_redirects", "w", encoding="utf-8") as f:
-            f.write("/index.html / 200\n/* /index.html 200\n")
-        print(f"   {C.GREEN}✓ تم إنشاء ملف التوجيهات _redirects.{C.RESET}")
+    # Ensure dist folder is updated
+    dist_dir = "dist"
+    if os.path.exists(dist_dir):
+        shutil.copy2(dest_html, os.path.join(dist_dir, "index.html"))
+        if os.path.exists("static"):
+            shutil.copytree("static", os.path.join(dist_dir, "static"), dirs_exist_ok=True)
 
     return True
 

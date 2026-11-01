@@ -439,6 +439,8 @@ def build_dist_bundle() -> bool:
             f.write(index_content)
         with open(os.path.join(BASE_DIR, "index.html"), "w", encoding="utf-8") as f:
             f.write(index_content)
+        with open(main_html, "w", encoding="utf-8") as f:
+            f.write(index_content)
         
     # Copy deployment hub standalone html
     hub_html = os.path.join(templates_dir, "deployment_hub.html")
@@ -515,6 +517,9 @@ def push_to_github(commit_msg: Optional[str] = None) -> Dict[str, Any]:
     sec = security_preflight_check()
     if not sec["passed"]:
         return {"success": False, "error": sec["message"], "leaks": sec["leaks"]}
+
+    # 1. Automatically build clean dist bundle and inject unique cache-buster before git stage
+    build_dist_bundle()
         
     cfg = load_hub_config()
     token = cfg.get("github", {}).get("token", "").strip()

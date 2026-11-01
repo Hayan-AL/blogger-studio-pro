@@ -68,9 +68,9 @@
 
         const resolveCanonicalBlogId = (bId) => {
             const raw = String(bId || activeId || '3715457895504629620');
-            if (raw === '5132150821033221945' || raw === '3715457895504629620') return '3715457895504629620'; // Tekmilo
-            if (raw === '2026102901' || raw === '202' || raw === '6735965676618679814') return '6735965676618679814'; // HayanFilma
-            if (raw === '303' || raw === '4487851326088139307') return '4487851326088139307'; // Hayan Lite
+            if (raw === '3715457895504629620') return '3715457895504629620'; // Tekmilo
+            if (raw === '6735965676618679814' || raw === '5132150821033221945' || raw === '2026102901' || raw === '202') return '6735965676618679814'; // HayanFilma
+            if (raw === '4487851326088139307' || raw === '303') return '4487851326088139307'; // Hayan Lite
             return raw;
         };
 
@@ -2673,7 +2673,10 @@ function renderPostsTable(posts, isTrash = false) {
     tbody.innerHTML = posts.map(p => {
         const isChecked = isTrash ? selectedTrashPostIds.has(String(p.id)) : selectedPostIds.has(String(p.id));
         const postTitle = escapeHtml(p.title || 'بدون عنوان');
-        const snippetRaw = p.snippet || '';
+        let snippetRaw = p.snippet || '';
+        if ((!snippetRaw || snippetRaw === 'undefined' || snippetRaw === 'null') && (p.content || p.content_html)) {
+            snippetRaw = (p.content_html || p.content || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+        }
         const snippetText = (snippetRaw && snippetRaw !== 'undefined' && snippetRaw !== 'null') ? escapeHtml(snippetRaw) : '';
         const postImg = p.image || p.image_url || 'https://images.unsplash.com/photo-1518770660439-4636190af475?w=200';
         const postLang = (p.language || p.lang || (/[؀-ۿ]/.test(p.title || '') ? 'ar' : 'en'));
@@ -2707,6 +2710,12 @@ function renderPostsTable(posts, isTrash = false) {
                 const timePart = String(rawDate).substring(11, 16);
                 if (timePart) formattedDate += ` ${timePart}`;
             }
+        } else if (pStatus === 'SCHEDULED') {
+            formattedDate = 'موعد الجدولة غير محدد';
+        } else if (isTrash) {
+            formattedDate = 'تاريخ الحذف غير متوفر';
+        } else {
+            formattedDate = 'تاريخ النشر غير متوفر';
         }
 
         // Action Buttons
@@ -2802,8 +2811,15 @@ function filterPosts() {
     const statusVal = (document.getElementById('posts-filter-status')?.value || 'all').toUpperCase();
     const currentSection = window.currentPostsSection || 'all';
 
+    // Synchronize effective status filter
+    let statusFilter = statusVal;
+    if (currentSection === 'draft' && statusVal === 'ALL') statusFilter = 'DRAFT';
+    else if (currentSection === 'scheduled' && statusVal === 'ALL') statusFilter = 'SCHEDULED';
+    else if (currentSection === 'live' && statusVal === 'ALL') statusFilter = 'LIVE';
+    else if (currentSection === 'trash' && statusVal === 'ALL') statusFilter = 'TRASH';
+
     // Trash View
-    if (currentSection === 'trash' || statusVal === 'TRASH') {
+    if (currentSection === 'trash' || statusFilter === 'TRASH' || statusVal === 'TRASH') {
         const filtered = (allTrashPosts || []).filter(p => {
             const titleStr = (p.title || '').toLowerCase();
             const snippetStr = (p.snippet || '').toLowerCase();
@@ -2819,11 +2835,6 @@ function filterPosts() {
     }
 
     // Active Posts View (All, Draft, Scheduled, Live)
-    let statusFilter = statusVal;
-    if (currentSection === 'draft') statusFilter = 'DRAFT';
-    else if (currentSection === 'scheduled') statusFilter = 'SCHEDULED';
-    else if (currentSection === 'live') statusFilter = 'LIVE';
-
     const filtered = (allPosts || []).filter(p => {
         const titleStr = (p.title || '').toLowerCase();
         const snippetStr = (p.snippet || '').toLowerCase();
@@ -9577,8 +9588,8 @@ async function refreshAllDataForActiveBlog(targetBlog, seq, isInitialLoad = fals
                 fetchedPosts = [];
             }
             if ((!fetchedPosts || !fetchedPosts.length) && typeof REAL_BLOG_PRESEEDED_POSTS !== 'undefined') {
-                const canonicalId = (blogId === '5132150821033221945' ? '3715457895504629620' : (['2026102901', '202'].includes(blogId) ? '6735965676618679814' : blogId));
-                const pre = REAL_BLOG_PRESEEDED_POSTS[canonicalId] || REAL_BLOG_PRESEEDED_POSTS['3715457895504629620'];
+                const canonicalId = (typeof resolveCanonicalBlogId === 'function') ? resolveCanonicalBlogId(blogId) : blogId;
+                const pre = REAL_BLOG_PRESEEDED_POSTS[canonicalId] || REAL_BLOG_PRESEEDED_POSTS[blogId] || [];
                 if (pre && pre.length > 0) fetchedPosts = JSON.parse(JSON.stringify(pre));
             }
         }
