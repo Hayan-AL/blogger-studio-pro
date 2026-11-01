@@ -14071,3 +14071,91 @@ html[dir="ltr"] .topbar {
   border-color: #38bdf8 !important;
   transform: translateY(-2px);
 }
+
+
+/* --------------------------------------------------------------------------
+   PROFESSIONAL FULL FORMAT STUDIO & PREVIEW MODAL
+   -------------------------------------------------------------------------- */
+.smart-format-presets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 12px;
+}
+
+.smart-format-preset-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: var(--text-primary, #e2e8f0);
+  cursor: pointer;
+  text-align: right;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  user-select: none;
+}
+
+.smart-format-preset-btn:hover {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+
+.smart-format-preset-btn.active {
+  background: linear-gradient(135deg, rgba(2, 132, 199, 0.28), rgba(37, 99, 235, 0.25));
+  border-color: #38bdf8;
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.3), inset 0 0 12px rgba(56, 189, 248, 0.15);
+}
+
+.smart-format-preset-btn.active .preset-name {
+  color: #38bdf8;
+}
+
+.preset-icon {
+  font-size: 24px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.preset-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.preset-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+.preset-desc {
+  font-size: 11.5px;
+  color: var(--text-muted, #94a3b8);
+  line-height: 1.35;
+}
+
+.pro-format-container {
+  max-width: 100%;
+  margin: 0 auto;
+  line-height: 1.85;
+  color: inherit;
+}
+
+.pro-format-container a {
+  color: #38bdf8;
+  text-decoration: underline;
+}
+
+.pro-format-container .pro-download-btn {
+  text-decoration: none !important;
+}
+
+.pro-format-container .pro-download-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 24px rgba(2, 132, 199, 0.45) !important;
+}

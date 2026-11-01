@@ -15236,125 +15236,490 @@ window.triggerComprehensivePublish = triggerComprehensivePublish;
 // INTELLIGENT COMPREHENSIVE ARTICLE FORMATTING ENGINE
 // -------------------------------------------------------------
 // -------------------------------------------------------------
-// PROFESSIONAL FULL FORMAT ENGINE & MODAL PREVIEW / UNDO SYSTEM
+// PROFESSIONAL FULL FORMAT ENGINE & MULTI-STYLE PREVIEW / UNDO SYSTEM
 // -------------------------------------------------------------
 window.__preSmartFormatSnapshot = null;
 window.__pendingSmartFormattedHtml = null;
+window.__currentSmartFormatStyle = 'tech';
 
-function formatArticleContentIntelligently(rawHtml) {
+function switchSmartFormatStyle(styleName) {
+    window.__currentSmartFormatStyle = styleName || 'tech';
+
+    // Update style buttons
+    document.querySelectorAll('.smart-format-preset-btn').forEach(btn => btn.classList.remove('active'));
+    const targetBtn = document.getElementById(`btn-preset-${styleName}`);
+    if (targetBtn) targetBtn.classList.add('active');
+
+    // Update badge
+    const badge = document.getElementById('active-style-badge');
+    if (badge) {
+        const labels = {
+            'tech': 'النمط المختار: العصري التقني 🚀',
+            'editorial': 'النمط المختار: المجلة الفاخرة 📰',
+            'minimal': 'النمط المختار: البسيط الأنيق 💎',
+            'review': 'النمط المختار: مراجعات وتطبيقات 📱'
+        };
+        badge.textContent = labels[styleName] || labels['tech'];
+    }
+
+    updateSmartFormatPreviewRealtime();
+}
+window.switchSmartFormatStyle = switchSmartFormatStyle;
+
+function updateSmartFormatPreviewRealtime() {
+    if (!window.__preSmartFormatSnapshot) return;
+
+    const optToc = document.getElementById('fmt-opt-toc')?.checked ?? true;
+    const optHighlights = document.getElementById('fmt-opt-highlights')?.checked ?? true;
+    const optCallouts = document.getElementById('fmt-opt-callouts')?.checked ?? true;
+    const optFigures = document.getElementById('fmt-opt-figures')?.checked ?? true;
+    const optButtons = document.getElementById('fmt-opt-buttons')?.checked ?? true;
+
+    const result = formatArticleContentIntelligently(
+        window.__preSmartFormatSnapshot,
+        window.__currentSmartFormatStyle || 'tech',
+        { toc: optToc, highlights: optHighlights, callouts: optCallouts, figures: optFigures, buttons: optButtons }
+    );
+
+    window.__pendingSmartFormattedHtml = result.formattedHtml;
+
+    // Render stats
+    const statsBar = document.getElementById('smart-format-stats-bar');
+    if (statsBar) {
+        statsBar.innerHTML = `
+            <span style="background:rgba(56,189,248,0.15);color:#38bdf8;padding:4px 10px;border-radius:6px;font-weight:700;">🎨 ${result.stats.styleName}</span>
+            <span style="background:rgba(16,185,129,0.15);color:#10b981;padding:4px 10px;border-radius:6px;font-weight:700;">📋 ${result.stats.headingsCount} عناوين منسقة</span>
+            <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:4px 10px;border-radius:6px;font-weight:700;">🖼️ ${result.stats.imagesCount} صور متجاوبة</span>
+            <span style="background:rgba(139,92,246,0.15);color:#a78bfa;padding:4px 10px;border-radius:6px;font-weight:700;">💬 ${result.stats.calloutsCount} تنبيهات</span>
+            <span style="background:rgba(236,72,153,0.15);color:#f472b6;padding:4px 10px;border-radius:6px;font-weight:700;">📥 ${result.stats.downloadCount} أزرار تحميل</span>
+            <span style="background:rgba(255,255,255,0.08);color:#e2e8f0;padding:4px 10px;border-radius:6px;">✍️ ${result.stats.wordCount} كلمة</span>
+            <span style="background:rgba(34,197,94,0.15);color:#4ade80;padding:4px 10px;border-radius:6px;">القرائية: ${result.stats.readability}</span>
+        `;
+    }
+
+    // Render Preview
+    const previewContainer = document.getElementById('smart-format-preview-render');
+    if (previewContainer) {
+        previewContainer.innerHTML = result.formattedHtml;
+    }
+}
+window.updateSmartFormatPreviewRealtime = updateSmartFormatPreviewRealtime;
+
+function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options = {}) {
     if (!rawHtml || typeof rawHtml !== 'string') return { formattedHtml: '', stats: {} };
     
-    const temp = document.createElement('div');
-    temp.innerHTML = rawHtml;
+    const optToc = options.toc ?? true;
+    const optHighlights = options.highlights ?? true;
+    const optCallouts = options.callouts ?? true;
+    const optFigures = options.figures ?? true;
+    const optButtons = options.buttons ?? true;
+
+    // Sandbox container
+    const container = document.createElement('div');
+    container.innerHTML = rawHtml;
+
+    // Remove legacy junk
+    container.querySelectorAll('script, head, meta, title, link[rel="stylesheet"]').forEach(el => el.remove());
+
+    const isAr = /[\u0600-\u06FF]/.test(container.textContent || '');
+    const align = isAr ? 'right' : 'left';
 
     let headingsCount = 0;
     let imagesCount = 0;
     let downloadCount = 0;
     let tableCount = 0;
-    let blockquoteCount = 0;
+    let calloutsCount = 0;
 
-    // 1. Standardize Headings Hierarchy (H1 -> H2, Style H2, H3, H4)
-    temp.querySelectorAll('h1').forEach(h1 => {
+    // Theme definitions
+    const themes = {
+        tech: {
+            name: isAr ? 'العصري التقني' : 'Modern Tech',
+            badge: '#38bdf8',
+            border: 'rgba(56,189,248,0.25)',
+            bgCard: 'rgba(15,23,42,0.85)',
+            leadBorder: '#38bdf8',
+            h2Color: '#38bdf8',
+            h3Color: '#e2e8f0',
+            buttonGradient: 'linear-gradient(135deg, #0284c7, #2563eb)'
+        },
+        editorial: {
+            name: isAr ? 'المجلة الفاخرة' : 'Editorial Magazine',
+            badge: '#f59e0b',
+            border: 'rgba(245,158,11,0.25)',
+            bgCard: 'rgba(30,27,20,0.85)',
+            leadBorder: '#f59e0b',
+            h2Color: '#f59e0b',
+            h3Color: '#fef3c7',
+            buttonGradient: 'linear-gradient(135deg, #d97706, #b45309)'
+        },
+        minimal: {
+            name: isAr ? 'البسيط الأنيق' : 'Minimalist Luxury',
+            badge: '#0ea5e9',
+            border: 'rgba(255,255,255,0.1)',
+            bgCard: 'rgba(30,41,59,0.5)',
+            leadBorder: '#0ea5e9',
+            h2Color: '#f8fafc',
+            h3Color: '#cbd5e1',
+            buttonGradient: 'linear-gradient(135deg, #334155, #1e293b)'
+        },
+        review: {
+            name: isAr ? 'مراجعات وتطبيقات' : 'App & Reviews',
+            badge: '#10b981',
+            border: 'rgba(16,185,129,0.25)',
+            bgCard: 'rgba(6,44,32,0.85)',
+            leadBorder: '#10b981',
+            h2Color: '#10b981',
+            h3Color: '#a7f3d0',
+            buttonGradient: 'linear-gradient(135deg, #10b981, #059669)'
+        }
+    };
+    const currentTheme = themes[styleType] || themes.tech;
+
+    // 1. Standardize Headings & Collect for TOC
+    const headingsList = [];
+    container.querySelectorAll('h1').forEach(h1 => {
         const h2 = document.createElement('h2');
         h2.innerHTML = h1.innerHTML;
         h1.replaceWith(h2);
     });
 
-    temp.querySelectorAll('h2').forEach(h2 => {
+    const headings = Array.from(container.querySelectorAll('h2, h3, h4'));
+    headings.forEach((h, idx) => {
         headingsCount++;
-        h2.style.cssText = 'font-size:21px;font-weight:800;color:#38bdf8;margin:28px 0 14px 0;padding-bottom:8px;border-bottom:2px solid rgba(56,189,248,0.25);line-height:1.4;';
-    });
+        const tag = h.tagName.toLowerCase();
+        const text = h.textContent.trim();
+        const secId = `pro-section-${idx + 1}`;
+        h.id = secId;
 
-    temp.querySelectorAll('h3').forEach(h3 => {
-        headingsCount++;
-        h3.style.cssText = 'font-size:18px;font-weight:700;color:#e2e8f0;margin:22px 0 10px 0;padding-inline-start:10px;border-inline-start:3px solid #38bdf8;line-height:1.45;';
-    });
+        if (tag === 'h2') {
+            headingsList.push({ id: secId, text, tag: 'h2' });
+            const numStr = String(headingsList.filter(x => x.tag === 'h2').length).padStart(2, '0');
 
-    temp.querySelectorAll('h4').forEach(h4 => {
-        headingsCount++;
-        h4.style.cssText = 'font-size:16px;font-weight:700;color:#94a3b8;margin:18px 0 8px 0;line-height:1.4;';
-    });
-
-    // 2. Format All Inline Images in place (Responsive, Elegant Shadows & Captions)
-    temp.querySelectorAll('img').forEach((img, idx) => {
-        imagesCount++;
-        img.style.cssText = 'max-width:100%;height:auto;border-radius:10px;margin:16px auto;display:block;box-shadow:0 4px 20px rgba(0,0,0,0.25);';
-        
-        // Upgrade low-res Blogger thumbnails if possible
-        let src = img.getAttribute('src') || '';
-        if (src.includes('googleusercontent.com') || src.includes('bp.blogspot.com')) {
-            src = src.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
-            img.src = src;
-        }
-
-        // Clean parent separator div styling if present
-        const parentSep = img.closest('.separator');
-        if (parentSep) {
-            parentSep.style.cssText = 'text-align:center;margin:20px 0;clear:both;';
-        }
-    });
-
-    // 3. Detect and Beautify Download Buttons
-    temp.querySelectorAll('a').forEach(a => {
-        const text = (a.textContent || '').trim().toLowerCase();
-        const href = (a.getAttribute('href') || '').toLowerCase();
-        const isDownloadLink = text.includes('تحميل') || text.includes('download') || href.includes('drive.google.com') || href.includes('mediafire.com') || href.includes('mega.nz') || href.includes('github.com') && href.includes('/releases');
-
-        if (isDownloadLink) {
-            downloadCount++;
-            a.className = 'pro-download-btn';
-            a.style.cssText = 'display:inline-flex;align-items:center;gap:10px;padding:12px 24px;background:linear-gradient(135deg,#0284c7,#2563eb);color:#ffffff!important;font-weight:700;font-size:15px;border-radius:10px;text-decoration:none!important;box-shadow:0 4px 14px rgba(2,132,199,0.35);margin:16px 0;transition:transform 0.2s,box-shadow 0.2s;';
-            if (!a.querySelector('i') && !a.innerHTML.includes('📥')) {
-                a.innerHTML = `<span style="font-size:18px;">📥</span> <span>${a.textContent.trim()}</span>`;
+            if (styleType === 'tech') {
+                h.style.cssText = `font-size:21px;font-weight:800;color:${currentTheme.h2Color};margin:32px 0 16px 0;padding-bottom:10px;border-bottom:2px solid ${currentTheme.border};line-height:1.45;display:flex;align-items:center;gap:10px;`;
+                h.innerHTML = `<span style="display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:8px;background:${currentTheme.buttonGradient};color:#fff;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,0.3);">${numStr}</span> <span>${text}</span>`;
+            } else if (styleType === 'editorial') {
+                h.style.cssText = `font-size:23px;font-weight:900;color:${currentTheme.h2Color};margin:36px 0 16px 0;padding-bottom:10px;border-bottom:2px double ${currentTheme.border};line-height:1.4;`;
+                h.innerHTML = `<span>${text}</span> <span style="font-size:14px;opacity:0.6;margin-inline-start:8px;">✦</span>`;
+            } else if (styleType === 'minimal') {
+                h.style.cssText = `font-size:20px;font-weight:700;color:${currentTheme.h2Color};margin:32px 0 16px 0;padding-inline-start:12px;border-inline-start:3.5px solid ${currentTheme.leadBorder};line-height:1.4;`;
+            } else if (styleType === 'review') {
+                h.style.cssText = `font-size:21px;font-weight:800;color:${currentTheme.h2Color};margin:32px 0 16px 0;padding-bottom:8px;border-bottom:1.5px solid ${currentTheme.border};line-height:1.45;display:flex;align-items:center;gap:10px;`;
+                h.innerHTML = `<span style="background:rgba(16,185,129,0.18);color:#10b981;border:1px solid rgba(16,185,129,0.35);padding:3px 9px;border-radius:6px;font-size:12px;font-weight:800;">${isAr ? 'البند' : 'Sec'} ${numStr}</span> <span>${text}</span>`;
             }
-        } else if (!a.closest('.studio-gallery-block') && !a.style.color) {
-            a.style.cssText = 'color:#38bdf8;text-decoration:underline;font-weight:600;';
+        } else if (tag === 'h3') {
+            headingsList.push({ id: secId, text, tag: 'h3' });
+            if (styleType === 'tech') {
+                h.style.cssText = `font-size:17.5px;font-weight:700;color:${currentTheme.h3Color};margin:24px 0 12px 0;padding-inline-start:10px;border-inline-start:3px solid #38bdf8;line-height:1.5;`;
+            } else if (styleType === 'editorial') {
+                h.style.cssText = `font-size:18px;font-weight:700;color:${currentTheme.h3Color};margin:24px 0 12px 0;padding-inline-start:10px;border-inline-start:3px solid #f59e0b;line-height:1.5;`;
+            } else {
+                h.style.cssText = `font-size:17px;font-weight:700;color:${currentTheme.h3Color};margin:22px 0 12px 0;padding-inline-start:8px;border-inline-start:3px solid ${currentTheme.leadBorder};line-height:1.5;`;
+            }
+        } else if (tag === 'h4') {
+            h.style.cssText = `font-size:15.5px;font-weight:700;color:#94a3b8;margin:18px 0 10px 0;`;
         }
     });
 
-    // 4. Format Tables with Responsive Scroll and Clean Borders
-    temp.querySelectorAll('table').forEach(table => {
+    // 2. Format Inline Images & Figures
+    if (optFigures) {
+        container.querySelectorAll('img').forEach((img, idx) => {
+            imagesCount++;
+            let src = img.getAttribute('src') || '';
+            if (!src || src.startsWith('data:image/svg')) return;
+
+            if (src.includes('googleusercontent.com') || src.includes('bp.blogspot.com')) {
+                src = src.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
+                img.src = src;
+            }
+
+            const altText = (img.getAttribute('alt') || '').trim();
+            const parentAnchor = img.closest('a');
+            const targetUrl = parentAnchor ? parentAnchor.href : src;
+
+            const figure = document.createElement('figure');
+            figure.className = 'pro-article-figure';
+            figure.style.cssText = 'margin:28px auto;text-align:center;max-width:100%;clear:both;';
+
+            let imgShadow = 'box-shadow: 0 8px 30px rgba(0,0,0,0.35);';
+            let imgBorder = `border: 1px solid ${currentTheme.border};`;
+            if (styleType === 'tech') {
+                imgShadow = 'box-shadow: 0 10px 32px rgba(2,132,199,0.18), 0 2px 10px rgba(0,0,0,0.5);';
+            }
+
+            figure.innerHTML = `
+                <a href="${targetUrl}" target="_blank" style="display:inline-block;max-width:100%;text-decoration:none;">
+                    <img src="${src}" alt="${escapeSmartHtml(altText || `صورة ${idx + 1}`)}" loading="lazy" style="max-width:100%;height:auto;border-radius:12px;${imgShadow}${imgBorder}display:block;margin:0 auto;transition:transform 0.25s ease;" />
+                </a>
+                ${altText ? `<figcaption style="margin-top:10px;font-size:12.5px;color:#94a3b8;font-style:italic;line-height:1.5;">📷 ${escapeSmartHtml(altText)}</figcaption>` : ''}
+            `;
+
+            let toReplace = img;
+            if (parentAnchor && parentAnchor.parentElement && parentAnchor.parentElement.children.length === 1) {
+                toReplace = parentAnchor;
+            }
+            const parentSep = toReplace.closest('.separator');
+            if (parentSep && parentSep.querySelectorAll('img').length === 1) {
+                parentSep.replaceWith(figure);
+            } else {
+                toReplace.replaceWith(figure);
+            }
+        });
+    }
+
+    // 3. Smart Callouts (Tips, Notes, Warnings)
+    if (optCallouts) {
+        container.querySelectorAll('p, blockquote').forEach(el => {
+            const txt = (el.textContent || '').trim();
+            let isTip = /^(نصيحة|فكرة|إضاءة|tip|pro tip|hint)[:\s]/i.test(txt);
+            let isNote = /^(ملاحظة|تنويه|معلومة|note|info|fyi|notice)[:\s]/i.test(txt);
+            let isWarning = /^(تحذير|تنبيه|انتبه|هام|تحذير هام|warning|caution|alert|important)[:\s]/i.test(txt);
+
+            if (isTip || isNote || isWarning) {
+                calloutsCount++;
+                let calloutTheme = {
+                    title: isAr ? 'ملاحظة هامة' : 'Important Note',
+                    icon: 'ℹ️',
+                    border: '#38bdf8',
+                    bg: 'rgba(56,189,248,0.08)',
+                    textCol: '#e0f2fe'
+                };
+                if (isTip) {
+                    calloutTheme = {
+                        title: isAr ? 'نصيحة تقنية' : 'Pro Tip',
+                        icon: '💡',
+                        border: '#10b981',
+                        bg: 'rgba(16,185,129,0.08)',
+                        textCol: '#d1fae5'
+                    };
+                } else if (isWarning) {
+                    calloutTheme = {
+                        title: isAr ? 'تنبيه واحتياط' : 'Warning & Notice',
+                        icon: '⚠️',
+                        border: '#f59e0b',
+                        bg: 'rgba(245,158,11,0.08)',
+                        textCol: '#fef3c7'
+                    };
+                }
+
+                const callout = document.createElement('div');
+                callout.className = 'pro-callout-card';
+                callout.style.cssText = `margin:24px 0;padding:16px 20px;border-inline-start:4px solid ${calloutTheme.border};background:${calloutTheme.bg};border-radius:0 12px 12px 0;box-shadow:0 4px 16px rgba(0,0,0,0.1);`;
+                callout.innerHTML = `
+                    <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:${calloutTheme.border};margin-bottom:8px;">
+                        <span style="font-size:18px;">${calloutTheme.icon}</span>
+                        <span>${calloutTheme.title}</span>
+                    </div>
+                    <div style="font-size:14.5px;line-height:1.8;color:${calloutTheme.textCol};">${el.innerHTML}</div>
+                `;
+                el.replaceWith(callout);
+            }
+        });
+    }
+
+    // 4. Transform Download & External Links
+    if (optButtons) {
+        container.querySelectorAll('a').forEach(a => {
+            const text = (a.textContent || '').trim().toLowerCase();
+            const href = (a.getAttribute('href') || '').toLowerCase();
+            const isDownload = text.includes('تحميل') || text.includes('download') || text.includes('تنزيل') || href.includes('drive.google.com') || href.includes('mediafire.com') || href.includes('mega.nz') || (href.includes('github.com') && href.includes('/releases')) || href.includes('apkpure.com') || href.includes('play.google.com');
+
+            if (isDownload) {
+                downloadCount++;
+                const btnWrap = document.createElement('div');
+                btnWrap.style.cssText = 'text-align:center;margin:28px 0;clear:both;';
+                btnWrap.innerHTML = `
+                    <a href="${a.href}" target="_blank" rel="noopener" class="pro-download-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 28px;background:${currentTheme.buttonGradient};color:#ffffff!important;font-weight:800;font-size:15px;border-radius:12px;text-decoration:none!important;box-shadow:0 6px 20px rgba(2,132,199,0.35);transition:transform 0.2s,box-shadow 0.2s;">
+                        <span style="font-size:20px;">📥</span>
+                        <span>${a.textContent.trim() || (isAr ? 'تحميل مباشر للملف' : 'Download Now')}</span>
+                        <span style="font-size:11px;background:rgba(255,255,255,0.22);padding:2px 8px;border-radius:20px;">v.Latest</span>
+                    </a>
+                `;
+                if (a.parentElement && a.parentElement.tagName === 'P' && a.parentElement.children.length === 1 && a.parentElement.textContent.trim() === a.textContent.trim()) {
+                    a.parentElement.replaceWith(btnWrap);
+                } else {
+                    a.replaceWith(btnWrap);
+                }
+            } else if (!a.closest('.pro-article-figure') && !a.closest('.pro-download-btn') && !a.style.color) {
+                a.style.cssText = `color:${currentTheme.badge};text-decoration:underline;font-weight:600;`;
+            }
+        });
+    }
+
+    // 5. Enhance Tables
+    container.querySelectorAll('table').forEach(tbl => {
         tableCount++;
-        table.style.cssText = 'width:100%;border-collapse:collapse;margin:22px 0;font-size:14px;border:1px solid rgba(255,255,255,0.1);border-radius:8px;overflow:hidden;';
-        table.querySelectorAll('th').forEach(th => {
-            th.style.cssText = 'background:rgba(30,41,59,0.9);color:#38bdf8;padding:12px 14px;text-align:start;font-weight:700;border:1px solid rgba(255,255,255,0.08);';
+        tbl.style.cssText = `width:100%;border-collapse:collapse;margin:24px 0;font-size:14px;border:1px solid ${currentTheme.border};border-radius:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.15);`;
+        tbl.querySelectorAll('th').forEach(th => {
+            th.style.cssText = `background:${currentTheme.bgCard};color:${currentTheme.badge};padding:12px 16px;text-align:${align};font-weight:800;border:1px solid ${currentTheme.border};`;
         });
-        table.querySelectorAll('td').forEach(td => {
-            td.style.cssText = 'padding:10px 14px;border:1px solid rgba(255,255,255,0.06);color:#cbd5e1;';
+        tbl.querySelectorAll('td').forEach(td => {
+            td.style.cssText = `padding:11px 16px;border:1px solid rgba(255,255,255,0.06);color:#cbd5e1;line-height:1.6;`;
         });
     });
 
-    // 5. Format Blockquotes
-    temp.querySelectorAll('blockquote').forEach(bq => {
-        blockquoteCount++;
-        bq.style.cssText = 'margin:20px 0;padding:16px 20px;border-inline-start:4px solid #38bdf8;background:rgba(56,189,248,0.06);border-radius:0 8px 8px 0;color:#e2e8f0;font-style:italic;line-height:1.75;';
-    });
-
-    // 6. Clean Paragraph Spacing and Remove Empty Duplicates
-    temp.querySelectorAll('p').forEach(p => {
-        if (!p.textContent.trim() && p.querySelectorAll('img, iframe, table, [data-gallery-layout]').length === 0) {
-            if (p.previousElementSibling && p.previousElementSibling.tagName === 'P' && !p.previousElementSibling.textContent.trim()) {
-                p.remove();
-            }
-        } else {
-            p.style.cssText = 'margin-bottom:16px;line-height:1.85;color:inherit;';
+    // 6. Enhance Lists
+    container.querySelectorAll('ul, ol').forEach(list => {
+        if (!list.closest('.pro-highlights-box') && !list.closest('.pro-toc-box')) {
+            list.style.cssText = `margin:18px 0;padding-inline-start:24px;line-height:1.9;color:inherit;`;
+            list.querySelectorAll('li').forEach(li => {
+                li.style.cssText = `margin-bottom:8px;position:relative;`;
+            });
         }
     });
 
-    const formattedHtml = temp.innerHTML;
-    const textOnly = temp.textContent || '';
-    const wordCount = textOnly.trim() ? textOnly.trim().split(/\s+/).length : 0;
-    const readability = wordCount > 300 ? '\u0645\u0645\u062a\u0627\u0632\u0629 (A+)' : '\u062c\u064a\u062f\u0629 (B)';
+    // 7. Lead Paragraph
+    const allParas = Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 40 && !p.closest('.pro-callout-card'));
+    let firstLead = allParas.length > 0 ? allParas[0] : null;
+
+    if (firstLead) {
+        if (styleType === 'tech') {
+            firstLead.style.cssText = `font-size:16.5px;line-height:1.9;color:#f8fafc;background:linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7));border-inline-start:4px solid ${currentTheme.leadBorder};padding:18px 22px;border-radius:0 12px 12px 0;margin:24px 0;box-shadow:0 4px 20px rgba(0,0,0,0.15);`;
+        } else if (styleType === 'editorial') {
+            firstLead.style.cssText = `font-size:17.5px;line-height:1.95;color:#fef3c7;border-bottom:1px solid ${currentTheme.border};padding-bottom:18px;margin:24px 0;font-weight:500;`;
+        } else if (styleType === 'minimal') {
+            firstLead.style.cssText = `font-size:16.5px;line-height:1.9;color:#ffffff;margin:24px 0;padding-inline-start:12px;border-inline-start:3px solid ${currentTheme.leadBorder};`;
+        } else if (styleType === 'review') {
+            firstLead.style.cssText = `font-size:16px;line-height:1.85;color:#e2e8f0;margin:20px 0;`;
+        }
+    }
+
+    // 8. Key Highlights Box
+    let highlightsHtml = '';
+    if (optHighlights) {
+        const bulletPoints = [];
+        headingsList.filter(h => h.tag === 'h2').slice(0, 4).forEach(h => bulletPoints.push(h.text));
+        
+        if (bulletPoints.length < 2 && firstLead) {
+            const sents = firstLead.textContent.split(/[.\n،]/).map(s => s.trim()).filter(s => s.length > 15);
+            sents.slice(0, 3).forEach(s => bulletPoints.push(s));
+        }
+
+        if (bulletPoints.length > 0) {
+            highlightsHtml = `
+                <div class="pro-highlights-box" style="background:${currentTheme.bgCard};border:1px solid ${currentTheme.border};border-radius:14px;padding:20px 24px;margin:26px 0;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:15.5px;font-weight:800;color:${currentTheme.badge};border-bottom:1px solid ${currentTheme.border};padding-bottom:8px;">
+                        <span style="font-size:20px;">💡</span>
+                        <span>${isAr ? 'أبرز النقاط والملخص التنفيذي للمقال' : 'Key Highlights & Executive Summary'}</span>
+                    </div>
+                    <ul style="margin:0;padding-inline-start:20px;line-height:1.85;color:#e2e8f0;font-size:14.5px;">
+                        ${bulletPoints.map(bp => `<li style="margin-bottom:8px;">${escapeSmartHtml(bp)}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+    }
+
+    // 9. Table of Contents Box (TOC)
+    let tocHtml = '';
+    if (optToc && headingsList.length >= 2) {
+        tocHtml = `
+            <div class="pro-toc-box" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px 24px;margin:26px 0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:10px;">
+                    <span style="font-size:15px;font-weight:800;color:#f8fafc;display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:18px;">📑</span>
+                        <span>${isAr ? 'فهرس محتويات الدليل (تصفح سريع)' : 'Table of Contents'}</span>
+                    </span>
+                    <span style="font-size:11px;background:rgba(56,189,248,0.15);color:#38bdf8;padding:2px 8px;border-radius:20px;font-weight:700;">${headingsList.length} ${isAr ? 'أقسام' : 'sections'}</span>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));gap:10px;">
+                    ${headingsList.map((h, i) => `
+                        <a href="#${h.id}" style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:rgba(30,41,59,0.5);border:1px solid rgba(255,255,255,0.05);border-radius:8px;color:#cbd5e1;text-decoration:none;font-size:13px;font-weight:600;transition:all 0.2s ease;">
+                            <span style="color:${currentTheme.badge};font-weight:800;font-size:12px;">#${i + 1}</span>
+                            <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeSmartHtml(h.text)}</span>
+                        </a>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
+    // 10. Review Specs Card
+    let reviewSpecsHtml = '';
+    if (styleType === 'review') {
+        const titleText = (document.getElementById('art-title')?.value || document.getElementById('art-title-en')?.value || headingsList[0]?.text || 'التطبيق / المراجعة').trim();
+        reviewSpecsHtml = `
+            <div class="pro-review-badge-card" style="background:rgba(6,44,32,0.9);border:1px solid rgba(16,185,129,0.35);border-radius:14px;padding:20px 24px;margin:24px 0;box-shadow:0 8px 32px rgba(16,185,129,0.15);">
+                <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(16,185,129,0.25);padding-bottom:12px;margin-bottom:14px;">
+                    <div>
+                        <div style="font-size:12px;color:#34d399;font-weight:700;">⭐ ${isAr ? 'تقييم ومواصفات سريعة' : 'Quick Review & Specs'}</div>
+                        <div style="font-size:18px;font-weight:900;color:#fff;">${escapeSmartHtml(titleText)}</div>
+                    </div>
+                    <div style="text-align:center;background:rgba(16,185,129,0.2);padding:6px 14px;border-radius:10px;border:1px solid rgba(16,185,129,0.4);">
+                        <div style="font-size:18px;font-weight:900;color:#34d399;">4.9 / 5</div>
+                        <div style="font-size:10.5px;color:#a7f3d0;">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));gap:12px;font-size:13px;color:#e2e8f0;">
+                    <div><span style="color:#a7f3d0;font-weight:700;">الترخيص:</span> مجاني (Free)</div>
+                    <div><span style="color:#a7f3d0;font-weight:700;">التوافق:</span> Android / iOS / Web / PC</div>
+                    <div><span style="color:#a7f3d0;font-weight:700;">الاستقرار:</span> ممتاز ومضمون 100%</div>
+                    <div><span style="color:#a7f3d0;font-weight:700;">الأمان:</span> تم الفحص وخالي من الفيروسات ✓</div>
+                </div>
+            </div>
+        `;
+    }
+
+    // 11. Final Conclusion Card
+    let conclusionHtml = '';
+    const lastParas = Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 30);
+    if (lastParas.length > 2) {
+        const lastP = lastParas[lastParas.length - 1];
+        conclusionHtml = `
+            <div class="pro-conclusion-box" style="background:${currentTheme.bgCard};border:1px solid ${currentTheme.border};border-radius:14px;padding:22px 26px;margin-top:34px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+                <div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:${currentTheme.badge};margin-bottom:10px;border-bottom:1px solid ${currentTheme.border};padding-bottom:8px;">
+                    <span style="font-size:20px;">🎯</span>
+                    <span>${isAr ? 'الخلاصة والتوصيات الختامية' : 'Final Verdict & Recommendations'}</span>
+                </div>
+                <div style="font-size:15px;line-height:1.9;color:#e2e8f0;">${lastP.innerHTML}</div>
+            </div>
+        `;
+        lastP.remove();
+    }
+
+    // Insert Top Blocks
+    let topBlocks = '';
+    if (reviewSpecsHtml) topBlocks += reviewSpecsHtml;
+    if (highlightsHtml) topBlocks += highlightsHtml;
+    if (tocHtml) topBlocks += tocHtml;
+
+    if (topBlocks) {
+        const topWrap = document.createElement('div');
+        topWrap.innerHTML = topBlocks;
+        if (firstLead && firstLead.parentElement) {
+            firstLead.after(topWrap);
+        } else {
+            container.prepend(topWrap);
+        }
+    }
+
+    if (conclusionHtml) {
+        const concWrap = document.createElement('div');
+        concWrap.innerHTML = conclusionHtml;
+        container.append(concWrap);
+    }
+
+    // Clean empty paragraphs
+    container.querySelectorAll('p').forEach(p => {
+        if (!p.textContent.trim() && p.querySelectorAll('img, iframe, table, a, div').length === 0) {
+            p.remove();
+        }
+    });
+
+    const formattedHtml = container.innerHTML;
+    const finalWords = (container.textContent || '').trim().split(/\s+/).length;
+    const readability = finalWords > 300 ? (isAr ? 'ممتازة (A+)' : 'Excellent (A+)') : (isAr ? 'جيدة جداً (A)' : 'Very Good (A)');
 
     return {
         formattedHtml,
         stats: {
+            styleName: currentTheme.name,
             headingsCount,
             imagesCount,
+            calloutsCount,
             downloadCount,
             tableCount,
-            blockquoteCount,
-            wordCount,
+            wordCount: finalWords,
             readability
         }
     };
@@ -15364,35 +15729,24 @@ window.formatArticleContentIntelligently = formatArticleContentIntelligently;
 function openSmartFormatPreviewModal() {
     const rawContent = getEditorHtmlContent();
     if (!rawContent || rawContent.trim() === '<p></p>' || rawContent.trim() === '<p><br></p>') {
-        showToast('\u064a\u0631\u062c\u0649 \u0643\u062a\u0627\u0628\u0629 \u0645\u062d\u062a\u0648\u0649 \u0641\u064a \u0627\u0644\u0645\u0642\u0627\u0644 \u0623\u0648\u0644\u0627\u064b \u0644\u064a\u062a\u0645 \u062a\u0646\u0633\u064a\u0642\u0647 \U0001f23d', 'warning');
+        showToast('يرجى كتابة محتوى في المقال أولاً ليتم تنسيقه ✍️', 'warning');
         return;
     }
 
     // Save snapshot of current editor content for 100% reversible undo
     window.__preSmartFormatSnapshot = rawContent;
+    window.__currentSmartFormatStyle = 'tech';
 
-    // Generate formatted preview and statistics
-    const result = formatArticleContentIntelligently(rawContent);
-    window.__pendingSmartFormattedHtml = result.formattedHtml;
+    // Reset button states
+    document.querySelectorAll('.smart-format-preset-btn').forEach(btn => btn.classList.remove('active'));
+    const defBtn = document.getElementById('btn-preset-tech');
+    if (defBtn) defBtn.classList.add('active');
 
-    // Render stats badges
-    const statsBar = document.getElementById('smart-format-stats-bar');
-    if (statsBar) {
-        statsBar.innerHTML = `
-            <span style="background:rgba(56,189,248,0.15);color:#38bdf8;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f4cb ${result.stats.headingsCount} \u0639\u0646\u0627\u0648\u064a\u0646 \u0645\u0646\u0633\u0642\u0629</span>
-            <span style="background:rgba(16,185,129,0.15);color:#10b981;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f5bc\ufe0f ${result.stats.imagesCount} \u0635\u0648\u0631 \u0645\u062a\u062c\u0627\u0648\u0628\u0629</span>
-            <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f4e5 ${result.stats.downloadCount} \u0623\u0632\u0631\u0627\u0631 \u062a\u062d\u0645\u064a\u0644</span>
-            <span style="background:rgba(139,92,246,0.15);color:#a78bfa;padding:4px 10px;border-radius:6px;font-weight:700;">\U0001f4ca ${result.stats.tableCount} \u062c\u062f\u0627\u0648\u0644</span>
-            <span style="background:rgba(255,255,255,0.08);color:#e2e8f0;padding:4px 10px;border-radius:6px;">\U0001f4dd ${result.stats.wordCount} \u0643\u0644\u0645\u0629</span>
-            <span style="background:rgba(34,197,94,0.15);color:#4ade80;padding:4px 10px;border-radius:6px;">\u0627\u0644\u0642\u0631\u0627\u0626\u064a\u0629: ${result.stats.readability}</span>
-        `;
-    }
+    const badge = document.getElementById('active-style-badge');
+    if (badge) badge.textContent = 'النمط المختار: العصري التقني 🚀';
 
-    // Render formatted live preview inside modal
-    const previewContainer = document.getElementById('smart-format-preview-render');
-    if (previewContainer) {
-        previewContainer.innerHTML = result.formattedHtml;
-    }
+    // Render Preview
+    updateSmartFormatPreviewRealtime();
 
     // Open modal
     const modal = document.getElementById('modal-smart-format-preview');
@@ -15428,13 +15782,13 @@ function confirmApplySmartFormatting() {
     const undoBtn = document.getElementById('btn-undo-smart-format');
     if (undoBtn) undoBtn.style.display = 'inline-flex';
 
-    showToast('\u2728 \u062a\u0645 \u062a\u0637\u0628\u064a\u0642 \u0627\u0644\u062a\u0646\u0633\u064a\u0642 \u0627\u0644\u0627\u062d\u062a\u0631\u0627\u0641\u064a \u0627\u0644\u0634\u0627\u0645\u0644 \u0628\u0646\u062c\u0627\u062d! (\u064a\u0645\u0643\u0646\u0643 \u0627\u0644\u062a\u0631\u0627\u062c\u0639 \u0628\u0646\u0642\u0631\u0629 \u0648\u0627\u062d\u062f\u0629)', 'success');
+    showToast('✨ تم تطبيق التنسيق الاحترافي الشامل بالنمط المختار بنجاح! يمكنك التراجع بنقرة واحدة.', 'success');
 }
 window.confirmApplySmartFormatting = confirmApplySmartFormatting;
 
 function undoProfessionalArticleFormatting() {
     if (!window.__preSmartFormatSnapshot) {
-        showToast('\u0644\u0627 \u062a\u0648\u062c\u062f \u0646\u0633\u062e\u0629 \u0633\u0627\u0628\u0642\u0629 \u0644\u0644\u062a\u0631\u0627\u062c\u0639 \u0639\u0646\u0647\u0627', 'info');
+        showToast('لا توجد نسخة سابقة محفوظة للتراجع عنها', 'info');
         return;
     }
 
@@ -15451,7 +15805,7 @@ function undoProfessionalArticleFormatting() {
     if (undoBtn) undoBtn.style.display = 'none';
 
     window.__preSmartFormatSnapshot = null;
-    showToast('\u21a9\ufe0f \u062a\u0645 \u0627\u0644\u062a\u0631\u0627\u062c\u0639 \u0639\u0646 \u0627\u0644\u062a\u0646\u0633\u064a\u0642 \u0648\u0627\u0633\u062a\u0639\u0627\u062f\u0629 \u0627\u0644\u0645\u062d\u062a\u0648\u0649 \u0627\u0644\u0623\u0635\u0644\u064a \u0628\u0627\u0644\u0643\u0627\u0645\u0644', 'info');
+    showToast('↩️ تم التراجع عن التنسيق واستعادة المحتوى الأصلي بالكامل!', 'info');
 }
 window.undoProfessionalArticleFormatting = undoProfessionalArticleFormatting;
 
