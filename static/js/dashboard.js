@@ -4599,15 +4599,24 @@ function cleanGalleryHtmlForExport(html) {
             const styleTag = document.createElement('style');
             styleTag.id = 'blogger-studio-gallery-styles';
             styleTag.textContent = `
-                .blogger-gallery-container { margin: 28px 0; padding: 14px; background: rgba(15,23,42,0.55); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); direction: rtl; font-family: inherit; }
-                .blogger-gallery-grid-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
-                .blogger-gallery-masonry-items { column-count: auto; column-width: 210px; column-gap: 14px; }
-                .blogger-gallery-carousel-items { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 14px 2px; }
+                .blogger-gallery-container { margin: 28px 0; padding: 14px; background: rgba(15,23,42,0.55); border: 1px solid rgba(56,189,248,0.25); border-radius: 14px; box-shadow: 0 6px 20px rgba(0,0,0,0.25); direction: rtl; font-family: inherit; max-width: 100%; box-sizing: border-box; }
+                .blogger-gallery-grid-items { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; max-width: 100%; box-sizing: border-box; }
+                .blogger-gallery-masonry-items { column-count: auto; column-width: 210px; column-gap: 14px; max-width: 100%; box-sizing: border-box; }
+                .blogger-gallery-carousel-items { display: flex; gap: 14px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 6px 2px 14px 2px; max-width: 100%; box-sizing: border-box; -webkit-overflow-scrolling: touch; }
                 .blogger-gallery-carousel-items .gallery-card-item { flex: 0 0 280px; scroll-snap-align: start; }
-                .gallery-card-item { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12); background: #0f172a; cursor: pointer; transition: transform 0.22s ease, box-shadow 0.22s ease; }
+                .blogger-gallery-vertical-items { display: flex; flex-direction: column; gap: 16px; max-height: 560px; overflow-y: auto; scroll-snap-type: y mandatory; padding: 8px; border-radius: 12px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); -webkit-overflow-scrolling: touch; max-width: 100%; box-sizing: border-box; }
+                .blogger-gallery-vertical-items .gallery-card-item { scroll-snap-align: start; border-radius: 10px; overflow: hidden; flex-shrink: 0; max-width: 100%; }
+                .blogger-gallery-vertical-items .gallery-card-item img { width: 100%; max-height: 420px; object-fit: contain; background: #050b14; display: block; }
+                .blogger-gallery-featured-items { max-width: 100%; box-sizing: border-box; }
+                .blogger-gallery-featured-items .gallery-featured-hero { border-radius: 12px; overflow: hidden; margin-bottom: 12px; box-shadow: 0 6px 20px rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.12); background: #000; cursor: pointer; }
+                .blogger-gallery-featured-items .gallery-featured-hero img { width: 100%; max-height: 400px; object-fit: cover; display: block; }
+                .blogger-gallery-featured-items .gallery-featured-thumbs-row { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; max-width: 100%; box-sizing: border-box; }
+                .gallery-card-item { position: relative; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.12); background: #0f172a; cursor: pointer; transition: transform 0.22s ease, box-shadow 0.22s ease; max-width: 100%; box-sizing: border-box; }
                 .gallery-card-item:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 8px 24px rgba(0,0,0,0.45); }
                 .gallery-card-item img { width: 100%; height: 200px; object-fit: cover; display: block; border: 0; }
                 .gallery-card-caption { padding: 6px 10px; background: rgba(15,23,42,0.92); font-size: 11.5px; color: #cbd5e1; text-align: center; border-top: 1px solid rgba(255,255,255,0.06); }
+                .table-responsive-wrapper { width: 100%; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 20px 0; box-sizing: border-box; }
+                .blogger-gallery-container *, .pro-article-figure * { box-sizing: border-box; max-width: 100%; }
                 @media (max-width: 640px) {
                     .blogger-gallery-grid-items { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important; gap: 10px !important; }
                     .gallery-card-item img { height: 140px !important; }
@@ -6141,14 +6150,15 @@ window.createTranslationCounterpart = createTranslationCounterpart;
 function toggleLivePreviewModal() {
     const title = document.getElementById('art-title')?.value || 'عنوان المقال';
     const content = getEditorHtmlContent();
-    const cover = document.getElementById('art-cover')?.value;
+    const cover = document.getElementById('art-cover')?.value || currentFeaturedImage;
     const body = document.getElementById('preview-modal-body');
+    const cleanHtml = (typeof cleanGalleryHtmlForExport === 'function') ? cleanGalleryHtmlForExport(content) : content;
 
     document.getElementById('preview-modal-title').textContent = title;
     body.innerHTML = `
-        ${cover ? `<img src="${cover}" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px;margin-bottom:20px;">` : ''}
-        <h1 style="font-size:26px;font-weight:900;margin-bottom:16px;">${title}</h1>
-        <div style="font-size:14.5px;line-height:1.8;">${content}</div>
+        ${cover ? `<img src="${cover}" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px;margin-bottom:20px;max-width:100%;">` : ''}
+        <h1 style="font-size:26px;font-weight:900;margin-bottom:16px;color:var(--text-primary);">${escapeSmartHtml(title)}</h1>
+        <div class="article-preview-body" style="font-size:14.5px;line-height:1.85;color:var(--text-primary);max-width:100%;word-break:break-word;overflow-wrap:break-word;">${cleanHtml}</div>
     `;
 
     openModal('preview-modal');
@@ -6171,11 +6181,14 @@ function previewPostModal(postId) {
 
     document.getElementById('preview-modal-title').textContent = post.title;
     const body = document.getElementById('preview-modal-body');
+    const rawHtml = post.content || post.content_html || post.snippet || '';
+    const cleanHtml = (typeof cleanGalleryHtmlForExport === 'function') ? cleanGalleryHtmlForExport(rawHtml) : rawHtml;
+
     body.innerHTML = `
-        ${post.image ? `<img src="${post.image}" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px;margin-bottom:20px;">` : ''}
-        <h1 style="font-size:24px;font-weight:800;margin-bottom:14px;">${post.title}</h1>
-        <div style="color:var(--text-muted);font-size:12px;margin-bottom:18px;">نشر بتاريخ: ${post.display_date} | اللغة: ${post.language}</div>
-        <div style="font-size:14px;line-height:1.8;">${post.content || post.snippet}</div>
+        ${post.image ? `<img src="${post.image}" style="width:100%;max-height:360px;object-fit:cover;border-radius:8px;margin-bottom:20px;max-width:100%;">` : ''}
+        <h1 style="font-size:24px;font-weight:800;margin-bottom:14px;color:var(--text-primary);">${escapeSmartHtml(post.title)}</h1>
+        <div style="color:var(--text-muted);font-size:12px;margin-bottom:18px;">نشر بتاريخ: ${escapeSmartHtml(post.display_date || '')} | اللغة: ${escapeSmartHtml(post.language || 'ar')}</div>
+        <div class="article-preview-body" style="font-size:14.5px;line-height:1.85;color:var(--text-primary);max-width:100%;word-break:break-word;overflow-wrap:break-word;">${cleanHtml}</div>
     `;
 
     openModal('preview-modal');
@@ -15285,11 +15298,19 @@ function updateSmartFormatPreviewRealtime() {
     const optCallouts = document.getElementById('fmt-opt-callouts')?.checked ?? true;
     const optFigures = document.getElementById('fmt-opt-figures')?.checked ?? true;
     const optButtons = document.getElementById('fmt-opt-buttons')?.checked ?? true;
+    const galleryLayout = window.__currentSmartFormatGalleryLayout || currentGalleryLayout || 'grid';
 
     const result = formatArticleContentIntelligently(
         window.__preSmartFormatSnapshot,
         window.__currentSmartFormatStyle || 'tech',
-        { toc: optToc, highlights: optHighlights, callouts: optCallouts, figures: optFigures, buttons: optButtons }
+        { 
+            toc: optToc, 
+            highlights: optHighlights, 
+            callouts: optCallouts, 
+            figures: optFigures, 
+            buttons: optButtons,
+            galleryLayout: galleryLayout
+        }
     );
 
     window.__pendingSmartFormattedHtml = result.formattedHtml;
@@ -15300,9 +15321,9 @@ function updateSmartFormatPreviewRealtime() {
         statsBar.innerHTML = `
             <span style="background:rgba(56,189,248,0.15);color:#38bdf8;padding:4px 10px;border-radius:6px;font-weight:700;">🎨 ${result.stats.styleName}</span>
             <span style="background:rgba(16,185,129,0.15);color:#10b981;padding:4px 10px;border-radius:6px;font-weight:700;">📋 ${result.stats.headingsCount} عناوين منسقة</span>
-            <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:4px 10px;border-radius:6px;font-weight:700;">🖼️ ${result.stats.imagesCount} صور متجاوبة</span>
+            <span style="background:rgba(245,158,11,0.15);color:#f59e0b;padding:4px 10px;border-radius:6px;font-weight:700;">🖼️ ${result.stats.imagesCount} صور في المعرض</span>
             <span style="background:rgba(139,92,246,0.15);color:#a78bfa;padding:4px 10px;border-radius:6px;font-weight:700;">💬 ${result.stats.calloutsCount} تنبيهات</span>
-            <span style="background:rgba(236,72,153,0.15);color:#f472b6;padding:4px 10px;border-radius:6px;font-weight:700;">📥 ${result.stats.downloadCount} أزرار تحميل</span>
+            <span style="background:rgba(236,72,153,0.15);color:#f472b6;padding:4px 10px;border-radius:6px;font-weight:700;">📥 ${result.stats.downloadCount} أزرار إجراءات</span>
             <span style="background:rgba(255,255,255,0.08);color:#e2e8f0;padding:4px 10px;border-radius:6px;">✍️ ${result.stats.wordCount} كلمة</span>
             <span style="background:rgba(34,197,94,0.15);color:#4ade80;padding:4px 10px;border-radius:6px;">القرائية: ${result.stats.readability}</span>
         `;
@@ -15316,6 +15337,16 @@ function updateSmartFormatPreviewRealtime() {
 }
 window.updateSmartFormatPreviewRealtime = updateSmartFormatPreviewRealtime;
 
+function switchSmartFormatGalleryLayout(layout) {
+    window.__currentSmartFormatGalleryLayout = layout;
+    currentGalleryLayout = layout;
+    document.querySelectorAll('.smart-gallery-layout-btn').forEach(btn => btn.classList.remove('active'));
+    const btn = document.getElementById(`btn-fmt-layout-${layout}`);
+    if (btn) btn.classList.add('active');
+    updateSmartFormatPreviewRealtime();
+}
+window.switchSmartFormatGalleryLayout = switchSmartFormatGalleryLayout;
+
 function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options = {}) {
     if (!rawHtml || typeof rawHtml !== 'string') return { formattedHtml: '', stats: {} };
     
@@ -15324,6 +15355,7 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
     const optCallouts = options.callouts ?? true;
     const optFigures = options.figures ?? true;
     const optButtons = options.buttons ?? true;
+    const galleryLayout = options.galleryLayout || window.__currentSmartFormatGalleryLayout || currentGalleryLayout || 'grid';
 
     // Sandbox container
     const container = document.createElement('div');
@@ -15332,7 +15364,7 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
     // Remove legacy junk
     container.querySelectorAll('script, head, meta, title, link[rel="stylesheet"]').forEach(el => el.remove());
 
-    const isAr = /[\u0600-\u06FF]/.test(container.textContent || '');
+    const isAr = /[؀-ۿ]/.test(container.textContent || '');
     const align = isAr ? 'right' : 'left';
 
     let headingsCount = 0;
@@ -15432,50 +15464,177 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
         }
     });
 
-    // 2. Format Inline Images & Figures
+    // 2. Format Images: Intelligently group multiple images into responsive Gallery, format single images as centered figure
     if (optFigures) {
-        container.querySelectorAll('img').forEach((img, idx) => {
-            imagesCount++;
-            let src = img.getAttribute('src') || '';
-            if (!src || src.startsWith('data:image/svg')) return;
+        const existingGalleries = Array.from(container.querySelectorAll('.studio-gallery-block, .blogger-gallery-container, .blogger-gallery-grid, .blogger-gallery-featured'));
+        const detectedImages = [];
+        const seenUrls = new Set();
 
-            if (src.includes('googleusercontent.com') || src.includes('bp.blogspot.com')) {
-                src = src.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
-                img.src = src;
+        const recordImage = (src, alt, caption) => {
+            if (!src || typeof src !== 'string') return;
+            const cleanSrc = src.trim();
+            if (!cleanSrc || cleanSrc.startsWith('data:image/svg')) return;
+            if (seenUrls.has(cleanSrc)) return;
+
+            let fullResSrc = cleanSrc;
+            if (fullResSrc.includes('googleusercontent.com') || fullResSrc.includes('bp.blogspot.com')) {
+                fullResSrc = fullResSrc.replace(/\/(s(320|200|400|640|72-c|120|150))\//, '/s1600/');
             }
 
-            const altText = (img.getAttribute('alt') || '').trim();
-            const parentAnchor = img.closest('a');
-            const targetUrl = parentAnchor ? parentAnchor.href : src;
+            seenUrls.add(cleanSrc);
+            seenUrls.add(fullResSrc);
 
-            const figure = document.createElement('figure');
-            figure.className = 'pro-article-figure';
-            figure.style.cssText = 'margin:28px auto;text-align:center;max-width:100%;clear:both;';
+            detectedImages.push({
+                id: 'img_fmt_' + Date.now() + '_' + (detectedImages.length + 1),
+                url: fullResSrc,
+                alt: (alt || '').trim() || `صورة ${detectedImages.length + 1}`,
+                caption: (caption || '').trim(),
+                link: ''
+            });
+        };
 
-            let imgShadow = 'box-shadow: 0 8px 30px rgba(0,0,0,0.35);';
-            let imgBorder = `border: 1px solid ${currentTheme.border};`;
-            if (styleType === 'tech') {
-                imgShadow = 'box-shadow: 0 10px 32px rgba(2,132,199,0.18), 0 2px 10px rgba(0,0,0,0.5);';
-            }
-
-            figure.innerHTML = `
-                <a href="${targetUrl}" target="_blank" style="display:inline-block;max-width:100%;text-decoration:none;">
-                    <img src="${src}" alt="${escapeSmartHtml(altText || `صورة ${idx + 1}`)}" loading="lazy" style="max-width:100%;height:auto;border-radius:12px;${imgShadow}${imgBorder}display:block;margin:0 auto;transition:transform 0.25s ease;" />
-                </a>
-                ${altText ? `<figcaption style="margin-top:10px;font-size:12.5px;color:#94a3b8;font-style:italic;line-height:1.5;">📷 ${escapeSmartHtml(altText)}</figcaption>` : ''}
-            `;
-
-            let toReplace = img;
-            if (parentAnchor && parentAnchor.parentElement && parentAnchor.parentElement.children.length === 1) {
-                toReplace = parentAnchor;
-            }
-            const parentSep = toReplace.closest('.separator');
-            if (parentSep && parentSep.querySelectorAll('img').length === 1) {
-                parentSep.replaceWith(figure);
-            } else {
-                toReplace.replaceWith(figure);
-            }
+        // Extract from existing gallery blocks
+        existingGalleries.forEach(gal => {
+            gal.querySelectorAll('img').forEach(img => {
+                const src = img.getAttribute('src');
+                const alt = img.getAttribute('alt');
+                const caption = img.closest('.gallery-card-item')?.querySelector('.gallery-card-caption')?.textContent || '';
+                recordImage(src, alt, caption);
+            });
         });
+
+        // Extract loose images from content
+        container.querySelectorAll('img').forEach(img => {
+            if (img.closest('.studio-gallery-block, .blogger-gallery-container')) return;
+            const parentAnchor = img.closest('a');
+            let candidateSrc = img.getAttribute('src');
+            if (parentAnchor && parentAnchor.href) {
+                const href = parentAnchor.getAttribute('href') || '';
+                if (href.match(/\.(png|jpe?g|webp|gif)($|\?)/i) || href.includes('googleusercontent.com') || href.includes('bp.blogspot.com')) {
+                    candidateSrc = href;
+                }
+            }
+            const alt = img.getAttribute('alt') || '';
+            let caption = '';
+            const fig = img.closest('figure');
+            if (fig) {
+                const figCap = fig.querySelector('figcaption');
+                if (figCap) caption = figCap.textContent;
+            }
+            recordImage(candidateSrc, alt, caption);
+        });
+
+        imagesCount = detectedImages.length;
+
+        // Group into Gallery if 2 or more images
+        if (detectedImages.length >= 2) {
+            let insertBeforeNode = null;
+            if (existingGalleries.length > 0) {
+                insertBeforeNode = existingGalleries[0];
+            } else {
+                const firstImg = container.querySelector('img');
+                if (firstImg) {
+                    let parent = firstImg;
+                    while (parent.parentElement && parent.parentElement !== container && 
+                          (parent.parentElement.tagName === 'A' || 
+                           parent.parentElement.classList.contains('separator') ||
+                           parent.parentElement.tagName === 'FIGURE' ||
+                           parent.parentElement.classList.contains('swiper-slide') ||
+                           parent.parentElement.classList.contains('swiper-wrapper') ||
+                           parent.parentElement.classList.contains('swiper') ||
+                           (parent.parentElement.tagName === 'P' && parent.parentElement.textContent.trim().length === 0))) {
+                        parent = parent.parentElement;
+                    }
+                    insertBeforeNode = parent;
+                }
+            }
+
+            // Remove existing gallery blocks
+            existingGalleries.forEach(gal => gal.remove());
+
+            // Build gallery HTML
+            const galleryHtml = buildGalleryBlockHtml(detectedImages, galleryLayout, true);
+            const tempGal = document.createElement('div');
+            tempGal.innerHTML = galleryHtml;
+            const galleryNode = tempGal.firstElementChild;
+
+            if (insertBeforeNode && insertBeforeNode.parentElement) {
+                insertBeforeNode.before(galleryNode);
+            } else {
+                const firstPara = container.querySelector('p');
+                if (firstPara) firstPara.after(galleryNode);
+                else container.prepend(galleryNode);
+            }
+
+            // Remove ALL duplicate loose images without removing article text!
+            const looseImgs = Array.from(container.querySelectorAll('img')).filter(img => 
+                !img.closest('.studio-gallery-block, .blogger-gallery-container')
+            );
+            looseImgs.forEach(img => {
+                const parentAnchor = img.closest('a');
+                const parentSeparator = img.closest('.separator, figure, p, div');
+
+                if (parentAnchor && parentAnchor.parentElement && parentAnchor.textContent.trim().length === 0) {
+                    parentAnchor.remove();
+                } else {
+                    img.remove();
+                }
+
+                if (parentSeparator && parentSeparator !== container && parentSeparator.parentElement) {
+                    if (parentSeparator.textContent.trim().length === 0 && parentSeparator.querySelectorAll('img, iframe, table').length === 0) {
+                        parentSeparator.remove();
+                    }
+                }
+            });
+
+            // Clean any empty wrappers
+            container.querySelectorAll('.separator, .swiper, .swiper-wrapper, .swiper-slide').forEach(w => {
+                if (!w.textContent.trim() && w.querySelectorAll('img, iframe, table').length === 0) {
+                    w.remove();
+                }
+            });
+
+            window.__smartFormatExtractedGalleryImages = detectedImages;
+            window.__smartFormatExtractedGalleryLayout = galleryLayout;
+
+        } else if (detectedImages.length === 1) {
+            // Exactly 1 image: Format with single centered responsive figure
+            const singleImg = detectedImages[0];
+            const looseImgs = Array.from(container.querySelectorAll('img'));
+            if (looseImgs.length > 0) {
+                const img = looseImgs[0];
+                const figure = document.createElement('figure');
+                figure.className = 'pro-article-figure';
+                figure.style.cssText = 'margin:28px auto;text-align:center;max-width:100%;clear:both;';
+
+                let imgShadow = 'box-shadow: 0 8px 30px rgba(0,0,0,0.35);';
+                let imgBorder = `border: 1px solid ${currentTheme.border};`;
+                if (styleType === 'tech') {
+                    imgShadow = 'box-shadow: 0 10px 32px rgba(2,132,199,0.18), 0 2px 10px rgba(0,0,0,0.5);';
+                }
+
+                figure.innerHTML = `
+                    <a href="${singleImg.url}" target="_blank" style="display:inline-block;max-width:100%;text-decoration:none;">
+                        <img src="${singleImg.url}" alt="${escapeSmartHtml(singleImg.alt)}" loading="lazy" style="max-width:100%;height:auto;border-radius:12px;${imgShadow}${imgBorder}display:block;margin:0 auto;transition:transform 0.25s ease;" />
+                    </a>
+                    ${singleImg.caption ? `<figcaption style="margin-top:10px;font-size:12.5px;color:#94a3b8;font-style:italic;line-height:1.5;">📷 ${escapeSmartHtml(singleImg.caption)}</figcaption>` : ''}
+                `;
+
+                let toReplace = img;
+                const parentAnchor = img.closest('a');
+                if (parentAnchor && parentAnchor.parentElement && parentAnchor.parentElement.children.length === 1) {
+                    toReplace = parentAnchor;
+                }
+                const parentSep = toReplace.closest('.separator');
+                if (parentSep && parentSep.querySelectorAll('img').length === 1) {
+                    parentSep.replaceWith(figure);
+                } else {
+                    toReplace.replaceWith(figure);
+                }
+            }
+            window.__smartFormatExtractedGalleryImages = detectedImages;
+            window.__smartFormatExtractedGalleryLayout = galleryLayout;
+        }
     }
 
     // 3. Smart Callouts (Tips, Notes, Warnings)
@@ -15515,13 +15674,13 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
 
                 const callout = document.createElement('div');
                 callout.className = 'pro-callout-card';
-                callout.style.cssText = `margin:24px 0;padding:16px 20px;border-inline-start:4px solid ${calloutTheme.border};background:${calloutTheme.bg};border-radius:0 12px 12px 0;box-shadow:0 4px 16px rgba(0,0,0,0.1);`;
+                callout.style.cssText = `margin:24px 0;padding:16px 20px;border-inline-start:4px solid ${calloutTheme.border};background:${calloutTheme.bg};border-radius:0 12px 12px 0;box-shadow:0 4px 16px rgba(0,0,0,0.1);max-width:100%;box-sizing:border-box;`;
                 callout.innerHTML = `
                     <div style="display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:${calloutTheme.border};margin-bottom:8px;">
                         <span style="font-size:18px;">${calloutTheme.icon}</span>
                         <span>${calloutTheme.title}</span>
                     </div>
-                    <div style="font-size:14.5px;line-height:1.8;color:${calloutTheme.textCol};">${el.innerHTML}</div>
+                    <div style="font-size:14.5px;line-height:1.8;color:${calloutTheme.textCol};word-break:break-word;">${el.innerHTML}</div>
                 `;
                 el.replaceWith(callout);
             }
@@ -15538,9 +15697,9 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
             if (isDownload) {
                 downloadCount++;
                 const btnWrap = document.createElement('div');
-                btnWrap.style.cssText = 'text-align:center;margin:28px 0;clear:both;';
+                btnWrap.style.cssText = 'text-align:center;margin:28px 0;clear:both;max-width:100%;';
                 btnWrap.innerHTML = `
-                    <a href="${a.href}" target="_blank" rel="noopener" class="pro-download-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 28px;background:${currentTheme.buttonGradient};color:#ffffff!important;font-weight:800;font-size:15px;border-radius:12px;text-decoration:none!important;box-shadow:0 6px 20px rgba(2,132,199,0.35);transition:transform 0.2s,box-shadow 0.2s;">
+                    <a href="${a.href}" target="_blank" rel="noopener" class="pro-download-btn" style="display:inline-flex;align-items:center;justify-content:center;gap:12px;padding:14px 28px;background:${currentTheme.buttonGradient};color:#ffffff!important;font-weight:800;font-size:15px;border-radius:12px;text-decoration:none!important;box-shadow:0 6px 20px rgba(2,132,199,0.35);transition:transform 0.2s,box-shadow 0.2s;max-width:100%;box-sizing:border-box;">
                         <span style="font-size:20px;">📥</span>
                         <span>${a.textContent.trim() || (isAr ? 'تحميل مباشر للملف' : 'Download Now')}</span>
                         <span style="font-size:11px;background:rgba(255,255,255,0.22);padding:2px 8px;border-radius:20px;">v.Latest</span>
@@ -15551,47 +15710,55 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
                 } else {
                     a.replaceWith(btnWrap);
                 }
-            } else if (!a.closest('.pro-article-figure') && !a.closest('.pro-download-btn') && !a.style.color) {
-                a.style.cssText = `color:${currentTheme.badge};text-decoration:underline;font-weight:600;`;
+            } else if (!a.closest('.pro-article-figure') && !a.closest('.pro-download-btn') && !a.closest('.studio-gallery-block') && !a.style.color) {
+                a.style.cssText = `color:${currentTheme.badge};text-decoration:underline;font-weight:600;word-break:break-word;`;
             }
         });
     }
 
-    // 5. Enhance Tables
+    // 5. Enhance Tables & Wrap in Responsive Container
     container.querySelectorAll('table').forEach(tbl => {
         tableCount++;
-        tbl.style.cssText = `width:100%;border-collapse:collapse;margin:24px 0;font-size:14px;border:1px solid ${currentTheme.border};border-radius:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.15);`;
+        tbl.style.cssText = `width:100%;max-width:100%;border-collapse:collapse;margin:16px 0;font-size:14px;border:1px solid ${currentTheme.border};border-radius:10px;overflow:hidden;box-shadow:0 4px 16px rgba(0,0,0,0.15);box-sizing:border-box;`;
         tbl.querySelectorAll('th').forEach(th => {
             th.style.cssText = `background:${currentTheme.bgCard};color:${currentTheme.badge};padding:12px 16px;text-align:${align};font-weight:800;border:1px solid ${currentTheme.border};`;
         });
         tbl.querySelectorAll('td').forEach(td => {
             td.style.cssText = `padding:11px 16px;border:1px solid rgba(255,255,255,0.06);color:#cbd5e1;line-height:1.6;`;
         });
+
+        if (!tbl.parentElement.classList.contains('table-responsive-wrapper')) {
+            const wrap = document.createElement('div');
+            wrap.className = 'table-responsive-wrapper';
+            wrap.style.cssText = 'width:100%;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;margin:20px 0;box-sizing:border-box;';
+            tbl.replaceWith(wrap);
+            wrap.appendChild(tbl);
+        }
     });
 
     // 6. Enhance Lists
     container.querySelectorAll('ul, ol').forEach(list => {
-        if (!list.closest('.pro-highlights-box') && !list.closest('.pro-toc-box')) {
-            list.style.cssText = `margin:18px 0;padding-inline-start:24px;line-height:1.9;color:inherit;`;
+        if (!list.closest('.pro-highlights-box') && !list.closest('.pro-toc-box') && !list.closest('.studio-gallery-block')) {
+            list.style.cssText = `margin:18px 0;padding-inline-start:24px;line-height:1.9;color:inherit;max-width:100%;box-sizing:border-box;`;
             list.querySelectorAll('li').forEach(li => {
-                li.style.cssText = `margin-bottom:8px;position:relative;`;
+                li.style.cssText = `margin-bottom:8px;position:relative;word-break:break-word;`;
             });
         }
     });
 
     // 7. Lead Paragraph
-    const allParas = Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 40 && !p.closest('.pro-callout-card'));
+    const allParas = Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 40 && !p.closest('.pro-callout-card') && !p.closest('.studio-gallery-block'));
     let firstLead = allParas.length > 0 ? allParas[0] : null;
 
     if (firstLead) {
         if (styleType === 'tech') {
-            firstLead.style.cssText = `font-size:16.5px;line-height:1.9;color:#f8fafc;background:linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7));border-inline-start:4px solid ${currentTheme.leadBorder};padding:18px 22px;border-radius:0 12px 12px 0;margin:24px 0;box-shadow:0 4px 20px rgba(0,0,0,0.15);`;
+            firstLead.style.cssText = `font-size:16.5px;line-height:1.9;color:#f8fafc;background:linear-gradient(135deg, rgba(15,23,42,0.9), rgba(30,41,59,0.7));border-inline-start:4px solid ${currentTheme.leadBorder};padding:18px 22px;border-radius:0 12px 12px 0;margin:24px 0;box-shadow:0 4px 20px rgba(0,0,0,0.15);max-width:100%;box-sizing:border-box;`;
         } else if (styleType === 'editorial') {
-            firstLead.style.cssText = `font-size:17.5px;line-height:1.95;color:#fef3c7;border-bottom:1px solid ${currentTheme.border};padding-bottom:18px;margin:24px 0;font-weight:500;`;
+            firstLead.style.cssText = `font-size:17.5px;line-height:1.95;color:#fef3c7;border-bottom:1px solid ${currentTheme.border};padding-bottom:18px;margin:24px 0;font-weight:500;max-width:100%;box-sizing:border-box;`;
         } else if (styleType === 'minimal') {
-            firstLead.style.cssText = `font-size:16.5px;line-height:1.9;color:#ffffff;margin:24px 0;padding-inline-start:12px;border-inline-start:3px solid ${currentTheme.leadBorder};`;
+            firstLead.style.cssText = `font-size:16.5px;line-height:1.9;color:#ffffff;margin:24px 0;padding-inline-start:12px;border-inline-start:3px solid ${currentTheme.leadBorder};max-width:100%;box-sizing:border-box;`;
         } else if (styleType === 'review') {
-            firstLead.style.cssText = `font-size:16px;line-height:1.85;color:#e2e8f0;margin:20px 0;`;
+            firstLead.style.cssText = `font-size:16px;line-height:1.85;color:#e2e8f0;margin:20px 0;max-width:100%;box-sizing:border-box;`;
         }
     }
 
@@ -15608,13 +15775,13 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
 
         if (bulletPoints.length > 0) {
             highlightsHtml = `
-                <div class="pro-highlights-box" style="background:${currentTheme.bgCard};border:1px solid ${currentTheme.border};border-radius:14px;padding:20px 24px;margin:26px 0;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+                <div class="pro-highlights-box" style="background:${currentTheme.bgCard};border:1px solid ${currentTheme.border};border-radius:14px;padding:20px 24px;margin:26px 0;box-shadow:0 8px 30px rgba(0,0,0,0.2);max-width:100%;box-sizing:border-box;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;font-size:15.5px;font-weight:800;color:${currentTheme.badge};border-bottom:1px solid ${currentTheme.border};padding-bottom:8px;">
                         <span style="font-size:20px;">💡</span>
                         <span>${isAr ? 'أبرز النقاط والملخص التنفيذي للمقال' : 'Key Highlights & Executive Summary'}</span>
                     </div>
                     <ul style="margin:0;padding-inline-start:20px;line-height:1.85;color:#e2e8f0;font-size:14.5px;">
-                        ${bulletPoints.map(bp => `<li style="margin-bottom:8px;">${escapeSmartHtml(bp)}</li>`).join('')}
+                        ${bulletPoints.map(bp => `<li style="margin-bottom:8px;word-break:break-word;">${escapeSmartHtml(bp)}</li>`).join('')}
                     </ul>
                 </div>
             `;
@@ -15625,7 +15792,7 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
     let tocHtml = '';
     if (optToc && headingsList.length >= 2) {
         tocHtml = `
-            <div class="pro-toc-box" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px 24px;margin:26px 0;">
+            <div class="pro-toc-box" style="background:rgba(15,23,42,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:20px 24px;margin:26px 0;max-width:100%;box-sizing:border-box;">
                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;border-bottom:1px solid rgba(255,255,255,0.06);padding-bottom:10px;">
                     <span style="font-size:15px;font-weight:800;color:#f8fafc;display:flex;align-items:center;gap:8px;">
                         <span style="font-size:18px;">📑</span>
@@ -15650,7 +15817,7 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
     if (styleType === 'review') {
         const titleText = (document.getElementById('art-title')?.value || document.getElementById('art-title-en')?.value || headingsList[0]?.text || 'التطبيق / المراجعة').trim();
         reviewSpecsHtml = `
-            <div class="pro-review-badge-card" style="background:rgba(6,44,32,0.9);border:1px solid rgba(16,185,129,0.35);border-radius:14px;padding:20px 24px;margin:24px 0;box-shadow:0 8px 32px rgba(16,185,129,0.15);">
+            <div class="pro-review-badge-card" style="background:rgba(6,44,32,0.9);border:1px solid rgba(16,185,129,0.35);border-radius:14px;padding:20px 24px;margin:24px 0;box-shadow:0 8px 32px rgba(16,185,129,0.15);max-width:100%;box-sizing:border-box;">
                 <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(16,185,129,0.25);padding-bottom:12px;margin-bottom:14px;">
                     <div>
                         <div style="font-size:12px;color:#34d399;font-weight:700;">⭐ ${isAr ? 'تقييم ومواصفات سريعة' : 'Quick Review & Specs'}</div>
@@ -15673,16 +15840,16 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
 
     // 11. Final Conclusion Card
     let conclusionHtml = '';
-    const lastParas = Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 30);
+    const lastParas = Array.from(container.querySelectorAll('p')).filter(p => p.textContent.trim().length > 30 && !p.closest('.studio-gallery-block'));
     if (lastParas.length > 2) {
         const lastP = lastParas[lastParas.length - 1];
         conclusionHtml = `
-            <div class="pro-conclusion-box" style="background:${currentTheme.bgCard};border:1px solid ${currentTheme.border};border-radius:14px;padding:22px 26px;margin-top:34px;box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+            <div class="pro-conclusion-box" style="background:${currentTheme.bgCard};border:1px solid ${currentTheme.border};border-radius:14px;padding:22px 26px;margin-top:34px;box-shadow:0 8px 30px rgba(0,0,0,0.2);max-width:100%;box-sizing:border-box;">
                 <div style="display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800;color:${currentTheme.badge};margin-bottom:10px;border-bottom:1px solid ${currentTheme.border};padding-bottom:8px;">
                     <span style="font-size:20px;">🎯</span>
                     <span>${isAr ? 'الخلاصة والتوصيات الختامية' : 'Final Verdict & Recommendations'}</span>
                 </div>
-                <div style="font-size:15px;line-height:1.9;color:#e2e8f0;">${lastP.innerHTML}</div>
+                <div style="font-size:15px;line-height:1.9;color:#e2e8f0;word-break:break-word;">${lastP.innerHTML}</div>
             </div>
         `;
         lastP.remove();
@@ -15709,6 +15876,36 @@ function formatArticleContentIntelligently(rawHtml, styleType = 'tech', options 
         concWrap.innerHTML = conclusionHtml;
         container.append(concWrap);
     }
+
+    // Universal strict boundary sanitation for elements
+    container.querySelectorAll('*').forEach(el => {
+        if (el.style && el.style.width && el.style.width.includes('px')) {
+            const wVal = parseInt(el.style.width, 10);
+            if (wVal > 500) {
+                el.style.maxWidth = '100%';
+                el.style.width = '100%';
+                el.style.boxSizing = 'border-box';
+            }
+        }
+        if (el.getAttribute('width')) {
+            const wAttr = parseInt(el.getAttribute('width'), 10);
+            if (wAttr > 500) {
+                el.setAttribute('width', '100%');
+                el.style.maxWidth = '100%';
+                el.style.boxSizing = 'border-box';
+            }
+        }
+    });
+
+    container.querySelectorAll('pre').forEach(pre => {
+        pre.style.cssText = `max-width:100%;overflow-x:auto;white-space:pre-wrap;word-break:break-all;background:rgba(15,23,42,0.9);border:1px solid ${currentTheme.border};border-radius:10px;padding:16px;font-size:13px;color:#38bdf8;margin:20px 0;box-sizing:border-box;`;
+    });
+
+    container.querySelectorAll('iframe, embed, object').forEach(ifr => {
+        ifr.style.maxWidth = '100%';
+        ifr.style.borderRadius = '10px';
+        ifr.style.boxSizing = 'border-box';
+    });
 
     // Clean empty paragraphs
     container.querySelectorAll('p').forEach(p => {
@@ -15747,6 +15944,7 @@ function openSmartFormatPreviewModal() {
     // Save snapshot of current editor content for 100% reversible undo
     window.__preSmartFormatSnapshot = rawContent;
     window.__currentSmartFormatStyle = 'tech';
+    window.__currentSmartFormatGalleryLayout = currentGalleryLayout || 'grid';
 
     // Reset button states
     document.querySelectorAll('.smart-format-preset-btn').forEach(btn => btn.classList.remove('active'));
@@ -15755,6 +15953,11 @@ function openSmartFormatPreviewModal() {
 
     const badge = document.getElementById('active-style-badge');
     if (badge) badge.textContent = 'النمط المختار: العصري التقني 🚀';
+
+    // Reset gallery layout button states
+    document.querySelectorAll('.smart-gallery-layout-btn').forEach(btn => btn.classList.remove('active'));
+    const defGalBtn = document.getElementById(`btn-fmt-layout-${window.__currentSmartFormatGalleryLayout}`);
+    if (defGalBtn) defGalBtn.classList.add('active');
 
     // Render Preview
     updateSmartFormatPreviewRealtime();
@@ -15782,6 +15985,24 @@ function confirmApplySmartFormatting() {
         setEditorMode('advanced');
     }
     setEditorHtmlContent(window.__pendingSmartFormattedHtml);
+
+    // Sync gallery state in editor & sidebar
+    if (window.__smartFormatExtractedGalleryImages && window.__smartFormatExtractedGalleryImages.length > 0) {
+        currentGalleryImages = window.__smartFormatExtractedGalleryImages;
+        window.currentGalleryImages = currentGalleryImages;
+        const newLayout = window.__currentSmartFormatGalleryLayout || currentGalleryLayout || 'grid';
+        currentGalleryLayout = newLayout;
+        window.currentGalleryLayout = newLayout;
+
+        document.querySelectorAll('.gallery-layout-pill').forEach(btn => btn.classList.remove('active'));
+        const activePill = document.getElementById(`btn-layout-${newLayout}`);
+        if (activePill) activePill.classList.add('active');
+
+        if (typeof renderGalleryGrid === 'function') {
+            renderGalleryGrid();
+        }
+    }
+
     window.currentPostSaved = false;
     updateWordCount();
     scheduleAutoSave();
@@ -15793,7 +16014,7 @@ function confirmApplySmartFormatting() {
     const undoBtn = document.getElementById('btn-undo-smart-format');
     if (undoBtn) undoBtn.style.display = 'inline-flex';
 
-    showToast('✨ تم تطبيق التنسيق الاحترافي الشامل بالنمط المختار بنجاح! يمكنك التراجع بنقرة واحدة.', 'success');
+    showToast('✨ تم تطبيق التنسيق الاحترافي الشامل ومعرض الصور بنجاح! يمكنك التراجع بنقرة واحدة.', 'success');
 }
 window.confirmApplySmartFormatting = confirmApplySmartFormatting;
 
@@ -15807,6 +16028,7 @@ function undoProfessionalArticleFormatting() {
         setEditorMode('advanced');
     }
     setEditorHtmlContent(window.__preSmartFormatSnapshot);
+    extractAndPopulateSidebarGallery(window.__preSmartFormatSnapshot);
     window.currentPostSaved = false;
     updateWordCount();
     scheduleAutoSave();
@@ -15824,4 +16046,3 @@ function applyProfessionalArticleFormatting() {
     openSmartFormatPreviewModal();
 }
 window.applyProfessionalArticleFormatting = applyProfessionalArticleFormatting;
-

@@ -434,6 +434,7 @@ def build_dist_bundle() -> bool:
         build_timestamp = str(int(time.time()))
         index_content = re.sub(r"dashboard\.js(\?v=[^\s\"\'>]+)?", f"dashboard.js?v={build_timestamp}", index_content)
         index_content = re.sub(r"style\.css(\?v=[^\s\"\'>]+)?", f"style.css?v={build_timestamp}", index_content)
+        index_content = re.sub(r"dashboard\.css(\?v=[^\s\"\'>]+)?", f"dashboard.css?v={build_timestamp}", index_content)
 
         with open(os.path.join(dist_dir, "index.html"), "w", encoding="utf-8") as f:
             f.write(index_content)

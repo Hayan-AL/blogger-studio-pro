@@ -125,6 +125,7 @@ def sync_assets():
         content = content.replace('href="/static/', 'href="./static/').replace('src="/static/', 'src="./static/')
         content = re.sub(r'dashboard\.js(\?v=[^\s"\'\>]+)?', f'dashboard.js?v={b_ts}', content)
         content = re.sub(r'style\.css(\?v=[^\s"\'\>]+)?', f'style.css?v={b_ts}', content)
+        content = re.sub(r'dashboard\.css(\?v=[^\s"\'\>]+)?', f'dashboard.css?v={b_ts}', content)
         with open(dest_html, "w", encoding="utf-8") as f:
             f.write(content)
         with open(src_html, "w", encoding="utf-8") as f:

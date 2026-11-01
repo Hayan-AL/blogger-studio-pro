@@ -10,7 +10,7 @@
       document.documentElement.setAttribute('data-theme', savedTheme);
     } catch(e) {}
   </script>
-  <link rel="stylesheet" href="./static/css/dashboard.css?v=3.0">
+  <link rel="stylesheet" href="./static/css/dashboard.css?v=1793507510">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <link rel="icon" type="image/svg+xml" href="./static/img/dashboard_favicon.svg">
 <link rel="alternate icon" type="image/png" href="./static/img/dashboard_favicon.png">
@@ -4573,13 +4573,28 @@ Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
               </label>
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;">
                 <input type="checkbox" id="fmt-opt-figures" checked onchange="updateSmartFormatPreviewRealtime()">
-                <span>🖼️ إطارات أنيقة وتوسيط للصور</span>
+                <span>🖼️ تجميع الصور بمعرض متجاوب وأنيق</span>
               </label>
               <label style="display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none;">
                 <input type="checkbox" id="fmt-opt-buttons" checked onchange="updateSmartFormatPreviewRealtime()">
                 <span>📥 تحويل الروابط لأزرار إجراءات احترافية</span>
               </label>
             </div>
+
+            <!-- Smart Gallery Layout Selector Bar -->
+            <div style="display:flex;align-items:center;gap:12px;margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,0.08);flex-wrap:wrap;">
+              <span style="font-size:12px;font-weight:700;color:var(--text-muted);display:flex;align-items:center;gap:6px;">
+                <i class="fas fa-images text-cyan"></i> نمط تجميع معرض الصور:
+              </span>
+              <div class="smart-format-gallery-layouts" style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button type="button" class="smart-gallery-layout-btn active" id="btn-fmt-layout-grid" onclick="switchSmartFormatGalleryLayout('grid')">⊞ شبكة متجاوبة</button>
+                <button type="button" class="smart-gallery-layout-btn" id="btn-fmt-layout-vertical-slider" onclick="switchSmartFormatGalleryLayout('vertical-slider')">↕ سلايدر رأسي</button>
+                <button type="button" class="smart-gallery-layout-btn" id="btn-fmt-layout-masonry" onclick="switchSmartFormatGalleryLayout('masonry')">░ فسيفسائي (Masonry)</button>
+                <button type="button" class="smart-gallery-layout-btn" id="btn-fmt-layout-carousel" onclick="switchSmartFormatGalleryLayout('carousel')">↔ سلايدر متحرك</button>
+                <button type="button" class="smart-gallery-layout-btn" id="btn-fmt-layout-featured" onclick="switchSmartFormatGalleryLayout('featured')">★ رئيسي ومصغرات</button>
+              </div>
+            </div>
+
           </div>
 
           <!-- Statistics Badges -->
@@ -5622,7 +5637,7 @@ Sitemap: https://yourblog.blogspot.com/sitemap.xml</textarea>
 <script src="./static/vendor/codemirror/addon/display/fullscreen.min.js"></script>
 
 <script src="./static/js/google_blogger_client.js"></script>
-<script src="./static/js/dashboard.js?v=1793504782"></script>
+<script src="./static/js/dashboard.js?v=1793507510"></script>
 
 <!-- Modal: Image Properties & Settings -->
 <div class="modal-backdrop" id="gallery-image-settings-modal" style="display:none;" onclick="if(event.target===this)closeImageSettingsModal()">
